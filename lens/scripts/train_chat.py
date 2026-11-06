@@ -378,7 +378,7 @@ def main():
                          "construction (the true token was discarded by the vocabulary before training), "
                          "so the plain objective can only teach the model to EMIT <unk> -- measured on the "
                          "code corpus as the #1 most frequent target (lens/scripts/run_code_dropunk.sh) and "
-                         "on this corpus at 6.888% of held-out assistant targets with answer.b[<unk>] the "
+                         "on this corpus at 6.888%% of held-out assistant targets with answer.b[<unk>] the "
                          "largest of 12,002 biases (P71f). Validation is NOT changed by this flag, so the "
                          "held-out columns stay comparable to runs without it. Needs --assistant-only (the "
                          "per-target weights only exist there) and refuses loudly without it. Off by "
@@ -1480,8 +1480,14 @@ def main():
         These change the DECODER, not the model. The model's perplexity and accuracy are unaffected.
         """
         enc = encode(prompt)
-        if len(enc) < a.window:
-            enc = [0] * (a.window - len(enc)) + enc
+        # PAD-FREE CONTEXT (fixed 2026-11-06; measured in lens/runs/PROMPT-ENCODING-AUDIT.txt).
+        # This used to be `enc = [0]*(window-len(enc)) + enc`, i.e. id 0 = "<unk>". The six prompts
+        # below are only 9-12 ids long, so 20-23 of the 32 context slots were <unk>, and the model
+        # then emitted <unk> for 95.1-96.5% of its reply tokens. Repeating the prompt to fill the
+        # window (same weights, same decoder) took that to 26.4/21.5%. Predictions and numbers:
+        # docs/history/PROMPT-ENCODING.md. Do not reintroduce id-0 padding here.
+        if a.window > 1 and enc:
+            enc = (enc * ((a.window // len(enc)) + 2))[-a.window:]
         ctx = enc[-a.window:]
         out, r = [], np.random.default_rng(seed)
         used = {}

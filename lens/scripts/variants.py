@@ -373,8 +373,12 @@ class Variants:
         toks = re.findall(r"[A-Za-z']+|[0-9]+|[^\sA-Za-z0-9]", prompt.lower())
         enc = [vmap.get(x, 0) for x in toks]
         W = net.W
-        if len(enc) < W:
-            enc = [0] * (W - len(enc)) + enc
+        # PAD-FREE CONTEXT (fixed 2026-11-06). This used to left-pad with id 0 ("<unk>"), which put
+        # 20-23 <unk> tokens into a 32-slot context for the 6 project prompts and made the model
+        # reply in <unk> 95.1-96.5% of the time (lens/runs/PROMPT-ENCODING-AUDIT.txt). Repeating the
+        # prompt ids to fill the window, same weights and decoder, measured 26.4/21.5%.
+        if W > 1 and enc:
+            enc = (enc * ((W // len(enc)) + 2))[-W:]
         ctx = enc[-W:]
         out, used, r = [], {}, np.random.default_rng(seed)
         for _ in range(n_new):
