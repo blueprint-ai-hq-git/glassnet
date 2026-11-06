@@ -65,6 +65,7 @@ A wrong number is worse than a missing one, so these are listed with the correct
 | Cost table added a stage labelled "runs 32x" exactly once | published 0.1446 ms/token; with the core counted the 32 times it runs, the same rows give 0.2283 ms | `docs/history/PARAM-AUDIT.md` |
 | KV cache speedup "9.7x" had no run file behind it | only the prose figure existed (0.217 vs 2.115 ms, `docs/history/STATE.md:2730`); the recorded micro-benchmark is **2.29x** (0.483 -> 0.211 ms/token, identical to 5.3e-06) | `lens/runs/KV-CACHE-MICRO.txt` |
 | `wall_ab_grade.py` P2 computed `on - off` but graded the pre-registered `off - on` band | the falsifier (`on - off < 0.5`) fired on a real 3.11 pp LOSS and called it "earns under 0.5 pp"; the -1.0..-6.0 band was unreachable, so a perfect result would still have printed "OUTSIDE". Numbers unchanged (-1.39 / -3.11), only the sentence was wrong | `docs/history/GRADER-P2-SIGN.md` |
+| Same command, same seed, three runs at the 20k-window rung | VAL acc 11.32 / 10.79 / 10.29 and ASST 11.96 / 11.42 / 10.92 - a **1.03 pp spread**, not the 0.01-0.02 pp measured on the d512 / 2M-window path. The small figure must not be carried to this rung, and a +/-1.25 band around one draw cannot serve as a control at n=1 seed | `docs/history/REF-REPRO.md` |
 | A restarted run rewrote `<out>_best.npz` from its own epoch 1 | `wall_off_s0`'s epoch-3 checkpoint was replaced by an aborted second attempt's epoch 1. Repaired earlier; the **guard is now wired into the trainer and proven at the call site** (2 hunks, patch sha256 f10dc89e -> e5acd0aa, 4/4 unit tests, `--check` import=True call=True, and the end-to-end pair: run 2 printed 1 `CLOBBER GUARD` line, archived run 1's best.npz as sha256 b349a10b... with a receipt, and wrote its own 422ebc7e...) | `docs/history/BEST-CKPT-GUARD-APPLIED.md`, `lens/runs/BEST-CKPT-GUARD-E2E.txt` |
 
 ## Wall A/B (concept-wall bottleneck) - FINISHED 2026-11-06 17:51, six arms, P1 FAILs as coded (band mixes two columns)
@@ -114,6 +115,11 @@ far less overfit - and its control reproduces on a matched comparison, but the p
 coded still says FAIL, so nothing is quoted against the stored rung until that is ruled on. If Yahya
 adopts the metric-consistent reading, the deltas become quotable and the plan's next lever is data scale;
 if he keeps the gate as coded, the control has to be re-run before the block can be read at all.
+
+A third run of the same command, same seed, launched at 18:07 and finished at 18:15, landed at VAL 10.29% /
+ASST 10.92% (`lens/runs/REF-REPRO.txt`) - so three draws of one configuration span **1.03 pp**, and P1's
++/-1.25 band around a single draw cannot work as a control at n=1 seed. Full write-up:
+`docs/history/REF-REPRO.md`.
 
 Every arm's checkpoint has been machine-checked against the epoch its log line named
 (`lens/scripts/verify_wall_ab_ckpt.py`, output `lens/runs/WALL-AB-CKPT-VERIFY.txt`,
