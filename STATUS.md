@@ -160,7 +160,9 @@ same 36-concept set, **same 3,811,534 parameters**, no bypass, seed 0.
 | `datascale_honest_s0` | 200,000 | **17.43%** | 18.61% | **207.29** | `lens/runs/DATASCALE-HONEST.txt:230` |
 
 **+5.25 points** and perplexity 48.1% lower (399.50 -> 207.29); best held-out checkpoint is epoch 2 at ASST
-18.87%. Pre-registered predictions: D1 wanted +3 to +8 pp (got +5.25, **PASS, inside the band**), D2 wanted
+18.87%. A second effect, not predicted: the concept audit went from **20/36 to 36/36** passing at the same
+36-concept set and the same parameter count (counted from the AUROC rows in both logs, not from the summary
+line). Pre-registered predictions: D1 wanted +3 to +8 pp (got +5.25, **PASS, inside the band**), D2 wanted
 ppl < 300 (got 207.29, **PASS**); both of D1's falsifiers were registered in advance and neither fired.
 
 Caveats, stated because they matter: **one seed**; the 20k rung's measured run-to-run spread is 1.03 pp
