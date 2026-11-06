@@ -14,6 +14,15 @@ conversations), same command (`--d 256 --window 32 --epochs 3 --batch 256 --lr 0
 
     ONLY DIFFERENCE: --max-windows 20000 -> 200000
 
+The comparison is on the SAME held-out windows, verified from both logs this run:
+
+    WALL-AB.txt          "windows  20,000 train / 87,035 val   vocab 12,002   window 32"
+    DATASCALE-HONEST.txt "windows 200,000 train / 87,035 val   vocab 12,002   window 32"
+    VAL per-metric counts, ep 3/3: 20k run (n=44418) (n=58191)  |  200k run (n=44418) (n=58191)
+
+so 10x the training windows were scored against the identical 87,035-window validation set (44,418 masked
+targets, 58,191 assistant positions). The extra data cannot have leaked into the scored set by resizing it.
+
 | arm | windows | VAL acc | ASST acc | final ppl | source |
 |---|---:|---:|---:|---:|---|
 | `wall_off` seed 0 (baseline) | 20,000 | 12.18% | 13.00% | 399.50 | `WALL-AB.txt:116` |

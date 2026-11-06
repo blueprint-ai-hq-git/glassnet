@@ -152,7 +152,9 @@ Supervisor: lens/scripts/run_wall_ab_resume2.sh via the chain (label wall_ab_res
 ## Data scale at d=256 - the first lever that moved this rung (2026-11-06 19:29)
 
 One flag changed (`--max-windows 20000` -> `200000`), everything else identical: same corpus, same command,
-same 36-concept set, **same 3,811,534 parameters**, no bypass, seed 0.
+same 36-concept set, **same 3,811,534 parameters**, no bypass, seed 0 - and the **same 87,035-window
+held-out set** in both runs (`n=44418` masked / `n=58191` assistant positions in each epoch-3 line, verified
+from both logs), so the extra data cannot have come from resizing the scored set.
 
 | run | windows | VAL acc | ASST acc | final ppl | source |
 |---|---:|---:|---:|---:|---|
