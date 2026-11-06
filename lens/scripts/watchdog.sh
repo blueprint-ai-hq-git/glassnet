@@ -4,6 +4,14 @@ RESIDENT_1_NAME="long_compare"; RESIDENT_1_PAT="stable_vs_plain.py"
 RESIDENT_2_NAME="gpu_trainer";  RESIDENT_2_PAT="train_chat.py"
 resident() {
   local name="$1" pat="$2" cmd="$3" mem="${4:-8G}"
+  # GPU CLAIM (2026-11-06 16:4x, MEASURED NEED). A chained experiment (run_wall_ab.sh) takes the card for
+  # ~20 min and writes lens/runs/GPU-CLAIM while it holds it. Without this the 15-min tick restarted the
+  # resident keeper mid-experiment: two trainers on the 6 GB card, which is the OOM class BUGS.md documents.
+  # The claim is a plain file with its owner on line 1, so the skip is visible in WATCHDOG.txt.
+  if [ "$name" = "gpu_trainer" ] && [ -e lens/runs/GPU-CLAIM ]; then
+    echo "  - RESIDENT '$name' held off: GPU-CLAIM present ($(head -1 lens/runs/GPU-CLAIM 2>/dev/null))" >> lens/runs/WATCHDOG.txt
+    return 0
+  fi
   if ! pgrep -f "$pat" >/dev/null 2>&1; then
     echo "  - RESIDENT '$name' was dead -> restarting $(date '+%H:%M')" >> lens/runs/WATCHDOG.txt
     # OWN TRANSIENT SERVICE (2026-11-06 15:31, MEASURED). This used to be
@@ -240,7 +248,7 @@ fi
 # while I reported progress. Now an empty queue pulls the next experiment from PLAN.txt automatically, and if
 # the plan is ALSO empty that is written to the inbox so it is visible instead of silent.
 qcount=$(grep -cvE '^[[:space:]]*#|^[[:space:]]*$' lens/runs/QUEUE.txt 2>/dev/null)
-if [ "${qcount:-0}" -eq 0 ] && [ "$(pgrep -cf 'venv-gpu/bin/python3 -u lens/scripts/train_chat')" -eq 0 ]; then
+if [ "${qcount:-0}" -eq 0 ] && [ "${qrunning:-0}" -eq 0 ]; then
   pnext=$(grep -vE '^[[:space:]]*#|^[[:space:]]*$' lens/runs/PLAN.txt 2>/dev/null | head -1)
   if [ -n "$pnext" ]; then
     echo "$pnext" >> lens/runs/QUEUE.txt
@@ -251,6 +259,12 @@ if [ "${qcount:-0}" -eq 0 ] && [ "$(pgrep -cf 'venv-gpu/bin/python3 -u lens/scri
   fi
 fi
 qnext=$(grep -vE '^[[:space:]]*#|^[[:space:]]*$' lens/runs/QUEUE.txt 2>/dev/null | head -1)
+# GPU CLAIM, QUEUE SIDE (2026-11-06 16:4x). Same file as the resident guard above: while a chained job owns
+# the card, a tick must not start the queue's own copy of the same work (double launch, OOM risk).
+if [ -e lens/runs/GPU-CLAIM ]; then
+  note "GPU-CLAIM present ($(head -1 lens/runs/GPU-CLAIM 2>/dev/null)): NOT starting '$qnext'"
+  qnext=""
+fi
 if [ "${qrunning:-0}" -eq 0 ] && [ -n "$qnext" ]; then
   note "nothing running and the queue has work: starting '$qnext'"
   grep -vxF "$qnext" lens/runs/QUEUE.txt > lens/runs/QUEUE.tmp 2>/dev/null && mv lens/runs/QUEUE.tmp lens/runs/QUEUE.txt
