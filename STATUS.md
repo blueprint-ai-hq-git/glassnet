@@ -121,6 +121,26 @@ ASST 10.92% (`lens/runs/REF-REPRO.txt`) - so three draws of one configuration sp
 +/-1.25 band around a single draw cannot work as a control at n=1 seed. Full write-up:
 `docs/history/REF-REPRO.md`.
 
+### Replication on fresh seeds (WALL-REP) - finished 2026-11-06 18:56
+
+A separate pre-registered block (`docs/history/WALL-REP-PREDICTIONS.md`), own log
+`lens/runs/WALL-REP.txt`, own tags - its arms are **not** in the six-arm table above.
+
+| arm | seed | VAL acc | ASST acc | source |
+|---|---|---:|---:|---|
+| wall_rep_off (no bypass) | 2 | **13.40%** | 13.83% | lens/runs/WALL-REP.txt:329 |
+| wall_rep_on (tied bypass) | 2 | 9.98% | 10.65% | lens/runs/WALL-REP.txt:110 |
+| wall_rep_off (no bypass) | 3 | **13.26%** | 13.72% | lens/runs/WALL-REP.txt:517 |
+| wall_rep_on (tied bypass) | 3 | 11.21% | 11.99% | lens/runs/WALL-REP.txt:705 |
+
+**R1 direction PASS** (+3.42 at seed 2, +2.05 at seed 3), **R2 magnitude PASS** (both inside the predicted
+1.0-4.0 pp), **R3 noise bound FAIL** (the `on` arm spans 1.53 pp over four draws against a 1.5 pp bound -
+missed by 0.03), **R4 not pooled PASS**. All four seeds now put the no-bypass arm ahead:
++1.39 / +3.11 / +3.42 / +2.05. Because R3's pre-registered falsifier says a span above 1.5 pp means "no
+delta may be quoted at all", **no delta is quoted here and none is claimed as significant** - the numbers
+are shown, the rule is not re-read. Checkpoints: 4 arms, 0 provenance problems
+(`verify_wall_ab_ckpt.py lens/runs/WALL-REP.txt`). Full write-up: `docs/history/WALL-REP-RESULT.md`.
+
 Every arm's checkpoint has been machine-checked against the epoch its log line named
 (`lens/scripts/verify_wall_ab_ckpt.py`, output `lens/runs/WALL-AB-CKPT-VERIFY.txt`,
 sha256 4e11965f...: **6 arms, 0 provenance problems**; the 5-arm version is kept, not deleted, at
