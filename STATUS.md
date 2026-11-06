@@ -41,3 +41,13 @@ repository are the proof of that.
 | Gradient check | 7.5e-10 abs / 1.8e-07 rel (live check, 9/9 PASS) max error | `tests/test_gradcheck.py` |
 | KV cache speedup | 9.7x | `lens/kvcache.py` |
 | Arithmetic, unseen operands | 0.0% exact | digit 0 alone: 100% |
+
+## Levers measured and closed
+
+These were tested one change at a time against a matched reference, and lost on every seed.
+They are listed so nobody has to re-run them.
+
+| Lever | Result | Where |
+|---|---|---|
+| Attention (bare single head, no position) at 20k windows | 8.21% vs 11.02% reference, 2 seeds, -2.81 | `docs/history/CTX-ATTN-ARMS.md` |
+| Window 64 (double tokens per example) at 20k windows | 9.45% vs 11.02% reference, 2 seeds, -1.57 | `docs/history/CTX-ATTN-ARMS.md` |
