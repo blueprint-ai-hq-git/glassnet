@@ -42,8 +42,8 @@ are looking for a capable assistant, this is not it yet — and this file will s
 |---|---|---|
 | **Autograd engine** | every operation has a hand-written derivative; blame flows backwards through a graph | all 9 gradient checks PASS — worst absolute error **7.5e-10**, worst relative **1.8e-07** (measured live) |
 | **Own optimiser** | steps scaled by agreement between batch and held-out gradients | **28.59%** vs SGD **27.81%** best-epoch mean, 3 seeds — level with SGD, not a win |
-| **Own KV cache** | reuses attention state instead of recomputing | **9.7x faster**, identical output |
-| **Compute core** | recurrent state carried across all 32 positions | 131,328 params, 0.0027 ms/token |
+| **Own KV cache** | reuses attention state instead of recomputing | **2.29x faster** measured (0.483 → 0.211 ms/token, 2,069 → 4,747 tokens/s), identical output (5.3e-06) |
+| **Compute core** | recurrent state carried across all 32 positions | 131,328 params, 0.0027 ms/token — the **proposed** variant, which lost to the plain shape by 1.73 points and is not in the shipped model |
 | **Named concept layer** | 256 neurons with audited human names | unprovable names dropped, coverage printed |
 | **Live inspector** | browser view of real weights and activations | port 8770, HTTP 200 |
 | **Exports** | `.npz`, `.safetensors`, `.gguf` | standard containers, our architecture |
@@ -181,7 +181,7 @@ including the ones that killed our own ideas.
 |---|---|---|
 | Autograd engine (`lens/tensor.py`) | **works** | all 9 checks PASS — worst absolute error **7.5e-10**, worst relative **1.8e-07** |
 | Our optimiser (`lens/opt.py`) | **works, level with SGD** | **28.59%** vs plain SGD **27.81%** best-epoch mean over 3 seeds (29.12% vs 27.15% at matched epoch); the pre-registered stability bar failed |
-| KV cache (`lens/kvcache.py`) | **works** | **9.7x faster** generation, byte-identical output |
+| KV cache (`lens/kvcache.py`) | **works** | **2.29x faster** generation (0.483 → 0.211 ms/token), byte-identical output (5.3e-06) — `lens/runs/KV-CACHE-MICRO.txt` |
 | Live inspector (`lens/liveview.py`) | **works** | serves real weights and live neuron activations on port 8770 |
 | Exports | **works** | `.npz`, `.safetensors`, `.gguf` |
 | Named concept layer | **partial** | 256 neurons; every name audited per run, unprovable names dropped |
@@ -205,35 +205,57 @@ including the ones that killed our own ideas.
 
 ## Architecture
 
-Data flows through four inspectable stages:
+The model every published number comes from is four inspectable steps, and it has **no attention block and no
+recurrent core**:
 
 ```
-tokens + position
+tokens (32-token window)
       |
       v
-[ compute core ]   recurrent, state carried across all 32 positions
+[ embedding ]     12,002 x 256, tied to the answer readout
       |
       v
-[ concepts ]       named neurons: "is_a_question", "mentions_self", ...
+[ concepts ]      named neurons: "is_a_question", "mentions_self", ... (36 kept of 43 defined)
       |
       v
-[ answer ]         tied readout over the 12,002-token vocabulary
+[ answer ]        36 -> 12,002 over the vocabulary
+      |
+      v
+[ direct mix ]    a 8,192 -> 256 mixing head added to the concept path
 ```
 
 ![Architecture](docs/assets/architecture.png)
 
-Measured cost per token and parameter count at `d=256`, window 32, vocab 12,002, float32:
+Parameter count, read off the model object (`d=256`, window 32, vocab 12,002, K=36; source
+`docs/history/PARAM-AUDIT.md`, and every training log prints the same total, e.g. `lens/runs/GPU-BEST.txt:57`):
 
-| Stage | Params | ms / token |
-|---|---:|---:|
-| embedding | 3,072,512 | 0.0053 |
-| position add | 8,192 | 0.0021 |
-| compute step (runs 32x) | 131,328 | 0.0027 |
-| concepts | 16,448 | 0.0008 |
-| answer via concepts | 780,130 | 0.0273 |
-| direct read | 3,072,512 | 0.0239 |
-| loss | 0 | 0.0825 |
-| **whole stack** | **7,081,122** | **0.1446** |
+| Part | Params |
+|---|---:|
+| embedding (`emb`, tied to the answer) | 3,072,512 |
+| concept layer (`concept.W` 36x8,192 + `concept.b`) | 294,948 |
+| answer (`answer.W` 36x12,002 + `answer.b`) | 444,074 |
+| direct mix head (`dmix`, 8,192x256) | 2,097,152 |
+| **whole model** | **5,908,686** |
+
+Earlier versions of this page published **7,081,122** here. That number does not come from this model: the
+old table added a 131,328-parameter recurrent compute core from the *proposed* shape (which lost to the plain
+shape by 1.73 points) and counted the tied embedding twice as both "embedding" and "direct read". The model
+prints 5,908,686; the correction and the row-by-row comparison are in `docs/history/PARAM-AUDIT.md`.
+
+Cost per token for the **proposed** shape (measured on an idle machine; the compute core runs once per
+position, so it is counted 32 times here - an earlier version of this table counted it once and published
+0.1446 ms):
+
+| Stage | ms / token |
+|---|---:|
+| embedding | 0.0053 |
+| position add | 0.0021 |
+| compute step, 32 x 0.0027 (the proposed core, not in the shipped model) | 0.0864 |
+| concepts | 0.0008 |
+| answer via concepts | 0.0273 |
+| direct read | 0.0239 |
+| loss | 0.0825 |
+| **whole stack, all 32 core steps counted** | **0.2283** |
 
 For comparison, a reference transformer block at the same width: qkv 196,608 params / 0.0005 ms, attention
 scores 0 / 0.0118 ms, MLP 524,288 / 0.0841 ms.

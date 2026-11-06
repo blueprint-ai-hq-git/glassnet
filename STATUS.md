@@ -8,7 +8,7 @@ Updated: 2026-11-06. Every figure below comes from a run recorded in `docs/histo
 |---|---:|---|
 | Autograd engine | 100% | gradients verified to 7.5e-10 abs / 1.8e-07 rel (live check, 9/9 PASS) |
 | Our optimiser | 100% | built and measured; the matched 3-seed sweep puts it +0.78 points over SGD's best setting (28.59% vs 27.81%) and level at matched epoch, and it fails the stability bar - not the 4.3 points once published |
-| KV cache | 100% | 9.7x faster, identical output |
+| KV cache | 100% | 2.29x faster (0.483 -> 0.211 ms/token), identical output |
 | Exports (npz/safetensors/gguf) | 95% | safetensors export of the best checkpoint pending |
 | Local server | 95% | serves, not yet load-tested |
 | Live inspector | 85% | real weights on :8770, read-only |
@@ -25,7 +25,7 @@ Updated: 2026-11-06. Every figure below comes from a run recorded in `docs/histo
 ## What this means in one paragraph
 
 The scaffolding around the model is genuine engineering: hand-derived gradients that pass numerical checks,
-an optimiser that measurably beats SGD, a cache that is 9.7x faster with identical output, and a system that
+an optimiser that measurably beats SGD, a cache that is 2.29x faster with identical output, and a system that
 stops and resumes without losing work. The model itself is not good yet - 37.37% held-out next-token
 accuracy at best. Anyone claiming this is a working assistant would be lying, and the numbers in this
 repository are the proof of that.
@@ -35,12 +35,13 @@ repository are the proof of that.
 | Metric | Value | Where |
 |---|---:|---|
 | Best held-out accuracy | 37.37% | d=512, full corpus, 6 epochs |
-| d=256 full corpus | 35.26% | |
-| d=256, 2M windows | 24.20% | seed 1 |
+| d=256 full corpus | 35.26% | by position, `lens/runs/ATTN-GRADE-RUN.txt:28` (legacy by-id: 26.31%) |
+| d=256, 2M windows | 24.20% | seed 1, by position, `lens/runs/GPU-BEST.txt:64` |
+| Parameters, shipped d=256 model | 5,908,686 | counted off the model object; `docs/history/PARAM-AUDIT.md`, also `lens/runs/GPU-BEST.txt:57` |
 | Optimiser vs SGD (matched sweep, 3 seeds) | 28.59% vs 27.81% best-epoch mean; 29.12% vs 27.15% at matched epoch | `docs/history/PUBLIC-NUMBER-AUDIT.md` |
 | Gradient check | 7.5e-10 abs / 1.8e-07 rel (live check, 9/9 PASS) max error | `tests/test_gradcheck.py` |
-| KV cache speedup | 9.7x | `lens/kvcache.py` |
-| Arithmetic, unseen operands | 0.0% exact | digit 0 alone: 100% |
+| KV cache speedup | 2.29x (0.483 -> 0.211 ms/token, 2,069 -> 4,747 tokens/s) | `lens/runs/KV-CACHE-MICRO.txt` |
+| Arithmetic, unseen operands | 0.0% exact | digit 0 alone: 100%; two different runs, `lens/runs/ARITHMETIC.txt` and `lens/runs/ARITH_DIAG.txt` |
 
 ## Levers measured and closed
 
@@ -59,3 +60,7 @@ A wrong number is worse than a missing one, so these are listed with the correct
 | Bug | What it did to the numbers | Where |
 |---|---|---|
 | Talk decoder left-padded short prompts with token id 0 (`<unk>`) | 20-23 of 32 context slots were `<unk>` for the project prompts, so 95.1% (d256) / 96.5% (d512) of the reply tokens were `<unk>`; pad-free the same weights measure 26.4% / 21.5% | `docs/history/PROMPT-ENCODING.md` |
+| Architecture table added the proposed recurrent core and counted the tied embedding twice | published "7,081,122 parameters"; the shipped model prints **5,908,686**, so the count was overstated by 1,172,436 (19.8%) | `docs/history/PARAM-AUDIT.md` |
+| Cost table added a stage labelled "runs 32x" exactly once | published 0.1446 ms/token; with the core counted the 32 times it runs, the same rows give 0.2283 ms | `docs/history/PARAM-AUDIT.md` |
+| KV cache speedup "9.7x" had no run file behind it | only the prose figure existed (0.217 vs 2.115 ms, `docs/history/STATE.md:2730`); the recorded micro-benchmark is **2.29x** (0.483 -> 0.211 ms/token, identical to 5.3e-06) | `lens/runs/KV-CACHE-MICRO.txt` |
+
