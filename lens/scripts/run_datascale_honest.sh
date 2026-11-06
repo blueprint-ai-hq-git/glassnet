@@ -53,6 +53,10 @@ cleanup() { [ -e "$CLAIM" ] && grep -q "^owner: run_datascale_honest" "$CLAIM" 2
 trap cleanup EXIT INT TERM
 
 say "===== DATASCALE-HONEST start (predictions: docs/history/DATASCALE-PREDICTIONS.md) vram_free=${free_mb}MiB"
+# Standard arm marker in the format every tool in this repo reads (verify_wall_ab_ckpt.py, the results
+# parsers). Added AFTER the first run finished: the 19:08 run wrote no marker, so the verifier reported
+# 0 arms for a log that had a finished arm in it (docs/history/DATASCALE-RESULT.md, "Provenance check").
+say "----- off seed 0 : --max-windows 200000 (10x the 20k baseline; no bypass)  $(date '+%H:%M:%S')  vram_free=${free_mb}MiB"
 say "----- command: identical to run_wall_ab.sh 'off' seed 0 except --max-windows 20000 -> 200000"
 
 CHAT_DATA_DIR="$PWD/data/chat/prepared_mix_ctrl_honest" taskset -c 0,1 nice -n 19 ionice -c3 \
