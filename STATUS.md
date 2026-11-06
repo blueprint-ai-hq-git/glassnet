@@ -37,6 +37,7 @@ repository are the proof of that.
 | Best held-out accuracy | 37.37% | d=512, full corpus, 6 epochs |
 | d=256 full corpus | 35.26% | by position, `lens/runs/ATTN-GRADE-RUN.txt:28` (legacy by-id: 26.31%) |
 | d=256, 2M windows | 24.20% | seed 1, by position, `lens/runs/GPU-BEST.txt:64` |
+| d=512, 3 epochs, 2M windows (run twice) | 24.39% / 24.40% (ppl 109.90 both) | same script, 0.01 pp spread between two runs a day apart, `docs/history/D512-REPRODUCIBILITY.md` |
 | Parameters, shipped d=256 model | 5,908,686 | counted off the model object; `docs/history/PARAM-AUDIT.md`, also `lens/runs/GPU-BEST.txt:57` |
 | Optimiser vs SGD (matched sweep, 3 seeds) | 28.59% vs 27.81% best-epoch mean; 29.12% vs 27.15% at matched epoch | `docs/history/PUBLIC-NUMBER-AUDIT.md` |
 | Gradient check | 7.5e-10 abs / 1.8e-07 rel (live check, 9/9 PASS) max error | `tests/test_gradcheck.py` |
@@ -64,3 +65,15 @@ A wrong number is worse than a missing one, so these are listed with the correct
 | Cost table added a stage labelled "runs 32x" exactly once | published 0.1446 ms/token; with the core counted the 32 times it runs, the same rows give 0.2283 ms | `docs/history/PARAM-AUDIT.md` |
 | KV cache speedup "9.7x" had no run file behind it | only the prose figure existed (0.217 vs 2.115 ms, `docs/history/STATE.md:2730`); the recorded micro-benchmark is **2.29x** (0.483 -> 0.211 ms/token, identical to 5.3e-06) | `lens/runs/KV-CACHE-MICRO.txt` |
 
+## Wall A/B (concept-wall bottleneck) - IN PROGRESS, 1 of 6 arms recorded
+
+Question: docs/history/PROBLEMS.md OPEN #1. Design + predictions written before any run:
+docs/history/WALL-AB-PREDICTIONS.md (P1-P5, plus P6 "supervision must not move a number").
+
+| arm | seed | final val ppl | val acc | concepts | source |
+|---|---|---|---|---|---|
+| wall_off (no bypass) | 0 | 399.50 | **12.18%** | 20/36 | lens/runs/WALL-AB.txt:201-202 |
+
+Reference for the same 20k-window rung: 11.96 / 10.08 (mean 11.02%), lens/runs/CTX-ATTN.txt.
+Arms still to run: off s1, on s0/s1, r64 s0/s1. Do not read the A/B as answered until all six lines exist.
+Supervisor: lens/scripts/run_wall_ab_resume2.sh via the chain (label wall_ab_resume2), log lens/runs/WALL-AB.txt.
