@@ -277,6 +277,21 @@ Batch 4096 raised GPU utilisation to 44% and throughput to 5.46M tokens/sec, but
 fewer optimiser updates per epoch and **cost half the accuracy**. Speed setting and accuracy setting are
 different settings; we publish both rather than only the flattering one.
 
+### One lever that moved: more data at a fixed configuration
+
+Same command, same corpus, same 36-concept set, same **3,811,534** parameters, no bypass, seed 0 - only
+`--max-windows` changed. Measured 2026-11-06:
+
+| Configuration | Held-out accuracy | Source |
+|---|---:|---|
+| `d=256`, 20,000 windows (the rung every other lever was compared on) | 12.18% | `lens/runs/WALL-AB.txt:116` |
+| `d=256`, 200,000 windows (same command, 10x the windows) | **17.43%** | `lens/runs/DATASCALE-HONEST.txt:230` |
+
+That is **+5.25 points** and a final perplexity of 207.29 against 399.50 (48.1% lower). One seed, and the
+20k rung's measured run-to-run spread is 1.03 points, so the gain is 5.1x the noise rather than a proof;
+the architectural levers tried at 20k windows - attention (-2.81), window 64 (-1.57), the concept bypass
+(-1.4 to -3.4) - all went the other way. Write-up: `docs/history/DATASCALE-RESULT.md`.
+
 ## Install and run
 
 ```bash

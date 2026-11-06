@@ -148,3 +148,24 @@ sha256 4e11965f...: **6 arms, 0 provenance problems**; the 5-arm version is kept
 `lens/runs/archive/ckpt_verify_5arms_2026-11-06/`, sha256 6b55befd...).
 Supervisor: lens/scripts/run_wall_ab_resume2.sh via the chain (label wall_ab_resume2), log
 `lens/runs/WALL-AB.txt` (1,226 lines).
+
+## Data scale at d=256 - the first lever that moved this rung (2026-11-06 19:29)
+
+One flag changed (`--max-windows 20000` -> `200000`), everything else identical: same corpus, same command,
+same 36-concept set, **same 3,811,534 parameters**, no bypass, seed 0.
+
+| run | windows | VAL acc | ASST acc | final ppl | source |
+|---|---:|---:|---:|---:|---|
+| `wall_off` seed 0 | 20,000 | 12.18% | 13.00% | 399.50 | `lens/runs/WALL-AB.txt:116` |
+| `datascale_honest_s0` | 200,000 | **17.43%** | 18.61% | **207.29** | `lens/runs/DATASCALE-HONEST.txt:230` |
+
+**+5.25 points** and perplexity 48.1% lower (399.50 -> 207.29); best held-out checkpoint is epoch 2 at ASST
+18.87%. Pre-registered predictions: D1 wanted +3 to +8 pp (got +5.25, **PASS, inside the band**), D2 wanted
+ppl < 300 (got 207.29, **PASS**); both of D1's falsifiers were registered in advance and neither fired.
+
+Caveats, stated because they matter: **one seed**; the 20k rung's measured run-to-run spread is 1.03 pp
+(`docs/history/REF-REPRO.md`), so the gain is 5.1x the noise, not a significance test. The headline number
+is unchanged - best held-out accuracy is still **37.37%** (d=512, full corpus, 6 epochs). Checkpoint
+provenance verified directly on the files this run: params counted off `ep3` = 3,811,534 (matches the log),
+`best.npz` is byte- and array-identical to `ep2` (the epoch the log named) and differs from `ep3`, meta says
+seed 0 / no bypass. Full write-up: `docs/history/DATASCALE-RESULT.md`.
