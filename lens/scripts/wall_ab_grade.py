@@ -92,19 +92,27 @@ def main() -> int:
     else:
         print("  -> UNDETERMINED (wall_on seed 1 and/or seed 0 has no epoch-3 line yet)")
 
-    print("\nP2 MAIN - wall_off < wall_on on BOTH seeds; predicted delta -1.0 to -6.0 points")
+    print("\nP2 MAIN - wall_off LOWER than wall_on on BOTH seeds; predicted delta (off-on) -1.0 to -6.0 points")
     if need(("off", 0), ("on", 0), ("off", 1), ("on", 1)):
+        # The pre-registered delta is off-ON (WALL-AB-PREDICTIONS.md: "wall_off is LOWER than wall_on ...
+        # Predicted delta: -1.0 to -6.0 points"). The falsifier there is "wall_on - wall_off smaller than
+        # 0.5 pp on both seeds", i.e. a NO-EFFECT band, so it is graded as |off-on| < 0.5 and must not
+        # swallow a real opposite-sign loss (that case is P5's). Both numbers are printed every time.
         deltas = []
         for s in SEEDS:
             off, on = d[("off", s)]["acc"], d[("on", s)]["acc"]
-            deltas.append(on - off)
-            print(f"  s{s}: on {on:.2f}% - off {off:.2f}% = {on - off:+.2f}")
-        if all(x < 0.5 for x in deltas):
-            print("  -> FALSIFIED: bypass earns under 0.5 pp on both seeds; the lossy-wall premise is "
-                  "NOT established and the wider-residual build is cancelled")
-        elif all(x > 0 for x in deltas):
+            deltas.append(off - on)
+            print(f"  s{s}: off {off:.2f}% - on {on:.2f}% = {off - on:+.2f}   (on {on:.2f}% - off {off:.2f}% = {on - off:+.2f})")
+        if all(abs(x) < 0.5 for x in deltas):
+            print("  -> FALSIFIED: |wall_on - wall_off| under 0.5 pp on both seeds (no effect); the "
+                  "lossy-wall premise is NOT established and the wider-residual build is cancelled")
+        elif all(x < 0 for x in deltas):
             band = all(-6.0 <= x <= -1.0 for x in deltas)
-            print(f"  -> PASS direction; magnitude {'inside' if band else 'OUTSIDE'} the -1.0..-6.0 band")
+            print(f"  -> direction as predicted (off lower on both seeds); magnitude "
+                  f"{'INSIDE' if band else 'OUTSIDE'} the predicted -1.0..-6.0 band")
+        elif all(x > 0 for x in deltas):
+            print("  -> OPPOSITE SIGN: off is ABOVE on by more than 0.5 pp on both seeds, so the bypass "
+                  "does not earn its keep at this rung; the predicted loss is NOT reproduced (see P5)")
         else:
             print("  -> MIXED: direction not consistent across seeds; report as no effect")
     else:

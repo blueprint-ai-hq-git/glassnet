@@ -2,11 +2,12 @@
 
 Source of every figure: `lens/runs/WALL-AB.txt` (line numbers given). Nothing is computed or estimated.
 Design and predictions, written before any arm ran: `docs/history/WALL-AB-PREDICTIONS.md`.
-Status: **4 of 6 arms done** at the time of writing (2026-11-06 17:4x IST). No verdict is possible yet.
+Status: **5 of 6 arms done** at the time of writing (2026-11-06 17:5x IST). Last arm (`wall_r64` s1)
+launched 17:42:23. No verdict is possible until it finishes.
 
 Checkpoint provenance for every finished arm is machine-checked by
 `lens/scripts/verify_wall_ab_ckpt.py` (read-only), output kept in `lens/runs/WALL-AB-CKPT-VERIFY.txt`:
-4 arms verified, 0 with a provenance problem.
+5 arms verified, 0 with a provenance problem.
 
 ## Arm table
 
@@ -16,8 +17,8 @@ Checkpoint provenance for every finished arm is machine-checked by
 | `wall_on` (tied, +2,097,152 params) | 0 | 575.00 | 10.79% | 505.00 / 11.42% | 1502.15 / 7.31% | 20/36 | `:392` | `:477` |
 | `wall_r64` (rank 64, +1,292,416 params) | 0 | 550.85 | 11.28% | 486.97 / 11.59% | 1447.35 / 9.71% | 24/36 | `:580` | `:664` |
 | `wall_off` | 1 | 395.80 | 12.79% | 350.02 / 13.21% | 1321.54 / 7.09% | 26/36 | `:765` | `:850` |
-| `wall_on` | 1 | — | — | — | — | — | running | — |
-| `wall_r64` | 1 | — | — | — | — | — | queued | — |
+| `wall_on` (tied, +2,097,152 params) | 1 | 628.41 | 9.68% | 549.10 / 10.30% | 1603.56 / 6.79% | 22/36 | `:952` | `:1036` |
+| `wall_r64` | 1 | — | — | — | — | — | running (17:42:23) | — |
 
 Parameter counts are the ones the trainer printed in each arm's announcement and were re-counted off the
 stored arrays by the verifier: `off` 3,811,534 (`:733`), `on` 5,908,686 (`:360`), `r64` 5,103,950 (`:547`).
@@ -44,22 +45,29 @@ below); 81/81/87 s. Gate: 1 of 232 refused (0.4%), probe 9.0590 → 6.1469. Agre
 Its announcement (`:733`) prints the same 3,811,534 params as seed 0 and the same seeded-1 20,000-window
 cap (`:678` region), i.e. the seed-1 arm is the same configuration, not a drifted one.
 
-## What these four lines do and do not say
+`wall_on` seed 1 (`:854`, `:932`, `:942`, `:952`): ep1 8.22% (ppl 564.26) → ep2 **10.94%** (529.38) → ep3
+9.68% (628.41); 93/88/89 s. It peaked at epoch 2, so its `best.npz` is the epoch-2 file (provenance
+below). Gate: 0 of 236 refused (0.0%), probe 9.2767 → 6.1598. Agreement: 1 of 237 refused (0.4%),
+A_train 0.2062 → 0.2174. Result `wall_on_s1_ep3.npz`, sha256 `d28c4146…8684` (23,650,676 bytes).
+Announcement `:919` prints 5,908,686 params, the same as `wall_on` seed 0, so the seed-1 arm is the same
+configuration.
 
-* **Not a verdict.** P1-P5 are graded by `lens/scripts/wall_ab_grade.py` after all six lines exist. Two
-  arms are still missing (`wall_on` s1 running, `wall_r64` s1 queued), and every prediction in
-  `WALL-AB-PREDICTIONS.md` is a both-seeds claim.
-* **Seed 0 points against P2's predicted direction.** P2 says `wall_off` is LOWER than `wall_on`; at seed
-  0 the no-bypass arm is **1.39 pp higher** (12.18% vs 10.79%) with fewer parameters. One seed is not the
-  falsifier (it needs both seeds), so this is written as an observation, not as a result.
+## What these five lines do and do not say
+
+* **Not a verdict.** P1-P5 are graded by `lens/scripts/wall_ab_grade.py` after all six lines exist. One
+  arm is still missing (`wall_r64` s1, running since 17:42:23), and every prediction in
+  `WALL-AB-PREDICTIONS.md` is a both-seeds claim. The grader's output, not this file, is the verdict.
+* **Both seeds now point against P2's predicted direction.** P2 says `wall_off` is LOWER than `wall_on`;
+  the measured pair is off 12.18% / 12.79% versus on 10.79% / 9.68%, i.e. the no-bypass arm is **1.39 pp**
+  higher at seed 0 and **3.11 pp** higher at seed 1, with 2,097,152 fewer parameters. Both seeds are in,
+  so P2's falsifier is now met on its own terms - but it is graded by the script, not asserted here.
 * **The rank-64 arm sits between them at seed 0:** 11.28%, which is 0.49 pp above `wall_on` and 0.90 pp
-  below `wall_off`. Also one seed.
+  below `wall_off`. Seed 1 for it is running.
 * **Train accuracy runs far ahead of held-out in every arm** (e.g. 39.23% train vs 11.28% val at `:580`;
-  39.03% vs 10.79% at `:392`), which is the overfit direction P4 asks about, again only across seeds 0/1
-  once both exist.
-* **No arm talks.** The first logged greedy reply in each of the four finished arms is word salad
-  (`:132`, `:408`, `:595`, `:781`). The bypass question is about the concept wall, not about fluency, and
-  nothing here is claimed as talk progress.
+  39.03% vs 10.79% at `:392`; 39.39% vs 9.68% at `:952`), which is the overfit direction P4 asks about.
+* **No arm talks.** The first logged greedy reply in each of the five finished arms is word salad
+  (`:132`, `:408`, `:595`, `:781`, `:967`). The bypass question is about the concept wall, not about
+  fluency, and nothing here is claimed as talk progress.
 
 ## Provenance: checked for every finished arm, not just recorded
 
@@ -73,6 +81,7 @@ earlier today (below), which is why every arm is now checked mechanically instea
 | `wall_on` s0 | ep3 (11.42%, `:395`) | yes `99a4ec80…` | yes | yes (`tied`, seed 0) |
 | `wall_r64` s0 | ep2 (13.61%, `:573`) | yes `dca4c38c…` | yes | yes (`lowrank`, seed 0) |
 | `wall_off` s1 | ep3 (13.21%, `:768`) | yes `70162257…` | yes | yes (`off`, seed 1) |
+| `wall_on` s1 | ep2 (10.94%, `:945`) | yes `1298bbc5…` | yes (`ep2.npz`, 23,650,676 B) | yes (`tied`, seed 1) |
 
 At seed 0 on this rung the arm numbers sit in the band P1 calls comparable, but P1 is graded only from
 the `wall_on` pair, so it is not called here either.
