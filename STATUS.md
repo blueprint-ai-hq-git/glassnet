@@ -65,7 +65,7 @@ A wrong number is worse than a missing one, so these are listed with the correct
 | Cost table added a stage labelled "runs 32x" exactly once | published 0.1446 ms/token; with the core counted the 32 times it runs, the same rows give 0.2283 ms | `docs/history/PARAM-AUDIT.md` |
 | KV cache speedup "9.7x" had no run file behind it | only the prose figure existed (0.217 vs 2.115 ms, `docs/history/STATE.md:2730`); the recorded micro-benchmark is **2.29x** (0.483 -> 0.211 ms/token, identical to 5.3e-06) | `lens/runs/KV-CACHE-MICRO.txt` |
 
-## Wall A/B (concept-wall bottleneck) - IN PROGRESS, 4 of 6 arms recorded
+## Wall A/B (concept-wall bottleneck) - IN PROGRESS, 5 of 6 arms recorded
 
 Question: docs/history/PROBLEMS.md OPEN #1. Design + predictions written before any run:
 docs/history/WALL-AB-PREDICTIONS.md (P1-P5, plus P6 "supervision must not move a number").
@@ -76,11 +76,13 @@ docs/history/WALL-AB-PREDICTIONS.md (P1-P5, plus P6 "supervision must not move a
 | wall_on (tied full-rank bypass, +2,097,152 params) | 0 | 575.00 | 10.79% | 20/36 | lens/runs/WALL-AB.txt:477-478 |
 | wall_r64 (rank 64, +1,292,416 params) | 0 | 550.85 | 11.28% | 24/36 | lens/runs/WALL-AB.txt:664-665 |
 | wall_off (no bypass) | 1 | 395.80 | 12.79% | 26/36 | lens/runs/WALL-AB.txt:850-851 |
+| wall_on (tied full-rank bypass) | 1 | 628.41 | 9.68% | 22/36 | lens/runs/WALL-AB.txt:1036-1037 |
 
 Reference for the same 20k-window rung: 11.96 / 10.08 (mean 11.02%), lens/runs/CTX-ATTN.txt.
-Arms still to run: on s1 (training now), r64 s1. Do not read the A/B as answered until all six lines exist -
-at seed 0 the no-bypass arm is 1.39 points *ahead* of the bypass arm, which is against P2's predicted
-direction but is one seed and is not a verdict.
+Last arm still running: r64 s1 (launched 17:42:23). Do not read the A/B as answered until all six lines
+exist - but both seeds now put the no-bypass arm ahead of the bypass arm (12.18 vs 10.79 at seed 0,
+12.79 vs 9.68 at seed 1) with 2.1M fewer parameters, i.e. against P2's predicted direction. The verdict
+is lens/scripts/wall_ab_grade.py's to write, not this table's.
 Each finished arm's checkpoint has been machine-checked against the epoch its log line named
-(lens/scripts/verify_wall_ab_ckpt.py, output lens/runs/WALL-AB-CKPT-VERIFY.txt: 4 arms, 0 problems).
+(lens/scripts/verify_wall_ab_ckpt.py, output lens/runs/WALL-AB-CKPT-VERIFY.txt: 5 arms, 0 problems).
 Supervisor: lens/scripts/run_wall_ab_resume2.sh via the chain (label wall_ab_resume2), log lens/runs/WALL-AB.txt.
