@@ -56,9 +56,15 @@ source lens/scripts/lib_trainer_alive.sh
   fi
 
   run() {  # $1 = seed, $2 = logfile
+    # --assistant-only --train-turn-end are REQUIRED for this test to be able to pass, not decoration:
+    # without them the epoch line has no ASST(by-position) / MASKED columns, both metrics are None, and
+    # train_chat.py never writes <out>_best.npz (measured 2026-11-06 18:01: ep 1/1 line had no ASST
+    # column, run 1 wrote only guard_e2e_ep1.npz, so the guard had nothing to move and P2 reported FAIL
+    # for a guard that was fine). Every real arm passes both flags; this keeps the test on the real path.
+    # Probe at 18:02 with them added: "NEW BEST held-out 4.94% at epoch 1 -> saved guard_probe_best.npz".
     nice -19 ionice -c3 "$PY" -u lens/scripts/train_chat.py \
       --d 64 --window 32 --epochs 1 --batch 128 --seed "$1" --device cpu \
-      --max-windows 1500 --out "$TAG" 2>&1 | tee "$2"
+      --max-windows 1500 --assistant-only --train-turn-end --out "$TAG" 2>&1 | tee "$2"
   }
 
   echo "--- run 1 (seed 0)"
