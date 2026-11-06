@@ -65,9 +65,9 @@ A wrong number is worse than a missing one, so these are listed with the correct
 | Cost table added a stage labelled "runs 32x" exactly once | published 0.1446 ms/token; with the core counted the 32 times it runs, the same rows give 0.2283 ms | `docs/history/PARAM-AUDIT.md` |
 | KV cache speedup "9.7x" had no run file behind it | only the prose figure existed (0.217 vs 2.115 ms, `docs/history/STATE.md:2730`); the recorded micro-benchmark is **2.29x** (0.483 -> 0.211 ms/token, identical to 5.3e-06) | `lens/runs/KV-CACHE-MICRO.txt` |
 | `wall_ab_grade.py` P2 computed `on - off` but graded the pre-registered `off - on` band | the falsifier (`on - off < 0.5`) fired on a real 3.11 pp LOSS and called it "earns under 0.5 pp"; the -1.0..-6.0 band was unreachable, so a perfect result would still have printed "OUTSIDE". Numbers unchanged (-1.39 / -3.11), only the sentence was wrong | `docs/history/GRADER-P2-SIGN.md` |
-| A restarted run rewrote `<out>_best.npz` from its own epoch 1 | `wall_off_s0`'s epoch-3 checkpoint was replaced by an aborted second attempt's epoch 1. Repaired earlier; the **guard is now wired into the trainer** (2 hunks, import + guarded call before the epoch loop, patch sha256 f10dc89e -> e5acd0aa, 4/4 unit tests, `--check` import=True call=True). The end-to-end call-site proof is still the next queue item | `docs/history/BEST-CKPT-GUARD-APPLIED.md`, `lens/runs/BEST-CKPT-GUARD-APPLY.txt` |
+| A restarted run rewrote `<out>_best.npz` from its own epoch 1 | `wall_off_s0`'s epoch-3 checkpoint was replaced by an aborted second attempt's epoch 1. Repaired earlier; the **guard is now wired into the trainer and proven at the call site** (2 hunks, patch sha256 f10dc89e -> e5acd0aa, 4/4 unit tests, `--check` import=True call=True, and the end-to-end pair: run 2 printed 1 `CLOBBER GUARD` line, archived run 1's best.npz as sha256 b349a10b... with a receipt, and wrote its own 422ebc7e...) | `docs/history/BEST-CKPT-GUARD-APPLIED.md`, `lens/runs/BEST-CKPT-GUARD-E2E.txt` |
 
-## Wall A/B (concept-wall bottleneck) - FINISHED 2026-11-06 17:51, six arms, control gate failed
+## Wall A/B (concept-wall bottleneck) - FINISHED 2026-11-06 17:51, six arms, P1 FAILs as coded (band mixes two columns)
 
 Question: docs/history/PROBLEMS.md OPEN #1. Design + predictions written before any run:
 docs/history/WALL-AB-PREDICTIONS.md (P1-P5, plus P6 "supervision must not move a number").
@@ -88,9 +88,15 @@ Reference for the same 20k-window rung: 11.96 / 10.08 (mean 11.02%), lens/runs/C
 Verdicts as printed by `lens/scripts/wall_ab_grade.py` (output `lens/runs/WALL-AB-GRADE.txt`,
 sha256 ac55e35b..., 6 rows in `lens/runs/WALL-AB-RESULTS.tsv`):
 
-* **P1 FAIL** - `wall_on` s0 10.79% is inside the pre-registered 10.0-12.5 band, s1 9.68% is 0.32 pp
-  BELOW the floor. The block did not reproduce the stored rung, so by the rule written before the run
-  **no delta against that rung is quoted**. This is the verdict that constrains the other four.
+* **P1 FAIL as coded, but the band mixes two columns** - the 10.0-12.5 band was derived from `ASST` values
+  (11.96 / 10.08 at `LEARNCURVE.txt:4773` and `:4960` - not in the file the predictions cite, which has no
+  such numbers) and then applied to the `VAL` column. On the graded column `wall_on` s0 10.79% is inside
+  the band and s1 9.68% is 0.32 pp below the floor. Compared on the SAME column the control reproduces
+  within 0.55 pp on both seeds (VAL -0.53 / +0.15, ASST -0.54 / +0.22), and the trainer commands and the
+  five config-header lines match field for field. So this FAIL is a metric mismatch, **not** evidence that
+  the rung drifted. The gate keeps its coded verdict - re-deriving it after seeing the result is exactly
+  what a gate must not do - so until Yahya rules, no delta against the stored rung is quoted. Both readings
+  with all numbers: `docs/history/WALL-AB-P1-METRIC.md`.
 * **P2 OPPOSITE SIGN** - off minus on = +1.39 (s0), +3.11 (s1). Removing the bypass did not cost the
   predicted 1-6 points; on both seeds it was ahead.
 * **P3 MIXED** - r64 minus on = +0.49 (s0), +1.19 (s1): not below `on` on either seed, so "rank 64 is
@@ -104,8 +110,10 @@ sha256 ac55e35b..., 6 rows in `lens/runs/WALL-AB-RESULTS.tsv`):
 
 What that means: the A/B does **not** establish that the concept wall is lossy, and it does not license
 the wider-residual build. It is a coherent lead - same direction on both seeds, 2.1M fewer parameters,
-far less overfit - held back by a control arm that missed its band. Deciding between re-running the
-control until it lands in 10.0-12.5 and moving to the plan's next lever (data scale) is a human call.
+far less overfit - and its control reproduces on a matched comparison, but the pre-registered gate as
+coded still says FAIL, so nothing is quoted against the stored rung until that is ruled on. If Yahya
+adopts the metric-consistent reading, the deltas become quotable and the plan's next lever is data scale;
+if he keeps the gate as coded, the control has to be re-run before the block can be read at all.
 
 Every arm's checkpoint has been machine-checked against the epoch its log line named
 (`lens/scripts/verify_wall_ab_ckpt.py`, output `lens/runs/WALL-AB-CKPT-VERIFY.txt`,

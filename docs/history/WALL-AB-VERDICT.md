@@ -33,10 +33,14 @@ P1 CONTROL SANITY - band 10.0-12.5% final val acc for `wall_on`.
     on s1  9.68%  (0.32 pp BELOW the floor)
     -> FAIL
 
-This is the one that constrains what may be said. The control arm did not reproduce the stored rung
-(mean 10.235% vs the stored 11.02%, -0.785 pp), so by the rule written before the run **no delta against
-the stored rung may be quoted**. The A/B's internal comparison (off vs on, same block, same config,
-same seeds) still stands as a measured pair, but it is a lead to confirm, not a result to publish.
+This is the one that constrains what may be said. As coded, the control arm did not land in the band:
+on s1 9.68% is 0.32 pp below the floor. **But the band itself was built from the wrong column** - 11.96 and
+10.08 are the `ASST(by-position)` values of `lc_w20000` at `LEARNCURVE.txt:4773` and `:4960`, while the
+grader reads the `VAL` column (the same two runs scored VAL 11.32 and 9.53, and the file the predictions
+cite, CTX-ATTN.txt, contains neither number). Compared on the same column the control reproduces within
+0.55 pp on both seeds. Full evidence, both columns, both commands and the five matching config-header
+lines: `docs/history/WALL-AB-P1-METRIC.md`. So: the coded verdict is FAIL and no delta against the stored
+rung is quoted, but that FAIL is a metric mismatch, not a drifted rung.
 
 P2 MAIN - predicted: `wall_off` LOWER than `wall_on` by 1.0-6.0 points.
 
