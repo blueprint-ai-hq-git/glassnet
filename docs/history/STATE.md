@@ -2718,11 +2718,13 @@ Everything else is on disk in this folder: 0 processes were left running, 0 scop
    So the method exists and acts, and its settings are the thing to fix. NOT DELIVERED AS BETTER YET.
 3. OUR OWN SETTINGS, ONE BEST PER SIZE, EASY MODE DEFAULT AND HARD MODE OPEN
    THE OPTIMISER HALF IS DONE AND MEASURED AT 3 SEEDS (16 arms, clean held-out):
-     our relgrad lr 0.01 .... 29.32 / 29.03 / 27.43  mean 28.59%  spread 1.9   <-- BEST MEAN, TIGHTEST SPREAD
-     SGD lr 0.4 ............ 27.99 / 27.68 / 27.76  mean 27.81%  spread 0.3
-     SGD lr 0.1 ............ 28.52 / 17.30 / 28.46  mean 24.76%  spread 11.2  (one bad seed cost it 4 points)
-     our relgrad lr 0.001 ../ 23.60 / 23.60 / 23.57  mean 23.59%
-     our relgrad lr 0.0001 ./ 15.23 / 15.12 / 14.64  mean 15.00%
+     arm names are the STARTING setting (lens/runs/OPT-VS-SGD.txt:5,159); the lr printed per epoch is the
+     DECAYED value, which is why these labels used to read 0.01 / 0.4 / 0.1. Values and means unchanged.
+     our relgrad --opt-lr 0.5 . 29.32 / 29.03 / 27.43  mean 28.59%  spread 1.89  <-- BEST MEAN, TIGHTEST SPREAD
+     SGD --lr 1.0 ............. 27.99 / 27.68 / 27.76  mean 27.81%  spread 0.31
+     SGD --lr 0.4 ............. 28.52 / 17.30 / 28.46  mean 24.76%  spread 11.22 (one bad seed)
+     our relgrad --opt-lr 0.05  23.60 / 23.47 / 23.56  mean 23.54%  (this arm supplied the old chart's 23.4x)
+     our relgrad --opt-lr 0.005 15.23 / 15.12 / 14.64  mean 15.00%
    THE GATE SETTINGS ARE NOT SETTLED - that sweep is what the queue is for.
 4. OUR OWN KV CACHE / THE MODEL MUST REMEMBER WHAT IT WROTE
    BUILT (lens/kvcache.py). Correct to 5.3e-06 against the model's own full recompute, and 9.7x faster:

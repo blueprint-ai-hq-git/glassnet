@@ -22,7 +22,7 @@ text, you get text back, and nothing in between is inspectable. GlassNet is buil
 gradient is derived by hand, every layer can be opened, every middle neuron carries a human-readable name
 like `is_a_question`, and every claim in this repository traces back to a log file you can read.
 
-It is **not a chatbot and not a product**. It is a working research system: about 91,000 lines of Python, no
+It is **not a chatbot and not a product**. It is a working research system: about 105,000 lines of Python, no
 PyTorch, no autograd library, no pretrained weights — a complete training and inspection stack written from
 zero, published at the stage it is actually in.
 
@@ -41,7 +41,7 @@ are looking for a capable assistant, this is not it yet — and this file will s
 | Built | What it does | Evidence |
 |---|---|---|
 | **Autograd engine** | every operation has a hand-written derivative; blame flows backwards through a graph | all 9 gradient checks PASS — worst absolute error **7.5e-10**, worst relative **1.8e-07** (measured live) |
-| **Own optimiser** | steps scaled by agreement between batch and held-out gradients | **23.46%** vs SGD **19.14%**, 3 seeds |
+| **Own optimiser** | steps scaled by agreement between batch and held-out gradients | **28.59%** vs SGD **27.81%** best-epoch mean, 3 seeds — level with SGD, not a win |
 | **Own KV cache** | reuses attention state instead of recomputing | **9.7x faster**, identical output |
 | **Compute core** | recurrent state carried across all 32 positions | 131,328 params, 0.0027 ms/token |
 | **Named concept layer** | 256 neurons with audited human names | unprovable names dropped, coverage printed |
@@ -180,7 +180,7 @@ including the ones that killed our own ideas.
 | Component | State | Measured evidence |
 |---|---|---|
 | Autograd engine (`lens/tensor.py`) | **works** | all 9 checks PASS — worst absolute error **7.5e-10**, worst relative **1.8e-07** |
-| Our optimiser (`lens/opt.py`) | **works, beats baseline** | **23.46%** vs plain SGD **19.14%** held-out, 3 seeds, 20k windows |
+| Our optimiser (`lens/opt.py`) | **works, level with SGD** | **28.59%** vs plain SGD **27.81%** best-epoch mean over 3 seeds (29.12% vs 27.15% at matched epoch); the pre-registered stability bar failed |
 | KV cache (`lens/kvcache.py`) | **works** | **9.7x faster** generation, byte-identical output |
 | Live inspector (`lens/liveview.py`) | **works** | serves real weights and live neuron activations on port 8770 |
 | Exports | **works** | `.npz`, `.safetensors`, `.gguf` |
@@ -300,15 +300,18 @@ runs/                 checkpoints and logs (gitignored)
 
 ## Verifying the numbers yourself
 
-Nothing here asks you to trust a claim. Each result has a file:
+Nothing here asks you to trust a claim. Each result has a file you can open, plus the raw per-run log that
+produced it. Raw logs are written to `lens/runs/` in the working tree; they are large and machine-local, so
+`.gitignore` keeps them out of git. The second column is always a tracked file, the third is the raw log.
 
-| Claim | File |
-|---|---|
-| best score 37.37% | `docs/history/` run logs, `runs/chat/*_best.npz` |
-| our architecture lost | `docs/history/ARCH-OURS-VERDICT.txt` |
-| attention lost 5.41 points | `docs/history/GATE-B-VERDICT.txt` |
-| optimiser beats SGD | agreement/learning-rate sweep logs |
-| arithmetic 0.0% unseen | `docs/history/ARITHMETIC.txt`, `ARITH_DIAG.txt` |
+| Claim | Read it in | Raw log |
+|---|---|---|
+| best score 37.37% | `docs/history/STATE.md`, `docs/RESULTS.md` | `lens/runs/TIED-D512-EXT6.txt` (epoch-6 row), `lens/runs/chat/*_best.npz` |
+| our architecture lost 1.73 points | `docs/RESULTS.md` | `lens/runs/ARCH-OURS-VERDICT.txt` |
+| attention lost 5.41 points | `docs/RESULTS.md` | `lens/runs/GATE-B-VERDICT.txt` |
+| optimiser is level with SGD | `docs/RESULTS.md`, `docs/history/STATE.md` | `lens/runs/OPT-VS-SGD-TABLE.txt` (16 arms, 3 seeds) |
+| arithmetic 0.0% unseen | `docs/RESULTS.md` | `lens/runs/ARITHMETIC.txt`, `lens/runs/ARITH_DIAG.txt` |
+| what was audited, and what was not | `docs/history/PUBLIC-NUMBER-AUDIT.md` | — |
 
 ## Roadmap
 
