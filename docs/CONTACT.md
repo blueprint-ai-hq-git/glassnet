@@ -4,7 +4,7 @@
 |---|---|
 | Email | **blueprintai.help1@gmail.com** |
 | Code | https://github.com/blueprint-ai-hq-git/glassnet |
-| Models | https://huggingface.co/blueprint-ai-hq |
+| Models | https://huggingface.co/blueprint-ai-hq-main |
 | Issues | GitHub Issues - bug reports and result reports both welcome |
 | Discussions | GitHub Discussions - design questions, proposals, reviews |
 

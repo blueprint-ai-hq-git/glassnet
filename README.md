@@ -88,7 +88,7 @@ signal something is wrong and worth asking about.
 | What | Where | Status |
 |---|---|---|
 | Full source, tests, training code | this repository | **available now** |
-| The 37.37% checkpoint | HuggingFace `blueprint-ai-hq`, gated | export in progress |
+| The 37.37% checkpoint | HuggingFace `blueprint-ai-hq-main`, gated | export in progress |
 | Run the model locally | `lens/serve.py` - our own server, no framework needed | available now |
 | Reproduce a training run | `docs/TESTING.md` | available now |
 
