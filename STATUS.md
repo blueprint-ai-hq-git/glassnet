@@ -1,13 +1,13 @@
 # Where GlassNet is right now
 
-Updated: 2026-11-06. Every figure below comes from a run recorded in `docs/history/`.
+Updated: 2026-11-06. Every figure below comes from a run recorded in `docs/history/` or `lens/runs/`.
 
 ## Honest completion
 
 | Area | Done | Note |
 |---|---:|---|
 | Autograd engine | 100% | gradients verified to 7.5e-10 abs / 1.8e-07 rel (live check, 9/9 PASS) |
-| Our optimiser | 100% | beats SGD by 4.3 points, 3 seeds |
+| Our optimiser | 100% | built and measured; the matched 3-seed sweep puts it +0.78 points over SGD's best setting (28.59% vs 27.81%) and level at matched epoch, and it fails the stability bar - not the 4.3 points once published |
 | KV cache | 100% | 9.7x faster, identical output |
 | Exports (npz/safetensors/gguf) | 95% | safetensors export of the best checkpoint pending |
 | Local server | 95% | serves, not yet load-tested |
@@ -37,7 +37,7 @@ repository are the proof of that.
 | Best held-out accuracy | 37.37% | d=512, full corpus, 6 epochs |
 | d=256 full corpus | 35.26% | |
 | d=256, 2M windows | 24.20% | seed 1 |
-| Optimiser vs SGD | 23.46% vs 19.14% | 3 seeds |
+| Optimiser vs SGD (matched sweep, 3 seeds) | 28.59% vs 27.81% best-epoch mean; 29.12% vs 27.15% at matched epoch | `docs/history/PUBLIC-NUMBER-AUDIT.md` |
 | Gradient check | 7.5e-10 abs / 1.8e-07 rel (live check, 9/9 PASS) max error | `tests/test_gradcheck.py` |
 | KV cache speedup | 9.7x | `lens/kvcache.py` |
 | Arithmetic, unseen operands | 0.0% exact | digit 0 alone: 100% |

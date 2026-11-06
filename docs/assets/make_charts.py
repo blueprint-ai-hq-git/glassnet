@@ -24,17 +24,17 @@ ax.set_title("Measured results - every bar is a real run", color=FG, fontsize=12
 ax.grid(axis="y", color="#21262d"); ax.set_axisbelow(True)
 finish(fig, "results.png")
 
-# 2) our optimiser vs plain SGD, 3 seeds
+# 2) our optimiser vs plain SGD, matched sweep, 3 seeds (lens/runs/OPT-VS-SGD-TABLE.txt)
 fig, ax = plt.subplots(figsize=(6,3.6))
 xs = [0,1]
-means = [23.46, 19.14]
-seeds = [[23.44,23.47,23.46],[18.93,19.35,19.14]]
+means = [28.59, 27.81]
+seeds = [[29.32,29.03,27.43],[27.99,27.68,27.76]]
 for i,(m,ss) in enumerate(zip(means,seeds)):
     ax.bar(i, m, color=ACC if i==0 else MUT, width=.5)
     ax.scatter([i]*len(ss), ss, color=FG, zorder=3, s=28)
     ax.text(i, m+0.6, f"{m:.2f}%", ha="center", color=FG, weight="bold")
-ax.set_xticks(xs); ax.set_xticklabels(["our optimiser","plain SGD"]); ax.set_ylim(0,28)
-ax.set_ylabel("held-out accuracy"); ax.set_title("Our optimiser vs SGD - 3 seeds, 20k windows", color=FG, fontsize=12, weight="bold")
+ax.set_xticks(xs); ax.set_xticklabels(["our optimiser","plain SGD (best setting)"]); ax.set_ylim(0,33)
+ax.set_ylabel("held-out accuracy, assistant-masked"); ax.set_title("Our optimiser vs SGD - matched sweep, 3 seeds", color=FG, fontsize=12, weight="bold")
 ax.grid(axis="y", color="#21262d"); ax.set_axisbelow(True)
 finish(fig, "optimiser_vs_sgd.png")
 
