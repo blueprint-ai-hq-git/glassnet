@@ -1,0 +1,374 @@
+# GlassNet
+
+**A neural network you can look inside.** Written from scratch — own tensors, own backward pass, own
+optimiser, own KV cache. No PyTorch, no autograd library, no pretrained weights, no borrowed training code.
+
+[Status](STATUS.md) · [Architecture](docs/ARCHITECTURE.md) · [Results](docs/RESULTS.md) · [Test it yourself](docs/TESTING.md) · [Roadmap](docs/ROADMAP.md) · [From scratch, precisely](docs/FROM-SCRATCH.md) · [Privacy](docs/PRIVACY.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Contact](docs/CONTACT.md)
+
+**First public release: v0.1.0, 2026-11-10.** · **Contact: blueprintai.help1@gmail.com**
+
+Every number in this document was produced by a run on the hardware listed at the bottom, and every
+experiment that *failed* is published here with its number. That is the point of the project.
+
+> **Current status: early research.** The machinery works and is measured. The model is not good yet.
+> This README tells you exactly how good it is instead of implying more.
+
+---
+
+## What is GlassNet?
+
+**GlassNet is a small language model whose insides you can see.** Most models are black boxes: you give them
+text, you get text back, and nothing in between is inspectable. GlassNet is built the opposite way. Every
+gradient is derived by hand, every layer can be opened, every middle neuron carries a human-readable name
+like `is_a_question`, and every claim in this repository traces back to a log file you can read.
+
+It is **not a chatbot and not a product**. It is a working research system: about 91,000 lines of Python, no
+PyTorch, no autograd library, no pretrained weights — a complete training and inspection stack written from
+zero, published at the stage it is actually in.
+
+**Who it is for:** people who want to learn how a model really works by reading one end to end, researchers
+who want a small controllable base to experiment on, and testers willing to check our numbers instead of
+trusting them.
+
+**What is honest about it:** the best score is **37.37%** held-out next-token accuracy. Grammar is real,
+conversation is not. Our own proposed architecture *lost* to the simple one and we published that. If you
+are looking for a capable assistant, this is not it yet — and this file will say so when it is.
+
+---
+
+## What was built, and how
+
+| Built | What it does | Evidence |
+|---|---|---|
+| **Autograd engine** | every operation has a hand-written derivative; blame flows backwards through a graph | all 9 gradient checks PASS — worst absolute error **7.5e-10**, worst relative **1.8e-07** (measured live) |
+| **Own optimiser** | steps scaled by agreement between batch and held-out gradients | **23.46%** vs SGD **19.14%**, 3 seeds |
+| **Own KV cache** | reuses attention state instead of recomputing | **9.7x faster**, identical output |
+| **Compute core** | recurrent state carried across all 32 positions | 131,328 params, 0.0027 ms/token |
+| **Named concept layer** | 256 neurons with audited human names | unprovable names dropped, coverage printed |
+| **Live inspector** | browser view of real weights and activations | port 8770, HTTP 200 |
+| **Exports** | `.npz`, `.safetensors`, `.gguf` | standard containers, our architecture |
+| **Self-healing runs** | interrupt checkpoints, watchdog, one-switch stop | proven by killing a run mid-training |
+
+> **Current status: early research.** The machinery works and is measured. The model is not good yet.
+> This README tells you exactly how good it is instead of implying more.
+
+---
+
+## Contents
+
+- [Why this exists](#why-this-exists)
+- [What works, with evidence](#what-works-with-evidence)
+- [What does not work yet](#what-does-not-work-yet)
+- [Architecture](#architecture)
+- [Results](#results)
+- [Install and run](#install-and-run)
+- [Repository map](#repository-map)
+- [Verifying the numbers yourself](#verifying-the-numbers-yourself)
+- [Roadmap](#roadmap)
+- [Licence](#licence)
+- [Contributing](#contributing)
+
+---
+
+## Updated every day
+
+This repository is updated **daily**. Each update is one measured change: a fix, an experiment with its
+prediction written before it ran, or a result including the ones that failed. Commit messages carry the
+number they produced, so the history reads as a lab notebook rather than a highlight reel.
+
+Progress is public in `STATUS.md`, including when it is bad news. If a week passes with no commit, that is a
+signal something is wrong and worth asking about.
+
+---
+
+## Can I test the actual model?
+
+**Yes - code today, weights on release.**
+
+| What | Where | Status |
+|---|---|---|
+| Full source, tests, training code | this repository | **available now** |
+| The 37.37% checkpoint | HuggingFace `blueprint-ai-hq`, gated | export in progress |
+| Run the model locally | `lens/serve.py` - our own server, no framework needed | available now |
+| Reproduce a training run | `docs/TESTING.md` | available now |
+
+Weights are **never** committed to git (they are hundreds of megabytes and git is the wrong place for them).
+They go to HuggingFace behind **gated access**: you accept the licence, you get the weights, and we can see
+who agreed to what - which is simply how the licence has to work if it has terms.
+
+**Context window, stated plainly:** this model reads **32 tokens** at a time - about a short sentence, not a
+paragraph and certainly not a conversation. That is a hard limit of the current training setup, not a
+setting you can raise, and extending it is open work. Anyone telling you this model "remembers" a
+conversation is wrong.
+
+---
+
+## How you can help
+
+You do not need to be an ML researcher. The most useful contributions are small and specific:
+
+| How | What it does for the project |
+|---|---|
+| **Reproduce a number** | run the baseline, report your accuracy, even if it is worse than ours - we publish it alongside |
+| **Test the model's honesty** | run `explain()` and tell us when the stated reason is false. False explanations are the failure mode we care most about |
+| **Report anything confusing** | if a document misled you, that is a docs bug and it will be fixed |
+| **Send a failed experiment** | tried an idea that did not work? That is publishable here, with your log |
+| **Argue with a design decision** | open a Discussion. Being told we are wrong, with reasoning, is a contribution |
+| **Point at prior work** | if this has been done before, tell us - we would rather cite it than pretend it is new |
+| **Say something is broken** | open an issue, or email if it is urgent or sensitive |
+
+**How to raise an idea:** open a GitHub Discussion titled `IDEA: <one line>`, and include what it would change
+and what result would convince you. We will answer whether it is testable on this hardware.
+
+**How to report a problem:** open an Issue titled `BUG: <one line>` with the command, the log and what you
+expected. For anything security or privacy related, email **blueprintai.help1@gmail.com** first.
+
+---
+
+## Download the models
+
+| Model | Held-out accuracy | Parameters | Link |
+|---|---:|---:|---|
+| `glassnet-d512-ext6-37pct` | **37.37%** (28.57% legacy by-id) | 15,567,566 | **https://huggingface.co/blueprint-ai-hq-main/glassnet-d512-ext6-37pct** |
+| `glassnet-d256-2m-24pct` | **24.20%** | 5,908,686 | **https://huggingface.co/blueprint-ai-hq-main/glassnet-d256-2m-24pct** |
+
+Each download contains `model.safetensors`, `config.json` (with the measured metrics, including the bad ones),
+`labels.json` for the concept-name tables, `LICENSE`, and an `examples/` folder with a loader and run
+instructions. No `transformers` needed - `numpy` and `safetensors` are enough.
+
+**Context window is 32 tokens.** Roughly one short sentence. That is a hard limit of this training setup, not
+a setting.
+
+## How to look inside the model
+
+This is the reason the project exists, so here it is concretely - three real ways, no mock:
+
+| What | How | What you get |
+|---|---|---|
+| **`explain()`** | ask the model why it answered | the named concepts that fired and how much each pushed the output |
+| **Live inspector** | `python lens/liveview.py` then open `localhost:8770` | real weights and live neuron activations for any input you type |
+| **The math** | `python tests/test_gradcheck.py` | every derivative checked numerically: 9/9 PASS, worst absolute error 7.5e-10 |
+
+**How to decode what it is doing, step by step:**
+1. Tokenise your text into the 32-token window.
+2. The compute core carries a state vector across all 32 positions - this replaces attention entirely.
+3. The concept layer turns that state into 256 named values: `is_a_question`, `mentions_self`,
+   `mentions_food`, and so on. **Each name is audited** - a neuron whose activation does not track its own
+   definition is dropped, never relabelled.
+4. The tied readout converts those concepts into scores over 12,002 tokens.
+5. `explain()` reports steps 3 and 4 together: which names fired, and how much each changed the answer.
+
+If the explanation disagrees with the input, that is the failure mode we care most about - please report it
+with the sentence.
+
+---
+
+## Why this exists
+
+Most small models are black boxes assembled from large frameworks: you get a number at the end and no way
+to know why. GlassNet asks a narrower, harder question:
+
+1. Can a usable model be built with **nothing hidden** — every gradient hand-derived, every layer inspectable?
+2. Can the middle of the network carry **human-readable names**, so a person can read *why* an answer came out?
+3. Can the project be **honest by construction** — publishing failed experiments instead of quietly dropping them?
+
+The third one is the part that survives contact with reality. Most of this repository is measurements,
+including the ones that killed our own ideas.
+
+## What works, with evidence
+
+| Component | State | Measured evidence |
+|---|---|---|
+| Autograd engine (`lens/tensor.py`) | **works** | all 9 checks PASS — worst absolute error **7.5e-10**, worst relative **1.8e-07** |
+| Our optimiser (`lens/opt.py`) | **works, beats baseline** | **23.46%** vs plain SGD **19.14%** held-out, 3 seeds, 20k windows |
+| KV cache (`lens/kvcache.py`) | **works** | **9.7x faster** generation, byte-identical output |
+| Live inspector (`lens/liveview.py`) | **works** | serves real weights and live neuron activations on port 8770 |
+| Exports | **works** | `.npz`, `.safetensors`, `.gguf` |
+| Named concept layer | **partial** | 256 neurons; every name audited per run, unprovable names dropped |
+| `explain()` | **partial** | reports which concepts fired and how much each contributed |
+
+## What does not work yet
+
+- **Coherent conversation.** The model produces grammatical text with weak content. It is not a chatbot.
+- **Arithmetic generalisation.** Addition trained on operands `< 50` scores **0.0%** exact on unseen
+  operands `50-99`, across three separate implementations (feed-forward, hand-written recurrent, and our
+  own autograd path). A per-digit diagnostic is the useful result here: **digit 0 reaches 100% on unseen
+  operands**, so a partial rule genuinely forms — the complete multi-digit answer does not.
+- **Attention.** A bare single-head attention block (no positional information, no residual, no
+  normalisation) **lost by 5.41 points**: 18.69% vs 24.10% over 7 runs. The honest conclusion is that
+  *that* block was worse than no attention, not that attention is worse.
+- **Our own proposed architecture.** "Position + recurrent compute core + concepts + direct readout" lost to
+  the plain shape on **both** seeds: **3.87% / 4.07%** vs **5.53% / 5.87%**. Cause identified in code: the
+  residual accumulates unnormalised thirty-two times, so state magnitude grows until ReLU saturates.
+- **Complete readability.** The named layer covers part of the model, not all of it. Per-run coverage is
+  printed rather than claimed as 100%.
+
+## Architecture
+
+Data flows through four inspectable stages:
+
+```
+tokens + position
+      |
+      v
+[ compute core ]   recurrent, state carried across all 32 positions
+      |
+      v
+[ concepts ]       named neurons: "is_a_question", "mentions_self", ...
+      |
+      v
+[ answer ]         tied readout over the 12,002-token vocabulary
+```
+
+![Architecture](docs/assets/architecture.png)
+
+Measured cost per token and parameter count at `d=256`, window 32, vocab 12,002, float32:
+
+| Stage | Params | ms / token |
+|---|---:|---:|
+| embedding | 3,072,512 | 0.0053 |
+| position add | 8,192 | 0.0021 |
+| compute step (runs 32x) | 131,328 | 0.0027 |
+| concepts | 16,448 | 0.0008 |
+| answer via concepts | 780,130 | 0.0273 |
+| direct read | 3,072,512 | 0.0239 |
+| loss | 0 | 0.0825 |
+| **whole stack** | **7,081,122** | **0.1446** |
+
+For comparison, a reference transformer block at the same width: qkv 196,608 params / 0.0005 ms, attention
+scores 0 / 0.0118 ms, MLP 524,288 / 0.0841 ms.
+
+## Results
+
+![Measured results](docs/assets/results.png)
+
+Held-out next-token accuracy, `d=256`, 32-token window, vocabulary 12,002, trained from scratch:
+
+| Configuration | Held-out accuracy |
+|---|---:|
+| `d=512`, full corpus, 6 epochs | **37.37%** |
+| `d=256`, full corpus | **35.26%** |
+| `d=256`, 2M windows, batch 1024 | **24.20%** |
+| `d=256`, 2M windows, batch 4096 | 17.64% |
+
+Batch 4096 raised GPU utilisation to 44% and throughput to 5.46M tokens/sec, but delivered four times
+fewer optimiser updates per epoch and **cost half the accuracy**. Speed setting and accuracy setting are
+different settings; we publish both rather than only the flattering one.
+
+## Install and run
+
+```bash
+python -m venv .venv && . .venv/bin/activate
+pip install numpy matplotlib
+
+python tests/test_gradcheck.py          # every gradient checked numerically - must print PASS
+python gates/phase1_xor.py                    # engine sanity: XOR to 100%
+python gates/phase1_fmnist.py --seeds 0 1 2   # baseline on Fashion-MNIST
+```
+
+Training writes a checkpoint after every epoch and a JSONL log per step, so an interrupted run resumes
+without losing work. Long runs are launched through small scripts so the machine stays responsive.
+
+## Repository map
+
+```
+lens/                 the model and its engine
+  tensor.py           Tensor, ops, backward pass  (9/9 gradient checks PASS)
+  model.py            Dense, compute core, tied readout
+  concepts.py         named-neuron layer and audit
+  opt.py              our optimiser
+  kvcache.py          our KV cache
+  unified.py          gates: revert an update if the held-out probe regressed
+  liveview.py         browser inspector on :8770
+  serve.py            local server, no framework required
+  scripts/            training and experiment drivers
+gates/                the phase gates - run these to verify the project
+  phase1_xor.py       engine sanity check
+  phase1_fmnist.py    baseline on Fashion-MNIST
+  phase2_*.py         concept layer, ablations, explain()
+  phase3_*.py         autopilot trainer and controls
+  phase4_judge.py     data judge
+  phase6_comparison.py
+tools/                verify_all.py, milestone_check.py, loop_step.py
+tests/                gradient and behavioural tests
+docs/                 architecture, results, testing, roadmap, privacy
+  assets/             charts used by the docs
+  history/            every run report, including the failures
+data/                 datasets (gitignored, never redistributed)
+runs/                 checkpoints and logs (gitignored)
+```
+
+## Verifying the numbers yourself
+
+Nothing here asks you to trust a claim. Each result has a file:
+
+| Claim | File |
+|---|---|
+| best score 37.37% | `docs/history/` run logs, `runs/chat/*_best.npz` |
+| our architecture lost | `docs/history/ARCH-OURS-VERDICT.txt` |
+| attention lost 5.41 points | `docs/history/GATE-B-VERDICT.txt` |
+| optimiser beats SGD | agreement/learning-rate sweep logs |
+| arithmetic 0.0% unseen | `docs/history/ARITHMETIC.txt`, `ARITH_DIAG.txt` |
+
+## Roadmap
+
+| Version | Date | Content |
+|---|---|---|
+| **v0.1.0 - source** | **2026-11-10** | engine, model, tests, every result and failure, licence, docs |
+| **v0.1.1 - weights** | 2026-11-12 | 37.37% checkpoint as `.safetensors`, gated on HuggingFace |
+| **v0.2.0** | 2026-11-17 | residual normalisation fix, re-test vs the 5.53% baseline |
+| **v0.3.0** | 2026-11-24 | proper multi-head attention, measured concept coverage |
+| **v0.4.0** | December | safety layer trained in, coherent-conversation milestone |
+
+Full detail in [`docs/ROADMAP.md`](docs/ROADMAP.md). Dates commit us to publishing *something measured*,
+never to a specific accuracy.
+
+### Open work, in priority order
+
+1. Move the comparison onto the GPU (our normalisation still calls NumPy, which is why that run was CPU-bound).
+2. Normalise the residual so the compute core stops saturating — then re-test against the **5.53%** baseline.
+3. Settle the `reshape` gradient check (fails at 0.064) before building proper multi-head attention on it.
+4. Publish audited concept coverage as a printed number on every run.
+5. Ship a genuine safety layer as part of training, not as a filter bolted on afterwards.
+
+## Licence
+
+**Blueprint AI License 1.0 (BAL-1.0)** — see [`LICENSE`](LICENSE).
+
+- **Free** for individuals, students, educators, researchers and non-commercial use.
+- **Free for organisations under 1,000,000 USD annual revenue**, including commercial use.
+- **Above that**: a commercial licence is required. Standard terms are a **1% revenue share** on products
+  built with it.
+- **Harmful use is not licensed.**
+- This is **not OSI-approved open source**. That is a deliberate trade-off, explained in
+  [`LICENSING.md`](LICENSING.md).
+
+## Contributing
+
+Contributions are welcome under the [CLA](CLA.md), which keeps the project able to offer commercial
+licensing. Two rules matter more than style here:
+
+1. **One change, one measurement.** Change a single thing and report what it did to the number.
+2. **Failed experiments get published.** A negative result with a clean measurement is a real contribution.
+
+## Hardware
+
+GTX 1660 SUPER (6 GB VRAM, no tensor cores), Ryzen 5 4650G, 14 GB RAM. `float32` only; no `bfloat16`.
+Datasets are used only where the licence is recorded in [`DATA_LICENSES.md`](DATA_LICENSES.md).
+
+---
+
+## Community
+
+GlassNet is built in the open. The most useful thing you can send is a **number we can reproduce** — including
+when it is worse than ours, which we publish next to our own. Failed experiments are welcome here; a project
+that only shows wins is not measuring anything.
+
+- **Email:** blueprintai.help1@gmail.com
+- **Bugs, result reports, readability failures:** GitHub Issues
+- **Design arguments and proposals:** GitHub Discussions
+- **How to run your own tests:** [`docs/TESTING.md`](docs/TESTING.md)
+
+---
+
+*If a claim in this repository cannot be traced to a run, treat that as a bug and open an issue.*

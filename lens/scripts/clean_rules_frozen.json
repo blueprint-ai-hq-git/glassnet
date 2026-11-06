@@ -1,0 +1,25 @@
+{
+ "rules": [
+  "drop_empty",
+  "drop_too_short",
+  "drop_too_long",
+  "drop_low_signal",
+  "drop_repetition",
+  "drop_duplicate",
+  "strip_boiler"
+ ],
+ "thresholds": {
+  "MIN_CHARS": 20,
+  "MAX_CHARS": 20000,
+  "MIN_ALNUM_FRAC": 0.35,
+  "MAX_CHAR_REPEAT_FRAC": 0.35,
+  "BOILER_FRAC": 0.25,
+  "BOILER_LEN": 40
+ },
+ "n_in": 75197,
+ "n_out": 75163,
+ "dropped": {
+  "drop_repetition": 30,
+  "drop_low_signal": 4
+ }
+}
