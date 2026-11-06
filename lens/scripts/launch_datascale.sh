@@ -5,14 +5,16 @@
 # turn ends - 18:20:00 and 18:30:15 both took a trainer with them. The same pattern used for wall_rep
 # (systemd-run --user --unit=...) survived every turn end and finished 4/4 arms, so this one uses it too.
 set -u
+SEED="${1:-0}"
 cd "/run/media/yahya/HARD DISK 4/GlassNet" || exit 1
-UNIT="glassnet-datascale-honest"   # NOT "glassnet-datascale": another agent's inline chain already owns that
-                                   # unit name (systemd-run --unit=glassnet-datascale, 19:05:43), and this
-                                   # agent turn is running INSIDE it - stopping or reusing it would kill me.
+UNIT="glassnet-datascale-honest"
+[ "$SEED" != "0" ] && UNIT="glassnet-datascale-honest-s$SEED"
+# NOT "glassnet-datascale": another agent's inline chain owns that unit (19:05:43) and this agent turn runs
+# INSIDE it, so stopping or reusing it would kill this turn.
 LOG="lens/runs/DATASCALE-LAUNCH.txt"
 
 {
-  echo "=== $(date '+%F %T') launch $UNIT"
+  echo "=== $(date '+%F %T') launch $UNIT (seed $SEED)"
   if systemctl --user is-active --quiet "$UNIT"; then
     echo "REFUSED: $UNIT is already active - not starting a second copy"
     exit 0
@@ -21,7 +23,7 @@ LOG="lens/runs/DATASCALE-LAUNCH.txt"
   systemd-run --user --unit="$UNIT" \
     -p MemoryMax=10G -p KillMode=process -p TimeoutStopSec=infinity \
     -p CPUWeight=20 -p IOWeight=20 \
-    bash -c "cd \"$PWD\" && exec bash lens/scripts/run_datascale_honest.sh" \
+    bash -c "cd \"$PWD\" && exec bash lens/scripts/run_datascale_honest.sh $SEED" \
     >> "$LOG" 2>&1 < /dev/null
   echo "systemd-run rc=$?"
   sleep 3

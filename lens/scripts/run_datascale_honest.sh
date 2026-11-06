@@ -1,10 +1,13 @@
 #!/bin/bash
-# DATASCALE-HONEST: 10x the windows, on the honest mix, one arm, seed 0 - a script file, not an inline command.
+# DATASCALE-HONEST: 10x the windows, on the honest mix - a script file, not an inline command.
+# Usage: run_datascale_honest.sh [SEED]      (default seed 0; seed 1 is the replication arm)
 #
-# Predictions were written BEFORE the launch: docs/history/DATASCALE-PREDICTIONS.md
+# Predictions were written BEFORE the launch: docs/history/DATASCALE-PREDICTIONS.md (seed 0) and
+# docs/history/DATASCALE-SEED1-PREDICTIONS.md (seed 1, the replication: same D1/D2 bands plus C1 on the
+# concept audit, because seed 0 came back 36/36 concepts passing against 20/36 at 20k windows).
 #   D1  200k windows lifts VAL acc from 12.18% to 15.18-20.18% (+3 to +8 pp)   [falsifiers both ways]
 #   D2  final VAL ppl below 300 (baseline 399.50)
-#   D3  one seed, 1.03 pp measured run-to-run spread, no significance claim
+#   D3  one seed per arm, 1.03 pp measured run-to-run spread, no significance claim
 #
 # WHY A SCRIPT, when a 200k arm was already run at 19:05 by other means: that run used a different corpus
 # (13.3M cached tokens vs 294.2M), a different trainer method (plain SGD, gates OFF vs ours), a different
@@ -12,13 +15,14 @@
 # compared to anything (docs/history/UNSCHEDULED-DATASCALE-RUN.md). This one changes exactly one flag from
 # the measured 20k baseline: --max-windows 20000 -> 200000.
 set -u
+SEED="${1:-0}"
 cd "/run/media/yahya/HARD DISK 4/GlassNet" || exit 1
 unset PYTHONPATH PYTHONHOME
 export OPENBLAS_NUM_THREADS=2
 LOG="lens/runs/DATASCALE-HONEST.txt"
 CLAIM="lens/runs/GPU-CLAIM"
 SAVED="lens/runs/chat"
-TAG="datascale_honest_s0"
+TAG="datascale_honest_s${SEED}"
 
 exec 9>"lens/runs/.lock_$(basename "$0" .sh)"
 if ! flock -n 9; then
@@ -52,16 +56,16 @@ printf 'owner: run_datascale_honest\npid: %s\nsince: %s\n' "$$" "$(date '+%F %T'
 cleanup() { [ -e "$CLAIM" ] && grep -q "^owner: run_datascale_honest" "$CLAIM" 2>/dev/null && rm -f "$CLAIM"; }
 trap cleanup EXIT INT TERM
 
-say "===== DATASCALE-HONEST start (predictions: docs/history/DATASCALE-PREDICTIONS.md) vram_free=${free_mb}MiB"
+say "===== DATASCALE-HONEST start seed ${SEED} (predictions: docs/history/DATASCALE-PREDICTIONS.md for seed 0, docs/history/DATASCALE-SEED1-PREDICTIONS.md for seed 1) vram_free=${free_mb}MiB"
 # Standard arm marker in the format every tool in this repo reads (verify_wall_ab_ckpt.py, the results
-# parsers). Added AFTER the first run finished: the 19:08 run wrote no marker, so the verifier reported
-# 0 arms for a log that had a finished arm in it (docs/history/DATASCALE-RESULT.md, "Provenance check").
-say "----- off seed 0 : --max-windows 200000 (10x the 20k baseline; no bypass)  $(date '+%H:%M:%S')  vram_free=${free_mb}MiB"
-say "----- command: identical to run_wall_ab.sh 'off' seed 0 except --max-windows 20000 -> 200000"
+# parsers). Added AFTER the first run finished: the 19:08 seed-0 run wrote no marker, so the verifier
+# reported 0 arms for a log that had a finished arm in it (docs/history/DATASCALE-RESULT.md).
+say "----- off seed ${SEED} : --max-windows 200000 (10x the 20k baseline; no bypass)  $(date '+%H:%M:%S')  vram_free=${free_mb}MiB"
+say "----- command: identical to run_wall_ab.sh 'off' seed ${SEED} except --max-windows 20000 -> 200000"
 
 CHAT_DATA_DIR="$PWD/data/chat/prepared_mix_ctrl_honest" taskset -c 0,1 nice -n 19 ionice -c3 \
   .venv-gpu/bin/python3 -u lens/scripts/train_chat.py --d 256 --window 32 --epochs 3 --batch 256 \
-  --lr 0.4 --lr-decay 0.5 --lam-concept 0.3 --lam-act 0.0 --seed 0 --device gpu --assistant-only \
+  --lr 0.4 --lr-decay 0.5 --lam-concept 0.3 --lam-act 0.0 --seed "$SEED" --device gpu --assistant-only \
   --train-turn-end --max-windows 200000 --gate-tol 0.05 \
   --out "$TAG" --method ours --opt-lr 1.0 >> "$LOG" 2>&1
 rc=$?
