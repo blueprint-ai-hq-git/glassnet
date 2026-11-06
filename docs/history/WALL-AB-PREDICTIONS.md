@@ -79,3 +79,24 @@ P6  SUPERVISION ONLY. The resumed run changes no arm and no hyperparameter, so t
     the original three-arm design.
 
 Cost note: seeds are per-arm, so resuming cannot inflate significance; there is no repeated seed here.
+
+## CITATION CORRECTION - 2026-11-06 18:4x (provenance only; nothing above is edited)
+
+The design section names the stored reference as `lens/runs/CTX-ATTN.txt` (final val 11.96/10.08, mean
+11.02%). **That file is wrong, and so is the column.** Re-verified this run:
+
+    grep -cE "11\.96|10\.08" lens/runs/CTX-ATTN.txt   -> 0
+
+The two numbers are the `ASST(by-position)` values at epoch 3 of the 20k arms in `lens/runs/LEARNCURVE.txt`:
+
+    :4773  lc_w20000_s0  VAL ppl 552.99 acc 11.32%  ...  ASST(by-position) acc 11.96%
+    :4960  lc_w20000_s1  VAL ppl 683.12 acc  9.53%  ...  ASST(by-position) acc 10.08%
+
+so the same two runs' `VAL acc` values are 11.32 and 9.53, and it is `VAL acc` that `wall_ab_grade.py`
+reads. P1's band was therefore derived from one column and applied to another; the numbers, both columns
+and both commands are in `docs/history/WALL-AB-P1-METRIC.md`.
+
+This addendum changes NO prediction, NO threshold and NO verdict: P1-P5 above stand exactly as written and
+the coded P1 verdict stays FAIL. It is here so that the next reader does not go looking for 11.96 in a file
+that does not contain it, and so nobody re-derives the band from the wrong column a second time.
+
