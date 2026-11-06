@@ -1,0 +1,86 @@
+
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+import numpy as np
+OUT = "/run/media/maintainer/HARD DISK 4/GlassNet/docs/assets/"
+BG, FG, ACC, MUT = "#0e1116", "#e6edf3", "#3fb950", "#8b949e"
+plt.rcParams.update({"figure.facecolor":BG,"axes.facecolor":BG,"savefig.facecolor":BG,
+    "text.color":FG,"axes.labelcolor":FG,"xtick.color":MUT,"ytick.color":MUT,
+    "axes.edgecolor":"#30363d","font.size":10})
+
+def finish(fig, name):
+    fig.tight_layout(); fig.savefig(OUT+name, dpi=150, facecolor=BG); plt.close(fig)
+    print("wrote", name)
+
+# 1) measured results
+cfg = ["d=256\n2M win\nbatch 4096","d=256\n2M win\nbatch 1024","d=256\nfull corpus","d=512\nfull corpus"]
+val = [17.64, 24.20, 35.26, 37.37]
+fig, ax = plt.subplots(figsize=(7,3.6))
+bars = ax.bar(cfg, val, color=[MUT,MUT,ACC,ACC], width=.6)
+for b,v in zip(bars,val): ax.text(b.get_x()+b.get_width()/2, v+0.7, f"{v:.2f}%", ha="center", color=FG, fontsize=11, weight="bold")
+ax.set_ylabel("held-out next-token accuracy"); ax.set_ylim(0,44)
+ax.set_title("Measured results - every bar is a real run", color=FG, fontsize=12, weight="bold")
+ax.grid(axis="y", color="#21262d"); ax.set_axisbelow(True)
+finish(fig, "results.png")
+
+# 2) our optimiser vs plain SGD, 3 seeds
+fig, ax = plt.subplots(figsize=(6,3.6))
+xs = [0,1]
+means = [23.46, 19.14]
+seeds = [[23.44,23.47,23.46],[18.93,19.35,19.14]]
+for i,(m,ss) in enumerate(zip(means,seeds)):
+    ax.bar(i, m, color=ACC if i==0 else MUT, width=.5)
+    ax.scatter([i]*len(ss), ss, color=FG, zorder=3, s=28)
+    ax.text(i, m+0.6, f"{m:.2f}%", ha="center", color=FG, weight="bold")
+ax.set_xticks(xs); ax.set_xticklabels(["our optimiser","plain SGD"]); ax.set_ylim(0,28)
+ax.set_ylabel("held-out accuracy"); ax.set_title("Our optimiser vs SGD - 3 seeds, 20k windows", color=FG, fontsize=12, weight="bold")
+ax.grid(axis="y", color="#21262d"); ax.set_axisbelow(True)
+finish(fig, "optimiser_vs_sgd.png")
+
+# 3) per-layer cost
+names = ["embedding","position","compute step","concepts","answer","direct read","loss"]
+ms    = [0.0053,0.0021,0.0027,0.0008,0.0273,0.0239,0.0825]
+params= [3072512,8192,131328,16448,780130,3072512,0]
+fig, ax = plt.subplots(figsize=(7,3.6))
+ax.barh(names, ms, color=ACC)
+for i,v in enumerate(ms): ax.text(v+0.001, i, f"{v:.4f} ms", va="center", color=FG, fontsize=9)
+ax.set_xlabel("ms per token (d=256, window 32, float32)"); ax.invert_yaxis()
+ax.set_title("Where the time goes - 0.1446 ms/token for the whole stack", color=FG, fontsize=12, weight="bold")
+ax.grid(axis="x", color="#21262d"); ax.set_axisbelow(True)
+finish(fig, "layer_cost.png")
+
+# 4) data is the only lever that moved held-out
+d = ["2k windows","20k","200k","2M"]
+v = [4.7,11.5,19.5,27.0]
+fig, ax = plt.subplots(figsize=(6,3.6))
+ax.plot(d, v, marker="o", color=ACC, linewidth=2.2, markersize=7)
+for x,y in zip(d,v): ax.annotate(f"{y:.1f}%", (x,y), textcoords="offset points", xytext=(0,10), ha="center", color=FG)
+ax.set_ylabel("held-out accuracy"); ax.set_ylim(0,32)
+ax.set_title("Seven other levers failed; more distinct data did not", color=FG, fontsize=12, weight="bold")
+ax.grid(color="#21262d"); ax.set_axisbelow(True)
+finish(fig, "data_curve.png")
+
+# 5) ablations: what lost and by how much
+ab = ["attention\nvs none","our architecture\nvs plain","carry path\n(arith.)"]
+delta = [-5.41,-1.73,-4.0]
+fig, ax = plt.subplots(figsize=(6,3.2))
+ax.bar(ab, delta, color="#f85149", width=.55)
+for i,v in enumerate(delta): ax.text(i, v-0.45, f"{v:+.2f} pts", ha="center", color=FG, weight="bold")
+ax.axhline(0, color=MUT, linewidth=1); ax.set_ylim(-7,1.2)
+ax.set_ylabel("change in held-out accuracy"); ax.set_title("Published negative results", color=FG, fontsize=12, weight="bold")
+ax.grid(axis="y", color="#21262d"); ax.set_axisbelow(True)
+finish(fig, "ablations.png")
+
+# 6) architecture diagram
+fig, ax = plt.subplots(figsize=(8,4.4)); ax.set_xlim(0,10); ax.set_ylim(0,6); ax.axis("off")
+boxes = [("tokens\n+ position",1.15,"#1f6feb"),("compute core\nrecurrent, state carried\n32 steps",3.5,"#238636"),
+         ("concepts\n256 named neurons\naudited",5.9,"#8957e5"),("answer\ntied readout\n12,002 classes",8.1,"#bf8700")]
+for label,x,c in boxes:
+    ax.add_patch(FancyBboxPatch((x-0.85,2.4),1.7,1.5, boxstyle="round,pad=0.12", linewidth=2, edgecolor=c, facecolor="#161b22"))
+    ax.text(x,3.15,label,ha="center",va="center",fontsize=10,color=FG)
+for (_,x1,_),(_,x2,_) in zip(boxes,boxes[1:]):
+    ax.add_patch(FancyArrowPatch((x1+0.9,3.15),(x2-0.9,3.15), arrowstyle="-|>", mutation_scale=18, color=MUT, linewidth=1.6))
+ax.text(5,5.3,"GlassNet: four inspectable stages, no hidden path", ha="center", fontsize=13, weight="bold", color=FG)
+ax.text(5,1.6,"7,081,122 parameters   |   0.1446 ms per token   |   float32", ha="center", fontsize=10, color=MUT)
+finish(fig, "architecture.png")
