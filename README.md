@@ -290,7 +290,8 @@ Same command, same corpus, same 36-concept set, same **3,811,534** parameters, n
 That is **+5.25 points** and a final perplexity of 207.29 against 399.50 (48.1% lower). One seed, and the
 20k rung's measured run-to-run spread is 1.03 points, so the gain is 5.1x the noise rather than a proof;
 the architectural levers tried at 20k windows - attention (-2.81), window 64 (-1.57), the concept bypass
-(-1.4 to -3.4) - all went the other way. Write-up: `docs/history/DATASCALE-RESULT.md`.
+(-1.4 to -3.4) - all went the other way. The same 10x also moved the named-concept audit from **20/36 to
+36/36** passing concepts, at the same parameter count. Write-up: `docs/history/DATASCALE-RESULT.md`.
 
 ## Install and run
 

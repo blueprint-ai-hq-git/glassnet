@@ -49,6 +49,21 @@ files, and are recorded here with their output:
     best != ep3 (so best is the epoch the log named, not the last one): True
     meta seed/direct/mode: 0 False off                                      -> the no-bypass arm, seed 0
 
+
+## A second effect, not predicted: the concept audit went from 20/36 to 36/36
+
+Same 36 kept concepts of 43, same AUROC audit, same architecture (3,811,534 params) - only the window count
+changed. Counted directly from the AUROC rows in each log rather than from the summary line:
+
+    wall_off s0, 20k windows        36 rows, 20 PASS  -> "concepts 20/36"   (WALL-AB.txt:201, audit :116-200)
+    datascale_honest_s0, 200k       36 rows, 36 PASS  -> "concepts 36/36"   (DATASCALE-HONEST.txt:322, :230)
+
+At 20k windows the concept layer was linearly separable for 20 of its 36 named concepts; at 200k it is
+separable for all 36, at the same parameter count. Nothing in D1/D2 predicted this and it is not a success
+claim for the concept idea: the audit asks whether each concept can be read off the layer, not whether the
+answer layer uses it. But it does mean the "named concepts" line in STATUS.md (60%) is limited by data at
+this rung, not only by the concept design.
+
 ## What this means, and what it does not
 
 * It is the first lever on this project that has moved the 20k rung by more than the noise: +5.25 pp,
