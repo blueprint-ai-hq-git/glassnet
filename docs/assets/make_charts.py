@@ -39,14 +39,18 @@ ax.grid(axis="y", color="#21262d"); ax.set_axisbelow(True)
 finish(fig, "optimiser_vs_sgd.png")
 
 # 3) per-layer cost
-names = ["embedding","position","compute step","concepts","answer","direct read","loss"]
+names = ["embedding","position","compute step x32","concepts","answer","direct read","loss"]
 ms    = [0.0053,0.0021,0.0027,0.0008,0.0273,0.0239,0.0825]
+# the compute core runs once per position, 32 positions, so its per-token cost is 32 x 0.0027 = 0.0864.
+# An earlier chart added it once and published 0.1446 ms; counted correctly the stack is 0.2283 ms.
+TOTAL_MS = round(sum(ms[:2]) + ms[2]*32 + sum(ms[3:]), 4)
+ms = [ms[0], ms[1], round(ms[2]*32, 4)] + ms[3:]
 params= [3072512,8192,131328,16448,780130,3072512,0]
 fig, ax = plt.subplots(figsize=(7,3.6))
 ax.barh(names, ms, color=ACC)
 for i,v in enumerate(ms): ax.text(v+0.001, i, f"{v:.4f} ms", va="center", color=FG, fontsize=9)
 ax.set_xlabel("ms per token (d=256, window 32, float32)"); ax.invert_yaxis()
-ax.set_title("Where the time goes - 0.1446 ms/token for the whole stack", color=FG, fontsize=12, weight="bold")
+ax.set_title(f"Where the time goes - {TOTAL_MS:.4f} ms/token, core counted 32x", color=FG, fontsize=12, weight="bold")
 ax.grid(axis="x", color="#21262d"); ax.set_axisbelow(True)
 finish(fig, "layer_cost.png")
 
@@ -74,13 +78,13 @@ finish(fig, "ablations.png")
 
 # 6) architecture diagram
 fig, ax = plt.subplots(figsize=(8,4.4)); ax.set_xlim(0,10); ax.set_ylim(0,6); ax.axis("off")
-boxes = [("tokens\n+ position",1.15,"#1f6feb"),("compute core\nrecurrent, state carried\n32 steps",3.5,"#238636"),
-         ("concepts\n256 named neurons\naudited",5.9,"#8957e5"),("answer\ntied readout\n12,002 classes",8.1,"#bf8700")]
+boxes = [("tokens\n32-token window",1.15,"#1f6feb"),("embedding\n12,002 x 256\ntied to answer",3.5,"#238636"),
+         ("concepts\nnamed neurons\naudited",5.9,"#8957e5"),("answer\n+ direct mix\n12,002 classes",8.1,"#bf8700")]
 for label,x,c in boxes:
     ax.add_patch(FancyBboxPatch((x-0.85,2.4),1.7,1.5, boxstyle="round,pad=0.12", linewidth=2, edgecolor=c, facecolor="#161b22"))
     ax.text(x,3.15,label,ha="center",va="center",fontsize=10,color=FG)
 for (_,x1,_),(_,x2,_) in zip(boxes,boxes[1:]):
     ax.add_patch(FancyArrowPatch((x1+0.9,3.15),(x2-0.9,3.15), arrowstyle="-|>", mutation_scale=18, color=MUT, linewidth=1.6))
-ax.text(5,5.3,"GlassNet: four inspectable stages, no hidden path", ha="center", fontsize=13, weight="bold", color=FG)
-ax.text(5,1.6,"7,081,122 parameters   |   0.1446 ms per token   |   float32", ha="center", fontsize=10, color=MUT)
+ax.text(5,5.3,"GlassNet: four inspectable stages, no attention, no hidden path", ha="center", fontsize=13, weight="bold", color=FG)
+ax.text(5,1.6,"5,908,686 parameters (d=256, K=36)   |   0.2283 ms per token   |   float32", ha="center", fontsize=10, color=MUT)
 finish(fig, "architecture.png")

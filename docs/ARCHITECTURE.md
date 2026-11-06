@@ -47,8 +47,10 @@ measured coverage.
 ## 4. Answer
 
 A tied readout maps concepts to the 12,002-token vocabulary. Tying shares the embedding matrix, which keeps
-the parameter count honest (7.08M total at d=256) and makes the output layer readable through the same
-vectors as the input.
+the parameter count honest (**5,908,686** total at d=256, K=36 - the number the model object prints and every
+training log records; an earlier version of this page said 7.08M because it added the proposed recurrent core
+and counted the tied embedding twice, see `docs/history/PARAM-AUDIT.md`) and makes the output layer readable
+through the same vectors as the input.
 
 ## Cost table
 
