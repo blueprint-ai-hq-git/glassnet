@@ -30,12 +30,16 @@ if ! flock -n 9; then
   exit 0
 fi
 
+# Shared trainer detector, anchored on the interpreter - `pgrep -af "train_chat.py"` blocked this item
+# on 2026-11-06 17:59 by matching an agent's prompt. See lens/scripts/lib_trainer_alive.sh.
+source lens/scripts/lib_trainer_alive.sh
+
 {
   echo "=== $(date '+%F %T') clobber-guard end-to-end"
 
-  if pgrep -af "train_chat.py" | grep -v run_guard_e2e >/dev/null; then
-    echo "BLOCKED: another train_chat.py is alive; not competing with it."
-    pgrep -af "train_chat.py" | grep -v run_guard_e2e
+  if trainer_alive; then
+    echo "BLOCKED: another real train_chat.py run is alive; not competing with it."
+    trainer_alive_print
     exit 3
   fi
   if ! nice -19 ionice -c3 "$PY" lens/scripts/apply_best_ckpt_guard.py --check; then

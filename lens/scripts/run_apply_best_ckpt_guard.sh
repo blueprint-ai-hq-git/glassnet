@@ -26,12 +26,17 @@ if ! flock -n 9; then
   exit 0
 fi
 
+# The trainer detector is shared, and it anchors the interpreter at the start of the command line.
+# `pgrep -af "train_chat.py"` matched an AGENT's prompt on 2026-11-06 17:59 and blocked the next item
+# for a trainer that did not exist: lens/scripts/lib_trainer_alive.sh has the measurement.
+source lens/scripts/lib_trainer_alive.sh
+
 {
   echo "=== $(date '+%F %T') apply_best_ckpt_guard"
 
-  if pgrep -af "train_chat.py" | grep -v apply_best_ckpt_guard >/dev/null; then
-    echo "BLOCKED: a train_chat.py process is alive:"
-    pgrep -af "train_chat.py" | grep -v apply_best_ckpt_guard
+  if trainer_alive; then
+    echo "BLOCKED: a real train_chat.py run is alive:"
+    trainer_alive_print
     echo "exit 3 - nothing was changed. Re-queue for when the GPU is free."
     exit 3
   fi
