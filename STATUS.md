@@ -51,3 +51,11 @@ They are listed so nobody has to re-run them.
 |---|---|---|
 | Attention (bare single head, no position) at 20k windows | 8.21% vs 11.02% reference, 2 seeds, -2.81 | `docs/history/CTX-ATTN-ARMS.md` |
 | Window 64 (double tokens per example) at 20k windows | 9.45% vs 11.02% reference, 2 seeds, -1.57 | `docs/history/CTX-ATTN-ARMS.md` |
+
+## Measurement bugs found and fixed
+
+A wrong number is worse than a missing one, so these are listed with the correction.
+
+| Bug | What it did to the numbers | Where |
+|---|---|---|
+| Talk decoder left-padded short prompts with token id 0 (`<unk>`) | 20-23 of 32 context slots were `<unk>` for the project prompts, so 95.1% (d256) / 96.5% (d512) of the reply tokens were `<unk>`; pad-free the same weights measure 26.4% / 21.5% | `docs/history/PROMPT-ENCODING.md` |
