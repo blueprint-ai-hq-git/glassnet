@@ -21,6 +21,15 @@ PY=".venv-gpu/bin/python3"
 CK="lens/runs/chat"
 TAG="guard_e2e"
 
+# SELF-LOCK (added 2026-11-06 18:0x): same reason as run_apply_best_ckpt_guard.sh - two agents woken by
+# the chain read the same queue line. Two copies of this item would also fight over $TAG's files, which
+# is exactly what its own "clean tag" step assumes cannot happen.
+exec 9>"lens/runs/.lock_$(basename "$0" .sh)"
+if ! flock -n 9; then
+  echo "$(date '+%F %T') REFUSED: another copy of $(basename "$0") holds the lock; nothing done" | tee -a "$LOG"
+  exit 0
+fi
+
 {
   echo "=== $(date '+%F %T') clobber-guard end-to-end"
 

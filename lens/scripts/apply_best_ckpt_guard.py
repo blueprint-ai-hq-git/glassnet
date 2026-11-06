@@ -105,11 +105,17 @@ def main():
 
     # the patched file must still be a superset of the original: both anchors' neighbours present
     check = open(TARGET).read()
-    ok = (check.count("import lens.ckpt_guard as ckpt_guard") == 1
-          and check.count("ckpt_guard.guard_existing_best(OUT, a.out, log=log)") == 1)
+    post_import = check.count("import lens.ckpt_guard as ckpt_guard")
+    post_call = check.count("ckpt_guard.guard_existing_best(OUT, a.out, log=log)")
+    ok = (post_import == 1 and post_call == 1)
     print("train_chat.py sha256 %s -> %s" % (before, after))
     print("backup kept at %s (same sha256 as the pre-patch file)" % backup)
-    print("patched: import=%s call=%s  post-write check=%s" % (has_import, has_call, ok))
+    # has_import/has_call are the PRE-patch reads. Printing them on the "patched:" line made a correct
+    # patch read as a failure ("patched: import=False call=False  post-write check=True" on 2026-11-06
+    # 17:57, which contradicted the prediction P1 word for word). Report the post-write counts instead.
+    print("before patch: import=%s call=%s" % (has_import, has_call))
+    print("patched: import=%s call=%s  post-write check=%s"
+          % (post_import == 1, post_call == 1, ok))
     return 0 if ok else 9
 
 

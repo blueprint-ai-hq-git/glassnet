@@ -49,6 +49,7 @@ sys.path.insert(0, os.path.join(PROJ, "scripts"))
 import chat_concepts                                       # noqa: E402
 import chat_data                                           # noqa: E402
 import lens                                                # noqa: E402
+import lens.ckpt_guard as ckpt_guard                    # noqa: E402  (clobber guard)
 import lens.tensor as T                                    # noqa: E402
 from lens import backend as B                              # noqa: E402
 from lens.concepts import Concept                          # noqa: E402
@@ -1016,6 +1017,14 @@ def main():
         log("  PROBE DONE - nothing was trained, no result of any kind was produced.")
         return
 
+    # ---- BEST-CHECKPOINT CLOBBER GUARD (2026-11-06, docs/history/WALL-AB-ARMS.md "Provenance defect") ----
+    # Best tracking starts empty on every fresh run, so a restarted run rewrites <out>_best.npz from its
+    # own epoch 1 and can silently replace an earlier run's better checkpoint (measured on wall_off_s0:
+    # 13.00% epoch 3 replaced by an aborted second attempt's epoch 1). A resumed run restores its best
+    # memory from the mid-state and is left alone. Nothing is deleted: the old file is moved into
+    # archive/best_clobber_guard_<stamp>/ with a .sha256 receipt and its hash is printed here.
+    if mid_state is None:
+        ckpt_guard.guard_existing_best(OUT, a.out, log=log)
     hist = []
     gstep = 0
     astep = 0
