@@ -73,14 +73,24 @@ stop_resident() {
   done
 }
 stop_resident
+# ONLY real python trainers are counted. `pgrep -f lens/scripts/train_chat` also matches any shell
+# whose command line merely MENTIONS that path (an agent's own tool shell, or the pgrep inside this
+# very loop), so the old test reported "a trainer is still alive" when none was: that is what aborted
+# the 16:39 block at 16:54:56, and what made the 240 s graceful SIGTERM also hit pid 2996309, a shell.
+trainer_pids() {
+  for p in $(pgrep -f 'train_chat\.py' 2>/dev/null); do
+    exe=$(readlink -f "/proc/$p/exe" 2>/dev/null)
+    case "$exe" in *python3*) echo "$p" ;; esac
+  done
+}
 WAITED=0
 GRACEFUL=0
-while pgrep -f 'lens/scripts/train_chat' >/dev/null 2>&1; do
+while [ -n "$(trainer_pids)" ]; do
   sleep 10; WAITED=$((WAITED+10))
   stop_resident
   if [ -e lens/runs/STOP-NIGHT ]; then echo "===== ABORT: STOP-NIGHT appeared while waiting" >> "$LOG"; exit 0; fi
   if [ "$WAITED" -ge 240 ] && [ "$GRACEFUL" -eq 0 ]; then
-    PIDS=$(pgrep -f 'lens/scripts/train_chat' | tr '\n' ' ')
+    PIDS=$(trainer_pids | tr '\n' ' ')
     echo "----- 240 s elapsed with a redundant resident trainer alive (pid $PIDS): ONE graceful SIGTERM so the A/B can run" >> "$LOG"
     for p in $PIDS; do kill -TERM "$p" 2>>"$LOG"; done
     GRACEFUL=1

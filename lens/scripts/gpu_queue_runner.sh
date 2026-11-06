@@ -4,7 +4,7 @@ cd "/run/media/yahya/HARD DISK 4/GlassNet" || exit 1
 while read -r line; do
   [ -z "$line" ] && continue
   echo "=== STARTING: $line  $(date '+%F %H:%M')" >> lens/runs/GPU-QUEUE-RUNS.txt
-  bash -c "$line"
+  /home/yahya/.local/bin/glassnet_chain.sh "$line" queueitem
   echo "=== DONE: $line  $(date '+%H:%M')  exit=$?" >> lens/runs/GPU-QUEUE-RUNS.txt
 done < lens/runs/GPU-QUEUE.txt
 echo "QUEUE DRAINED $(date '+%F %H:%M')" >> lens/runs/GPU-QUEUE-RUNS.txt

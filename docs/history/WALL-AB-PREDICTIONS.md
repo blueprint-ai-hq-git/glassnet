@@ -58,3 +58,24 @@ P5  FALSIFIER AGAINST MY OWN EXPECTATION. If `wall_off` is ABOVE `wall_on` by mo
 * No separation of "channel access" from "parameter count" beyond the three-point dose above - the arms
   differ in both, deliberately, and the dose is the evidence, not an ablation of one factor.
 * No extrapolation to 2M windows or to d512.
+
+## RESUME ADDENDUM - 2026-11-06 17:0x (added before the resumed launch; nothing above edited)
+
+Status when this was written: of the six arms, ONE was actually training (off seed 0, orphaned trainer pid
+3015702, launched 17:01:13). Three launchers of run_wall_ab.sh had each been SIGTERM'd with the agent turn
+that started it (chain rc=143, three separate records in lens/runs/WALL-AB.txt), and each death took the
+loop that owns the remaining arms with it while leaving the trainer alive. So no result existed yet; the
+"three aborts" in the log are launcher deaths, not training failures.
+
+The resumed run (lens/scripts/run_wall_ab_resume.sh) is the SAME experiment: same six arms, same seeds,
+byte-identical trainer commands, same log, same completion markers. P1-P5 above stand unedited and are
+graded exactly as written. One extra prediction, made before launching, about what I expect to see:
+
+P6  SUPERVISION ONLY. The resumed run changes no arm and no hyperparameter, so the six numbers should be
+    indistinguishable from what run_wall_ab.sh would have produced had its launcher lived. The ONLY
+    predicted difference is that off/seed 0 arrives first (it was already ~3 min in when the supervisor
+    attached) and the other five follow at ~7-9 min each. FALSIFIER: if any arm's recorded command line in
+    the log differs from run_wall_ab.sh's, the resume is invalid and its numbers must not be pooled with
+    the original three-arm design.
+
+Cost note: seeds are per-arm, so resuming cannot inflate significance; there is no repeated seed here.
