@@ -73,7 +73,8 @@ docs/history/WALL-AB-PREDICTIONS.md (P1-P5, plus P6 "supervision must not move a
 | arm | seed | final val ppl | val acc | concepts | source |
 |---|---|---|---|---|---|
 | wall_off (no bypass) | 0 | 399.50 | **12.18%** | 20/36 | lens/runs/WALL-AB.txt:201-202 |
+| wall_on (tied full-rank bypass) | 0 | 575.00 | 10.79% | 20/36 | lens/runs/WALL-AB.txt:477-478 |
 
 Reference for the same 20k-window rung: 11.96 / 10.08 (mean 11.02%), lens/runs/CTX-ATTN.txt.
-Arms still to run: off s1, on s0/s1, r64 s0/s1. Do not read the A/B as answered until all six lines exist.
+Arms still to run: r64 s0 (training now), off s1, on s1, r64 s1. Do not read the A/B as answered until all six lines exist.
 Supervisor: lens/scripts/run_wall_ab_resume2.sh via the chain (label wall_ab_resume2), log lens/runs/WALL-AB.txt.
