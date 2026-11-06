@@ -24,8 +24,29 @@ unset PYTHONPATH PYTHONHOME
 export OPENBLAS_NUM_THREADS=2
 LOG=lens/runs/WALL-AB.txt
 CLAIM=lens/runs/GPU-CLAIM
+LOCK=lens/runs/GPU-WALLAB.lock
 
-release_claim() { [ -e "$CLAIM" ] && grep -q "^pid $$" "$CLAIM" 2>/dev/null && rm -f "$CLAIM"; }
+# ATOMIC: two chain agents woke within a minute of each other on 2026-11-06 16:5x, and both would have written
+# the claim and run the 6 arms interleaved on one card. mkdir is atomic on this filesystem, so the loser exits
+# without touching anything. Stale lock (owner pid gone) is taken over - never silently ignored.
+if ! mkdir "$LOCK" 2>/dev/null; then
+  old=$(cat "$LOCK/pid" 2>/dev/null)
+  if [ -n "$old" ] && kill -0 "$old" 2>/dev/null; then
+    echo "===== REFUSED $(date '+%F %H:%M:%S'): $LOCK held by live pid $old" >> "$LOG"
+    exit 0
+  fi
+  rm -rf "$LOCK" 2>/dev/null
+  if ! mkdir "$LOCK" 2>/dev/null; then
+    echo "===== REFUSED $(date '+%F %H:%M:%S'): could not take $LOCK" >> "$LOG"
+    exit 0
+  fi
+fi
+echo $$ > "$LOCK/pid"
+
+release_claim() {
+  [ -e "$CLAIM" ] && grep -q "^pid $$" "$CLAIM" 2>/dev/null && rm -f "$CLAIM"
+  [ "$(cat "$LOCK/pid" 2>/dev/null)" = "$$" ] && rm -rf "$LOCK"
+}
 trap release_claim EXIT
 
 echo "===== WALL-AB START $(date '+%F %H:%M:%S')" >> "$LOG"
@@ -33,16 +54,39 @@ echo "pid $$ ; predictions in docs/history/WALL-AB-PREDICTIONS.md (written befor
 
 echo "pid $$ run_wall_ab.sh wall_ab claimed $(date '+%F %H:%M:%S')" > "$CLAIM"
 echo "===== GPU-CLAIM written (pid $$)" >> "$LOG"
-for u in $(systemctl --user list-units 'glassnet-res-gpu_trainer-*' --state=active --no-legend --plain 2>/dev/null | awk '{print $1}'); do
-  systemctl --user stop "$u" 2>>"$LOG"
-  echo "----- stopped resident unit $u (graceful SIGTERM; the trainer saves its own interrupt checkpoint)" >> "$LOG"
-done
+
+# OWNERSHIP POLICY (rewritten 2026-11-06 16:57 after TWO measured aborts - the 15-min "give up" rule
+# fired at 16:54:56 while the orphaned resident trainer was still on epoch 3 of 3, and had already
+# fired once on 16:39. Nothing below deletes a result: the trainer's SIGTERM handler writes
+# {out}_interrupt_ep{N}.npz + {out}_interrupt_rng.json and exits cleanly (train_chat.py:478-486),
+# which is the SAME graceful path used at 16:53 when its own unit was stopped.)
+#   1. hold the claim first (watchdog honours it, so no queue entry can start a second trainer);
+#   2. stop any resident unit, and keep stopping it: the keeper relaunches on a 15-min tick;
+#   3. wait up to 240 s for the card to free itself;
+#   4. if a redundant resident trainer is still alive after 240 s, SIGTERM it ONCE (graceful, it
+#      checkpoints itself), log the pids, and wait up to 180 s more;
+#   5. start the arms only with >= 3000 MiB free, and abort (rc 3) rather than run two models at once.
+stop_resident() {
+  for u in $(systemctl --user list-units 'glassnet-res-gpu_trainer-*' --state=active --no-legend --plain 2>/dev/null | awk '{print $1}'); do
+    systemctl --user stop "$u" 2>>"$LOG"
+    echo "----- stopped resident unit $u (graceful SIGTERM; the trainer saves its own interrupt checkpoint)" >> "$LOG"
+  done
+}
+stop_resident
 WAITED=0
+GRACEFUL=0
 while pgrep -f 'lens/scripts/train_chat' >/dev/null 2>&1; do
-  sleep 5; WAITED=$((WAITED+5))
+  sleep 10; WAITED=$((WAITED+10))
+  stop_resident
   if [ -e lens/runs/STOP-NIGHT ]; then echo "===== ABORT: STOP-NIGHT appeared while waiting" >> "$LOG"; exit 0; fi
-  if [ "$WAITED" -ge 900 ]; then
-    echo "===== ABORT: a trainer was still alive 15 min after the claim; not starting a second one" >> "$LOG"
+  if [ "$WAITED" -ge 240 ] && [ "$GRACEFUL" -eq 0 ]; then
+    PIDS=$(pgrep -f 'lens/scripts/train_chat' | tr '\n' ' ')
+    echo "----- 240 s elapsed with a redundant resident trainer alive (pid $PIDS): ONE graceful SIGTERM so the A/B can run" >> "$LOG"
+    for p in $PIDS; do kill -TERM "$p" 2>>"$LOG"; done
+    GRACEFUL=1
+  fi
+  if [ "$WAITED" -ge 600 ]; then
+    echo "===== ABORT: a trainer was still alive 10 min after the claim (and after one graceful SIGTERM); not starting a second one" >> "$LOG"
     exit 3
   fi
 done
