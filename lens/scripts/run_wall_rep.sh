@@ -40,31 +40,44 @@ run_arm() {  # $1=name $2=seed, rest passed to the trainer
     say "----- SKIP $NAME seed $SEED: recorded in $LOG and its npz exists"
     return 0
   fi
-  if trainer_alive; then
-    say "----- SKIP $NAME seed $SEED: another real train_chat.py run is alive"
-    trainer_alive_print | cut -c1-120 >> "$LOG"
-    return 3
-  fi
-  local free_mb
-  free_mb=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits 2>/dev/null | head -1)
-  free_mb=${free_mb:-0}
-  if [ "$free_mb" -lt 3000 ]; then
-    say "----- SKIP $NAME seed $SEED: only ${free_mb} MiB VRAM free (guard; nothing killed for it)"
-    return 3
-  fi
-  if [ -e "$CLAIM" ] && ! grep -q "^owner: run_wall_rep" "$CLAIM" 2>/dev/null; then
-    say "----- SKIP $NAME seed $SEED: GPU-CLAIM held by $(head -1 "$CLAIM")"
-    return 3
-  fi
-  printf 'owner: run_wall_rep\npid: %s\nsince: %s\n' "$$" "$(date '+%F %T')" > "$CLAIM"
-  say "----- $NAME seed $SEED : $*  $(date '+%H:%M:%S')  vram_free=${free_mb}MiB"
-  CHAT_DATA_DIR="$PWD/data/chat/prepared_mix_ctrl_honest" taskset -c 0,1 nice -n 19 ionice -c3 \
-    .venv-gpu/bin/python3 -u lens/scripts/train_chat.py --d 256 --window 32 --epochs 3 --batch 256 \
-    --lr 0.4 --lr-decay 0.5 --lam-concept 0.3 --lam-act 0.0 --seed "$SEED" --device gpu --assistant-only \
-    --train-turn-end --max-windows 20000 --gate-tol 0.05 \
-    --out "${TAGP}_${NAME}_s${SEED}" --method ours --opt-lr 1.0 "$@" >> "$LOG" 2>&1
-  say "  $NAME seed $SEED exit=$?"
-  return 0
+  local attempt rc
+  for attempt in 1 2; do
+    if trainer_alive; then
+      say "----- SKIP $NAME seed $SEED: another real train_chat.py run is alive"
+      trainer_alive_print | cut -c1-120 >> "$LOG"
+      return 3
+    fi
+    local free_mb
+    free_mb=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits 2>/dev/null | head -1)
+    free_mb=${free_mb:-0}
+    if [ "$free_mb" -lt 3000 ]; then
+      say "----- SKIP $NAME seed $SEED: only ${free_mb} MiB VRAM free (guard; nothing killed for it)"
+      return 3
+    fi
+    if [ -e "$CLAIM" ] && ! grep -q "^owner: run_wall_rep" "$CLAIM" 2>/dev/null; then
+      say "----- SKIP $NAME seed $SEED: GPU-CLAIM held by $(head -1 "$CLAIM")"
+      return 3
+    fi
+    printf 'owner: run_wall_rep\npid: %s\nsince: %s\n' "$$" "$(date '+%F %T')" > "$CLAIM"
+    say "----- $NAME seed $SEED attempt $attempt/2 : $*  $(date '+%H:%M:%S')  vram_free=${free_mb}MiB"
+    CHAT_DATA_DIR="$PWD/data/chat/prepared_mix_ctrl_honest" taskset -c 0,1 nice -n 19 ionice -c3 \
+      .venv-gpu/bin/python3 -u lens/scripts/train_chat.py --d 256 --window 32 --epochs 3 --batch 256 \
+      --lr 0.4 --lr-decay 0.5 --lam-concept 0.3 --lam-act 0.0 --seed "$SEED" --device gpu --assistant-only \
+      --train-turn-end --max-windows 20000 --gate-tol 0.05 \
+      --out "${TAGP}_${NAME}_s${SEED}" --method ours --opt-lr 1.0 "$@" >> "$LOG" 2>&1
+    rc=$?
+    say "  $NAME seed $SEED exit=$rc"
+    if [ "$rc" -eq 0 ]; then
+      return 0
+    fi
+    # A KILLED ARM IS NOT A RESULT (2026-11-06 18:20, MEASURED): the first off/seed-2 trainer came back
+    # exit=143 mid-epoch-1 and the first version of this script simply carried on to the next arm, which
+    # would have published a three-arm block as if it were four. Retry once, then report it as missing.
+    say "  $NAME seed $SEED attempt $attempt FAILED rc=$rc - retrying once (a killed arm is NOT a result)"
+    sleep 5
+  done
+  say "-----$NAME seed $SEED GAVE UP after 2 attempts (last rc=$rc); it will be counted as MISSING"
+  return 4
 }
 
 cleanup() {
@@ -78,8 +91,13 @@ for S in 2 3; do
   run_arm on  "$S" --direct --direct-mode tied
 done
 
-say "----- arm table (VAL acc and ASST acc read from each epoch-3 line)"
-grep -E "^  ep 3/3" "$LOG" | sed -E 's/.*VAL ppl ([0-9.]+) acc ([0-9.]+)%.*ASST\(by-position\) ppl [0-9.]+ acc ([0-9.]+)%.*/  VAL \2%  ASST \3%/' >> "$LOG"
-say "===== WALL-REP DONE $(date '+%F %H:%M')"
-grep -cE "^  final VAL" "$LOG" | sed 's/^/  arms finished: /' >> "$LOG"
+done_n=0
+for S in 2 3; do for A in off on; do arm_done "$A" "$S" && done_n=$((done_n+1)); done; done
+say "----- result lines in this log (each one is a finished arm's final VAL)"
+grep -E "^  final VAL" "$LOG" | tail -4 >> "$LOG"
+if [ "$done_n" -eq 4 ]; then
+  say "===== WALL-REP DONE $(date '+%F %H:%M') arms_done=4 of 4"
+else
+  say "===== WALL-REP INCOMPLETE $(date '+%F %H:%M') arms_done=$done_n of 4 - missing arms are NOT results"
+fi
 exit 0
