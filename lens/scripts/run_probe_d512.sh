@@ -13,7 +13,7 @@ export OPENBLAS_NUM_THREADS=2
 LOG="lens/runs/PROBE-D512.txt"
 CLAIM="lens/runs/GPU-CLAIM"
 SAVED="lens/runs/chat"
-TAG="probe_d512_relgrad"
+TAG="probe_d512_relgrad_full"
 
 exec 9>"lens/runs/.lock_$(basename "$0" .sh)"
 if ! flock -n 9; then
@@ -47,13 +47,16 @@ cleanup() { [ -e "$CLAIM" ] && grep -q "^owner: run_probe_d512" "$CLAIM" 2>/dev/
 trap cleanup EXIT INT TERM
 
 say "===== PROBE-D512 start (predictions: docs/history/D512-COST-PROBE-PREDICTIONS.md) vram_free=${free_mb}MiB"
-say "----- probe d512 : --method ours --no-gates --direct tied --d 512 --batch 1024 --lr 0.3 --epochs 1, FULL corpus  $(date '+%H:%M:%S')"
+say "----- probe d512 : --method ours --no-gates --direct tied --d 512 --batch 1024 --lr 0.3 --epochs 1 --max-windows 16900000  $(date '+%H:%M:%S')"
+say "  NOTE: the first probe (probe_d512_relgrad, 14:31-14:37) ran the DEFAULT cap of 900,000 windows, not the"
+say "  headline's 16,900,000 - it is kept as a cost calibration (164 s for 878 steps = 0.187 s/step) and this arm"
+say "  is the one that matches TIED-D512-EXT6.txt."
 
 start=$(date '+%s')
 CHAT_DATA_DIR="$PWD/data/chat/prepared_mix_ctrl_honest" taskset -c 0,1 nice -n 19 ionice -c3 \
   .venv-gpu/bin/python3 -u lens/scripts/train_chat.py --d 512 --window 32 --epochs 1 --batch 1024 \
   --lr 0.3 --lr-decay 0.5 --lam-concept 0.3 --lam-act 0.0 --seed 0 --device gpu --assistant-only \
-  --train-turn-end --direct --direct-mode tied \
+  --train-turn-end --direct --direct-mode tied --max-windows 16900000 \
   --out "$TAG" --method ours --no-gates >> "$LOG" 2>&1
 rc=$?
 end=$(date '+%s')
