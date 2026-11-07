@@ -121,7 +121,7 @@ enough budget on text — it won both image rungs).
   "No devices / Unknown Error" = **GPU hang** (Roblox + desktop blew past
   the ~300 MB headroom on 6 GB). RAM/CPU fine. **Nothing of GlassNet's
   touched it** (all our jobs are CPU-only, zero VRAM).
-- Fix: reboot. Verified after: GTX 1660 SUPER healthy (driver 595.91.07).
+- Fix: reboot. Verified after: a 6 GB consumer GPU healthy (driver 595.91.07).
 - **Prevention:** `scripts/gpu_watch.sh` runs every 3 min (VRAM + error
   state → runs/gpu_watch_gaming.log, alarm on danger); heavy training is
   paused while you play; my jobs run nice'd, capped threads, never GPU.

@@ -4,7 +4,7 @@ By submitting a contribution (a pull request, patch, or any code, weights or doc
 project, you agree to the following. This is what keeps the project able to offer a commercial licence,
 including the revenue share described in LICENSE.
 
-1. **Copyright licence.** You grant Muhammad Yahya (Blueprint AI) a perpetual, worldwide, non-exclusive,
+1. **Copyright licence.** You grant Muhammad the maintainer (Blueprint AI) a perpetual, worldwide, non-exclusive,
    royalty-free, irrevocable copyright licence to reproduce, modify, distribute, and **relicense** your
    contribution, including under a commercial licence.
 

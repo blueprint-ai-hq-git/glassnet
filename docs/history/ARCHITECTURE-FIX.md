@@ -11,8 +11,8 @@ inflection, which article. So the word salad is structural: the information need
 answer layer ever saw it. This is also why all 450 settings failed - they were tuning a pipe whose water had
 already been thrown away. No learning rate fixes a bottleneck that removed the information.
 
-## CORRECTION TO MY OWN EARLIER EXPLANATION (Yahya caught this)
-I said "give the answer layer a path from the hidden state, like other models". Yahya: "our model does not have
+## CORRECTION TO MY OWN EARLIER EXPLANATION (the maintainer caught this)
+I said "give the answer layer a path from the hidden state, like other models". the maintainer: "our model does not have
 a hidden state, so what will it read". Correct. What our model HAS in every configuration, attention or not, is
 the TOKEN-LEVEL WINDOW REPRESENTATION: W x D = 32 x 256 = 8,192 numbers, which the concept layer already reads
 before compressing it. So the fix needs no hidden state to exist: the answer layer must read those 8,192 numbers
@@ -29,7 +29,7 @@ hidden state. It can be carried across turns instead of recomputed. So the layer
     consistency          -> it remembers its OWN output through those tiers, so it cannot drift from code
                             into "a house in a story" - the drift IS the missing memory
 
-## THE FIXES YAHYA ASKED FOR, IN HIS WORDS
+## THE FIXES the maintainer ASKED FOR, IN HIS WORDS
 1. "carries everything ... make a token we can decode easily instead of words, because numbers can be stored
    easily": represent content as NUMBERS (quantities) rather than word tokens, so it is compact and decodes
    exactly. This is the numeric path applied to representation, not only to arithmetic. Stored as int8/int16,
@@ -45,7 +45,7 @@ hidden state. It can be carried across turns instead of recomputed. So the layer
 4. "remember what it output so he can be consistent": memory of its own output through the hot/warm/cold tiers,
    which is also what makes unlimited context useful rather than just large.
 
-## ORDER OF WORK (Yahya's instruction: our method first, settings second)
+## ORDER OF WORK (the maintainer's instruction: our method first, settings second)
 Because settings found for standard training will not transfer to our own method, the order is:
   A. Put OUR training method into the real trainer (lens/unified.py into lens/scripts/train_chat.py), with OUR
      step rule (lens/opt.py) wired in - the trainer still does plain SGD by hand today.
@@ -192,5 +192,5 @@ VERDICT: the answer-layer bottleneck was REAL and is now measurably relieved (th
 detail; it could not before). It is NOT the only problem. The new binding constraint is visible in the numbers:
 the new capacity went into MEMORISING the training text rather than generalising - train accuracy 44.14% against
 masked val 27.37%, peak at epoch 4, perplexity tripling afterwards. That is exactly the memorisation problem
-Yahya keeps naming, now measured with a number attached, and it is the next thing to attack (early stop at the
+the maintainer keeps naming, now measured with a number attached, and it is the next thing to attack (early stop at the
 peak plus the learn-not-memorise work), together with the model being small for the data (0.36 tokens/parameter).

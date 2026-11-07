@@ -91,7 +91,7 @@ and one of those must be used to test the cache.
 
 ## GAP 3 - THE THINKING BLOCK (asked for 2026-10-20)
 
-Yahya: "we will need to use tags so he can [do] thinking and we can hide the thinking or make a separate block
+the maintainer: "we will need to use tags so he can [do] thinking and we can hide the thinking or make a separate block
 for thinking and the output ... everybody does it from start, that was the whole problem of this".
 
 Every other model puts a private reasoning block before the answer (<|think|> ... <|/think|>) and designs it in
@@ -119,7 +119,7 @@ WHAT IT NEEDS:
 
 ## GAP 4 - UNLIMITED CONTEXT: REMEMBER CONCEPTS, NOT TOKENS (asked for 2026-10-20)
 
-Yahya: "the KV cache and the context window, can we get unlimited context windows ... that would be a crazy
+the maintainer: "the KV cache and the context window, can we get unlimited context windows ... that would be a crazy
 feature ... everything so small in size, it fits in 7 MB ... even 1 gigabyte would be around a billion tokens".
 
 THE ARITHMETIC THAT DECIDES IT (1 GB of memory) - CORRECTED 2026-10-20 to the MEASURED figures for the
@@ -157,7 +157,7 @@ named concept or the original token.
 
 ## GAP 5 - THE SETTINGS REGISTRY, OURS, NOT ONE LEARNING RATE (asked for 2026-10-20)
 
-Yahya: "why are you just thinking about learning rate, there I like 50 billion different settings we have to go
+the maintainer: "why are you just thinking about learning rate, there I like 50 billion different settings we have to go
 through and make our own so it only learns and still does not hide anything, what about those, even the
 gradient".
 

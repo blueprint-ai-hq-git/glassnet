@@ -137,7 +137,7 @@
 #     IDENTICAL to the twin's and mean <unk> 12.5% against the twin's 2.1% — SO NOTHING SHIPS. The same turn RAN
 #     THE DRIFT DISCRIMINATOR and its verdict is CAUSE (ii): THE MACHINE IS NOT RUN-TO-RUN REPRODUCIBLE (one
 #     command, twice, differs by 0.0739 points of held-out accuracy; the RNG sidecars are byte-identical, so the
-#     difference is ARITHMETIC). That re-attributes P102c's FAIL to a tolerance this machine cannot meet, gives
+#     difference is ARITHMETIC). That re-attributes P102c's FAIL to a tolerance tthe development machine cannot meet, gives
 #     every small delta in this project its floor, and is recorded in lens/runs/GRADE-P102-ARM2.txt section 5 +
 #     lens/runs/DRIFT-NUMBERS.txt + lens/runs/DRIFT-RNG-CONTROL.txt. The owner's decision file got the new
 #     numbers as an addendum (section 6). H2L, the last queued ship-path arm, is TRAINING.
@@ -547,7 +547,7 @@ gate arm holds it. Every number below names its file.
 6. TWO DEFECTS IN MY OWN PRE-FLIGHT, FOUND BY RUNNING IT AND FIXED BEFORE ANYTHING WAS QUEUED (recorded in
    BUGS.md as [BUG-CONTROL-COMPARES-WRONG-TYPE] and [BUG-FLAG-SCAN-MATCHES-RULES]):
    (a) the control-token check asked whether the INTEGER 12000 was a member of a set of 12,002 WORDS, so a
-   correct corpus printed FAIL — a right fact with a wrong verdict, this machine's most repeated bug class; the
+   correct corpus printed FAIL — a right fact with a wrong verdict, tthe development machine's most repeated bug class; the
    fixed check reads vocab[12000] == "<|im_start|>" and now passes on the same corpus that was never wrong;
    (b) the unknown-flag scan matched the '-----' rules in the runner's comment header as if they were flags, so
    the first run reported five nonexistent flags. Both were fixed, the pre-flight was re-run clean at 17/17, and
@@ -671,7 +671,7 @@ beside a live trainer.
    rows lens/runs/chat/h2l_noconcept_169_6ep_history.jsonl; the mechanical half of its grade already appended to
    lens/runs/H2L-NUMBERS.txt by lens/scripts/h2l_numbers.py). Its ep1 reproduction row reads **+0.0378 points
    against H2's 33.0000%**, INSIDE the measured 0.0739-point floor, and P104b's own first clause asks for 0.01
-   points — below what this machine can do, so the floor is the binding number and 0.01 is recorded as a defect
+   points — below what tthe development machine can do, so the floor is the binding number and 0.01 is recorded as a defect
    in that prediction file, not as a failed control.
 4. NEXT SELF-WAKE SHOULD: (a) grade H2L the moment its job ends (P104c/d/e/f/g from lens/runs/H2L-D256-6EP.txt +
    lens/runs/chat/h2l_noconcept_169_6ep_history.jsonl + the chained deciders lens/runs/PADFREE-TALK-H2L.txt and
@@ -798,7 +798,7 @@ re-attributes the previous turn's P102c FAIL to an unachievable tolerance and gi
    6.2x -> real and small; d=512 ext6's +0.19 = 2.6x -> marginal; P102c's 0.0687 = 0.93x -> **NOT A RESULT**.
    **NEW RULE FOR PREDICTION FILES: a reproduction control at this scale needs a tolerance of at least 2x the
    measured floor (>= 0.2 points by position) AND must name the column the floor is taken from.** P102c's FAIL is
-   re-attributed to a tolerance this machine cannot meet, not to the trainer.
+   re-attributed to a tolerance tthe development machine cannot meet, not to the trainer.
    STATIC CHECKS RUN BESIDE IT (no GPU), all recorded in GRADE-P102-ARM2.txt section 5's context: the only
    unconditional change in the training loop between the twin's era and now is one line in the INACTIVE
    agreement-gate branch (Xtr[idx] -> Xstep, gates OFF in every arm here) plus the mid-epoch checkpoint block,
@@ -2280,12 +2280,12 @@ VERDICT: the answer-layer bottleneck was REAL and is now measurably relieved (th
 detail; it could not before). It is NOT the only problem. The new binding constraint is visible in the numbers:
 the new capacity went into MEMORISING the training text rather than generalising - train accuracy 44.14% against
 masked val 27.37%, peak at epoch 4, perplexity tripling afterwards. That is exactly the memorisation problem
-Yahya keeps naming, now measured with a number attached, and it is the next thing to attack (early stop at the
+the maintainer keeps naming, now measured with a number attached, and it is the next thing to attack (early stop at the
 peak plus the learn-not-memorise work), together with the model being small for the data (0.36 tokens/parameter).
 
 ## FULL CONTROL HANDED OVER - 2026-10-21 LATE EVENING (autonomous work begins)
 
-Yahya gave full control: work the whole plan autonomously, stay SILENT (the self-wake now delivers to local
+the maintainer gave full control: work the whole plan autonomously, stay SILENT (the self-wake now delivers to local
 only, so it no longer messages him), and report when the work is COMPLETE and upload-ready. His warning: if it
 does not actually work when people try it, that is on me. So the standard is a model that TALKS, not a loss curve.
 
@@ -2376,7 +2376,7 @@ MEASURED, one line per number, each naming its file:
    (new file; log lens/runs/TIED-D512-FULL.txt; tag ct_d512_full169_fix3; predictions P69a-e written BEFORE it
    was queued, in lens/runs/TIED-D512-FULL-PREDICTIONS-P69.txt). It replaces nothing: the old run_tied_d512.sh
    arm stays on disk with its legacy numbers. The watchdog will not start it while a trainer runs, which is
-   correct - two trainers at once caused an OOM on this machine before.
+   correct - two trainers at once caused an OOM on tthe development machine before.
 
 4. THE RUN IN FLIGHT: ct_d256_full169_fix3 (mask-fix, full corpus, d=256, 3 epochs), started 18:27 by the
    watchdog in scope glassnet-q-3902145281-182758, PID 1184011, RSS 3.7 GB, GPU busy. No epoch line yet at
@@ -2465,7 +2465,7 @@ Ep3 is due about 19:30; the arm then writes its best checkpoint and exits. The p
 above) should be re-run on the FINAL best checkpoint by the next self-wake, since that is the artifact that would
 be shipped.
 
-## 2026-10-22 EVENING - SAVED FOR THE NIGHT (stopped on Yahya's call)
+## 2026-10-22 EVENING - SAVED FOR THE NIGHT (stopped on the maintainer's call)
 
 ## THE DAY'S RESULTS, ALL WITH SOURCE FILES
 1. MORE DATA WORKS, MEASURED. 6,000,000 windows, d=256, tied direct path, 6 epochs
@@ -2518,7 +2518,7 @@ capacity comparison against the 16.9M-window d=256 run and belong in the next se
    recipe on the old loop (TIED-FULLCORPUS-169M-MASKFIX.txt 965/1091/1093 s) -- our method costs 40-50x per
    step, and the cost is host-side (agreement pass = 8 sub-batch passes + 8 whole-model gradient flattenings;
    two extra forward passes per step; a full parameter snapshot + restore per step, with 77.6% of gap-gate
-   checks refused). The trainer saved ONLY at epoch boundaries, and this machine is stopped most nights.
+   checks refused). The trainer saved ONLY at epoch boundaries, and tthe development machine is stopped most nights.
    -> that launch could never have written an artifact. Stopped at 17:11 after 85.7 min, 7,405 steps (3.74% of
    the run), NO checkpoint, NO epoch line: recorded as lost, nothing deleted.
 2. THE TRAINER NOW CHECKPOINTS MID-EPOCH AND RESUMES EXACTLY. lens/runs/GRADE-P81.txt, P81a-f all measured:
@@ -2602,7 +2602,7 @@ OUR METHOD NOW ACTUALLY TRAINS THE MODEL, AND ITS FIRST HONEST VERDICT IS THAT I
     OUR METHOD, our step rule + our gates ....... 12.68%   (lens/runs/OURS-METHOD-RUN2.txt, ep1 best)
   WHY, measured: our memorisation gate REFUSED 6,939 of 8,225 step updates (84%) and the agreement gate refused
   3,511 of 11,725 (30%). Refusing that many updates means the weights barely move.
-  THIS IS THE SETTINGS QUESTION YAHYA ASKED FOR, and it is not answered yet: our method is misconfigured, not
+  THIS IS THE SETTINGS QUESTION the maintainer ASKED FOR, and it is not answered yet: our method is misconfigured, not
   shown good. Its refusal policy is the lever. No consistent setting exists for OUR method or any other.
 
 ## WHAT WAS BUILT TODAY
@@ -2611,7 +2611,7 @@ OUR METHOD NOW ACTUALLY TRAINS THE MODEL, AND ITS FIRST HONEST VERDICT IS THAT I
    trainer defaulted to --opt sgd --gates off, so every earlier reported run trained with our method switched
    off. That was the off-sequence mistake: those settings were settings for the old loop.
 2. The watchdog now launches every queued job pinned to 2 cores (taskset -c 0,1), nice 19, ionice -c3, and with
-   KillMode=process + an infinite stop timeout, because the trainer had been using all 12 cores and Yahya's game
+   KillMode=process + an infinite stop timeout, because the trainer had been using all 12 cores and the maintainer's game
    lagged badly, and because jobs kept being SIGTERM'd with the scope that launched them.
 
 ## THE UNFINISHED BUSINESS, IN ORDER

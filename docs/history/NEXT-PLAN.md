@@ -1,4 +1,4 @@
-# TOMORROW'S PLAN (recorded 2026-10-15 night, at Yahya's instruction)
+# TOMORROW'S PLAN (recorded 2026-10-15 night, at the maintainer's instruction)
 
 ## His instruction, restated
 1. Scan the whole record (the literature the research tracks gathered + every dataset/finding we have)
@@ -29,9 +29,9 @@ compared values printed side by side. Otherwise it is a goal, and it gets labell
 5. Then the up/down alternation: bigger model (d768 attention) -> evaluate -> smaller model (d256/d128)
    -> evaluate, on the SAME vocabulary family and the SAME clean val, so the numbers are comparable.
 6. Only after 1-5: build the single self-contained release package (architecture, trainer, audit
-   harness, all numbers, all licenses, the failure ledger) and pick the license with Yahya.
+   harness, all numbers, all licenses, the failure ledger) and pick the license with the maintainer.
 
 ## State as of shutdown
 GPU idle (0%, 229 MiB, 15.4 W). No trainers, no matrix, no supervisor, no watch loop. Research tracks
 1 and 3 completed and saved under research/. Track 0 completed (result pending delivery). Track 2 was
-stopped on Yahya's instruction; its partial log is saved.
+stopped on the maintainer's instruction; its partial log is saved.

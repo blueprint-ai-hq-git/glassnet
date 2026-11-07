@@ -1,6 +1,6 @@
 # GlassNet problem board
 
-Rule (Yahya): one problem at a time until 100% measured. No jumping ahead.
+Rule (the maintainer): one problem at a time until 100% measured. No jumping ahead.
 Legend: [x] closed · [~] running · [ ] open.
 
 ## AUTONOMOUS LOOP (mission 2026-10-01) — RUNG 1 PASSED ✅ (STOPPED.md)
@@ -18,14 +18,14 @@ VALIDATION split; TEST quarantined (runs/loop/TEST-USE.md: 2 touches, logged).
 - [x] L6. Auto-pilot untouched during loop (its rebuild respects new flags).
 - [x] R1. RUNG 1 GATE PASSED: test 86.26% ± 0.12% vs same-size normal
        86.26% ± 0.33% (Δ +0.00, readable ≥ normal; 102.4k vs 102.6k params).
-       STOPPED.md written; waiting for Yahya before Rung 2.
+       STOPPED.md written; waiting for the maintainer before Rung 2.
 - [x] R2. PATHMNIST (MedMNIST v2, CC BY 4.0 — CIFAR-10 BLOCKED, no license):
        iterations 011–014 (concept set rebuilt for textures, audit metric
        fixed for imbalanced targets, lie control re-engineered to pinned
        probe, rescue reflex tested+FAILED+reverted). RUNG 2 GATE: TEST
        readable **46.20% ± 1.18%** vs same-size normal **37.99% ± 4.25%**
        (Δ +8.21 pts, audit PASS on the submitted model). STOPPED.md rewritten;
-       waiting for Yahya before Rung 3 (tiny text task — license first).
+       waiting for the maintainer before Rung 3 (tiny text task — license first).
 
 ## Phase 1 — engine + baseline
 - [x] G1. Every hand-written gradient passes the numerical gate — worst rel err 1.8e-07, worst abs 4.8e-10, 7/7 checks. (The gate caught a real bug on first run: nets were being checked in float32, where finite differences are blind; fixed by running the gate in float64. Training stays float32.)

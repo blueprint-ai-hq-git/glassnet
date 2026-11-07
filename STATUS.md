@@ -97,7 +97,7 @@ sha256 ac55e35b..., 6 rows in `lens/runs/WALL-AB-RESULTS.tsv`):
   within 0.55 pp on both seeds (VAL -0.53 / +0.15, ASST -0.54 / +0.22), and the trainer commands and the
   five config-header lines match field for field. So this FAIL is a metric mismatch, **not** evidence that
   the rung drifted. The gate keeps its coded verdict - re-deriving it after seeing the result is exactly
-  what a gate must not do - so until Yahya rules, no delta against the stored rung is quoted. Both readings
+  what a gate must not do - so until the maintainer rules, no delta against the stored rung is quoted. Both readings
   with all numbers: `docs/history/WALL-AB-P1-METRIC.md`.
 * **P2 OPPOSITE SIGN** - off minus on = +1.39 (s0), +3.11 (s1). Removing the bypass did not cost the
   predicted 1-6 points; on both seeds it was ahead.
@@ -113,7 +113,7 @@ sha256 ac55e35b..., 6 rows in `lens/runs/WALL-AB-RESULTS.tsv`):
 What that means: the A/B does **not** establish that the concept wall is lossy, and it does not license
 the wider-residual build. It is a coherent lead - same direction on both seeds, 2.1M fewer parameters,
 far less overfit - and its control reproduces on a matched comparison, but the pre-registered gate as
-coded still says FAIL, so nothing is quoted against the stored rung until that is ruled on. If Yahya
+coded still says FAIL, so nothing is quoted against the stored rung until that is ruled on. If the maintainer
 adopts the metric-consistent reading, the deltas become quotable and the plan's next lever is data scale;
 if he keeps the gate as coded, the control has to be re-run before the block can be read at all.
 

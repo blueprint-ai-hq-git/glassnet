@@ -1,6 +1,6 @@
 # SETTINGS REGISTRY - every knob, ours to define (2026-10-20)
 
-Yahya: "why are you just thinking about learning rate, there I like 50 billion different settings we have to go
+the maintainer: "why are you just thinking about learning rate, there I like 50 billion different settings we have to go
 through and make our own so it only learns and still does not hide anything ... list me all of the settings
 there are already in the training, that we have to set, of RL, SFT, distillation, everything single, and then
 make everything for that our own setting that forces the model to learn."
@@ -138,11 +138,11 @@ GATES:  max-gap, eval interval, number of seeds before a win is claimed
    disclaimer.
 5. CAPACITY AS A LEARNING FORCE: our d=256 model is 3.9M parameters against a 294M-token corpus. It is
    physically too small to store the corpus, which is exactly why it must generalise. Keep it that way.
-6. THINKING BLOCK (standard tags, per Yahya: use the ready-made ones so any runtime understands them).
+6. THINKING BLOCK (standard tags, per the maintainer: use the ready-made ones so any runtime understands them).
    Our corpus already uses standard ChatML <|im_start|>/<|im_end|>. Adopt the standard reasoning block
    inside the assistant turn, and fill it with the NAMED CONCEPTS so the private thinking stays readable
    and checkable by our own gate.
-7. HARDWARE-DRIVEN CONTEXT (per Yahya: "it can be extended to unlimited as much as their hardware can
+7. HARDWARE-DRIVEN CONTEXT (per the maintainer: "it can be extended to unlimited as much as their hardware can
    support ... we do not follow math, math follows us"). No fixed cap; the cap is the machine:
      hot tier  (exact K/V/O, d=512): 6,144 bytes/token -> 1 GB ~ 175,000 tokens
      warm tier (concepts, int8):    1.28 bytes/token   -> 1 GB ~ 835,000,000 tokens
@@ -150,7 +150,7 @@ GATES:  max-gap, eval interval, number of seeds before a win is claimed
    So: model in the 6 GB GPU (ours is ~7 MB), context in system RAM, overflow to disk.
      64 GB RAM  -> ~50 billion tokens of concept memory
      1 TB RAM   -> ~780 billion tokens (~0.78 trillion), and more with disk tiers
-8. SPEED IS A SETTING TOO (per Yahya: "our model should be fast at everything even the token per second").
+8. SPEED IS A SETTING TOO (per the maintainer: "our model should be fast at everything even the token per second").
    Current measured: cached step 7.66 ms/token vs 0.51 ms for a full window recompute = 14x SLOWER. That
    is our Python per-token overhead, not the model: the model is 7 MB and fits in cache. The rewrite
    (preallocated buffers, batched step, no rebuild-per-token) must produce a real tokens/second number.

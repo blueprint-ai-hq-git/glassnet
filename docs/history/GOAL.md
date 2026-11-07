@@ -52,8 +52,8 @@ rather than computed, and that is deliberate — "understandable" is a human pro
 
 **The catch, stated plainly and up front:**
 
-* This machine is a **GTX 1660 SUPER with 6 GB** and no tensor cores. The owner's own LIMIT
-  RULE says: climb as far as this machine goes, then **stop and report where and why**.
+* Tthe development machine is a **a 6 GB consumer GPU with 6 GB** and no tensor cores. The owner's own LIMIT
+  RULE says: climb as far as tthe development machine goes, then **stop and report where and why**.
 * So **G2 can be *built* size-agnostic and *tested* up to roughly 20M parameters here.**
   A claim that it works on genuinely big models (billions of parameters) **cannot be measured
   on this hardware** and would be a **GUESS**, labelled as one — never presented as a result.
@@ -107,7 +107,7 @@ and his queued items turn out to be the same road.
 * From scratch: own tensors, own forward/backward, own losses, own optimiser. No pretrained
   weights, no library autograd.
 * Safe licenses only, recorded in `DATA_LICENSES.md`. **No license is chosen for GlassNet.**
-* Label anything beyond what this machine can measure as a **GUESS**.
+* Label anything beyond what tthe development machine can measure as a **GUESS**.
 * One change at a time, prediction written before the run.
 
 ## 7. What needs the owner

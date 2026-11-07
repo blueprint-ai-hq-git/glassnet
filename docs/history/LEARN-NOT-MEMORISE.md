@@ -1,6 +1,6 @@
 # A NETWORK THAT KNOWS IT MUST LEARN (design, 2026-10-20)
 
-Yahya: "every setting that you made is a normal setting, it does not force the model to learn ... set the
+the maintainer: "every setting that you made is a normal setting, it does not force the model to learn ... set the
 neural network so it already knows it has to learn not memorise, like it is alive while it is training so it
 knows what he has to do, and that thing is still readable to 100% while training and after training, and we
 have to get that number consistent."

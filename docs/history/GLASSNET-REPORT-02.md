@@ -1,11 +1,11 @@
 # GLASSNET — REPORT 02 (everything after the last file)
-**Written 2026-10-02 · Scripts are the canonical sources; this is the full readable copy for Yahya + his reviewer.**
+**Written 2026-10-02 · Scripts are the canonical sources; this is the full readable copy for the maintainer + his reviewer.**
 
 ---
 
 ## PART 0 — THE IDEA (read this first, it is the whole point)
 
-GlassNet is Yahya's attempt to build a neural network **where nothing is hidden**. A normal AI
+GlassNet is the maintainer's attempt to build a neural network **where nothing is hidden**. A normal AI
 model is a black box: millions of numbers, nobody can say *why* it answered. GlassNet's bet:
 make every middle unit a **named concept** a human can read (a neuron that literally means
 "fires on refund/fee/extra words"), then **prove the name is honest with audits and lie
@@ -36,7 +36,7 @@ After GLASSNET-FULL-REPORT.md was sent, the epoch-sweep ladder (48 → 1536 epoc
 sparsity lam_act=0.2/lam_w=1.0) climbed: 31.26 → 53.26 → 69.78 → 80.97 → 84.63 → 86.08 VAL.
 Milestone gate on the quarantined test (touch #5): iter-032 models −0.80 pts ("not yet").
 Touch #6 with iter-033 models: **readable 87.76 ± 0.24 vs normal 86.95 ± 0.28 → GATE PASS ✔**
-(STOPPED.md written; exit 42 = wait for Yahya). LOG.md rows 024–033 all on record.
+(STOPPED.md written; exit 42 = wait for the maintainer). LOG.md rows 024–033 all on record.
 Your three questions were answered in LOG.md: (1) Step 1 is labeled **"PASSED under a revised
 audit"** — the 0.25 contribution threshold was calibrated on iter-022 results, and that is
 recorded, not hidden; (2) the named concepts explain **R² ≈ 0.55** of the old image-gate's

@@ -222,14 +222,14 @@ activate_limit_exchange_card_us 0.70 is the weakest), lie CAUGHT.
 
 readable **87.76 ± 0.24** vs same-size normal **86.95 ± 0.28** ->
 delta **+0.81 pts**. within 2 pts: True | readable >= normal: True |
-**GATE: PASS ✔** — STOPPED.md written, exit 42, waiting for Yahya.
+**GATE: PASS ✔** — STOPPED.md written, exit 42, waiting for the maintainer.
 Rung-3 ledger (TEST): touch #5 iter-032 -0.80 (not yet), touch #6
 iter-033 +0.81 (PASS). The 24 discovered concepts (21/24 audited, lie
 probe caught) now beat the same-size normal MLP on the quarantined test
 split. Params: 30,149 both. Journey 024->033: 31.26 -> 86.08 VAL
 (epochs 48 -> 1536 was the whole story after the sparsity fix).
 
-## RUNG 3 RELABEL — PASSED on the SECOND test touch (Yahya 2026-10-02)
+## RUNG 3 RELABEL — PASSED on the SECOND test touch (the maintainer 2026-10-02)
 
 All references updated: STOPPED.md and TEST-USE.md now label rung 3 as
 "PASSED on the second test touch" — touch #5 (iter-032 models, 20:10)
@@ -238,7 +238,7 @@ then CHANGED (epochs 768 -> 1536) before touch #6 (iter-033 models,
 20:21) PASSED (+0.81: 87.76 ± 0.24 vs 86.95 ± 0.28). Gate rule unchanged
 (within 2 pts AND readable >= normal, 3 seeds, test quarantined).
 
-## RUNG 3 — TRAINING/TUNING BUDGET, readable vs normal (Yahya's report 1)
+## RUNG 3 — TRAINING/TUNING BUDGET, readable vs normal (the maintainer's report 1)
 
 - READABLE (iter 033 KEEP): 24 discovered concepts, 1175-d BOW input,
   30,149 params; TRAINED 1536 epochs, lr 0.1, batch 128, 3 seeds = exactly
@@ -268,7 +268,7 @@ spread) but the named words supply only 0.19-0.23 average logits of the
 firing — the causal claim is ~90% there but under the 0.25 bar. Their
 names are "mostly right, not fully causal." Log: audit_033.py output.
 
-## RUNG 3 FAIR COMPARISON pre-registration (Yahya 2026-10-02)
+## RUNG 3 FAIR COMPARISON pre-registration (the maintainer 2026-10-02)
 
 Rung 3 is PROVISIONAL until the normal network gets the same tuning
 budget: 27 validation-only iterations over epochs/lr/batch/hidden at
@@ -281,7 +281,7 @@ Sweeper: scripts/tune_normal_banking77.py.
 
 ## RUNG 3 — FAIR COMPARISON RESULT (2026-10-02): **NOT A WIN**
 
-Yahya ordered the normal get the same tuning budget (27 validation-only
+the maintainer ordered the normal get the same tuning budget (27 validation-only
 iterations, same axes). Result (VALIDATION only; TEST untouched):
 
 - readable (iter 033, 3 seeds):        **86.08 ± 0.60**
@@ -787,7 +787,7 @@ the measured ones.
 limitation is the task/data setup (contiguous split, 16.32% `<unk>` in val vs
 9.72% in train, 8001-way target), not the model size.
 
-Yahya authorised GPU use (Roblox moves to CPU, ~2 cores reserved). Engine was
+the maintainer authorised GPU use (Roblox moves to CPU, ~2 cores reserved). Engine was
 refactored so every op runs through a swappable array backend (`numpy` today,
 `cupy` when installed); **full gradient-check suite re-run on CPU after the
 refactor: 9/9 PASS, max abs err ~1e-10, GATE 1 PASS** — no maths changed.
@@ -802,7 +802,7 @@ difference confounds "model" with "array backend". Consequences:
   two backends do not agree, GPU results are not comparable to the CPU table.
 - Any comparison group that moves to GPU moves ALL of its runs.
 
-CuPy install is pending Yahya's explicit approval (his rule: ask before
+CuPy install is pending the maintainer's explicit approval (his rule: ask before
 installing anything big).
 
 Protocol: concat window, max 96 epochs, early stopping patience 15, best-val
@@ -824,7 +824,7 @@ initialisation. Excluding it: **18.20 ± 0.06 (n=4)**.
 Margin over the majority-word baseline (16.32%): **+1.50 pts** (all 5) /
 +1.88 (working 4). On non-`<unk>` targets the readable scores only ~6.4%.
 
-Stopped by Yahya for the night; state saved in GLASSNET-RESUME-02.md.
+Stopped by the maintainer for the night; state saved in GLASSNET-RESUME-02.md.
 Resume: `bash scripts/step2_sweep.sh` (skips banked runs).
 
 ## T2 MATCHED-NORMAL CONTROL (2026-10-02) — **"18.3% IS THE TASK CEILING, NOT A READABLE FAILURE"**
@@ -2780,7 +2780,7 @@ accuracy AND perplexity at every rung. Six predictions written first, including 
 **prediction 5 says G2-NOWORSE will FAIL at the large rungs**, because a 9-concept bottleneck
 should hurt more as the model grows.
 
-**Scope stated up front:** this machine can only test up to ~20M parameters, so "big models" here
+**Scope stated up front:** tthe development machine can only test up to ~20M parameters, so "big models" here
 means up to ~20M and nothing about frontier scale will be claimed.
 
 **Why this is safe to run without a new decision:** G2 is item two of the owner's own four-part
@@ -2965,7 +2965,7 @@ add 5,000,000 elems  ours 8.99 ms        numpy 5.10 ms        1.76x slower
 nest does not beat twenty years of hand-tuned assembly. Two routes to real speed, in order:
 1. **register blocking + AVX2 intrinsics** (6x16 micro-kernel, packing) — the standard route to
    3-5x on this CPU, and real work
-2. **the GPU layer** — the GTX 1660 SUPER is roughly **100x** the CPU's FLOPs, so Layer 2 is where
+2. **the GPU layer** — the a 6 GB consumer GPU is roughly **100x** the CPU's FLOPs, so Layer 2 is where
    "much faster" actually lives
 
 **Next: L1 (our own tensors + autograd, with the reference-cycle issue the old engine had).**
@@ -3023,7 +3023,7 @@ softmax+CE, all with printed numbers.
 kernels compiled at runtime by NVRTC -> module load -> launch -> correct answer.
 
 ```
-PASS  driver: device + context            NVIDIA GeForce GTX 1660 SUPER, 5746 MiB
+PASS  driver: device + context            NVIDIA GeForce a 6 GB consumer GPU, 5746 MiB
 PASS  nvrtc: compiler available           version 13.0 (from an existing venv's libnvrtc)
 PASS  nvrtc: our kernels.cu compiles      PTX 33049 bytes
 PASS  driver: module load + get_function  7/7 kernels found
@@ -3223,7 +3223,7 @@ provably reaching the layer, which the old code could not demonstrate.
 we are doing everything on the GPU or ok don't make everything from scratch but make the model
 architecture and the library from scratch at least."
 
-Read as: local GTX 1660 Super only, no cloud; the compute actually runs on the GPU; from-scratch
+Read as: local a 6 GB consumer GPU only, no cloud; the compute actually runs on the GPU; from-scratch
 is relaxed for the COMPUTE BACKEND ONLY, while **the model architecture and the library stay
 ours**. That is how it was implemented, and it is stated plainly rather than glossed:
 
@@ -4141,7 +4141,7 @@ efficiency, and the standard 6*params*tokens model:
           1 T   4,004,815 years                  physically out of reach
 ```
 
-**GPT-3 would take this machine 10,513 years of continuous training.** The hardware gap is roughly
+**GPT-3 would take tthe development machine 10,513 years of continuous training.** The hardware gap is roughly
 five orders of magnitude. That is a hardware fact, not an effort problem, and per the owner's own
 LIMIT RULE it is the stopping point to report rather than paper over.
 
@@ -5034,7 +5034,7 @@ model. The ladder makes the cheap failure happen first.
 
 `lens/scripts/virtual_camera.py` + `lens/scripts/frameio.py`.
 
-There are NO image libraries on this machine (no PIL, no cv2, no imageio) and none are on the
+There are NO image libraries on tthe development machine (no PIL, no cv2, no imageio) and none are on the
 project's allowed list. So:
   * `frameio.py` contains a **5x7 bitmap font written out by hand** (A-Z, 0-9, punctuation) and
     draws text, boxes and bars directly into a NumPy RGB array
@@ -5301,7 +5301,7 @@ loss dominating) precisely enough that one change fixed it and all three predict
 An image becomes 16 PATCHES, exactly like a 16-word text window, so the middle of the network does
 not know whether the 16 things came from a sentence or a picture. That is the from-scratch VL design.
 
-**`lens/scripts/frameio.py`** — video I/O with NO image libraries. This machine has no PIL, no cv2,
+**`lens/scripts/frameio.py`** — video I/O with NO image libraries. Tthe development machine has no PIL, no cv2,
 no imageio, and none are on the project's allowed list. So: a **5x7 bitmap font written by hand**,
 drawn straight into a NumPy RGB array, piped as raw rgb24 into ffmpeg (already installed).
 
@@ -7038,14 +7038,14 @@ The corrected ladder therefore still shows the monotone climb (tiny 44.8 -> smal
 82.52 -> big 83.49 readable) and the six other capabilities are unaffected.
 
 TIMING (real, from this run): gradcheck 0.3s · explain 1.2s · audit 0.6s · text_lm 486s ·
-image_cls 41s · vl_vqa 48s · code_lm 361s — full big rung ~16 min wall on the GTX 1660S.
+image_cls 41s · vl_vqa 48s · code_lm 361s — full big rung ~16 min wall on the a 6 GB consumer GPU.
 
 ---
 
 ## 2026-10-09 — FROM-SCRATCH FACE DETECTION (webcam, no dataset, no pretrained weights)
 
 Built `face_concepts.py`: face detection as NAMED, MEASURABLE features, every formula readable and
-every weight printed. No Haar cascade, no OpenCV (cv2 is absent on this machine and using its
+every weight printed. No Haar cascade, no OpenCV (cv2 is absent on tthe development machine and using its
 cascades would be pretrained weights anyway), no dataset required.
 
 Features (each with its exact formula in the file): skin_fraction, skin_cluster, skin_centred,
@@ -9093,7 +9093,7 @@ PRE-GATE @ v32000 clean: 43 concepts, 0 pairs >0.6 (was 0.99/0.90/0.87), 12 co-o
 (t3/t8 path picks up code_concepts.DEFS automatically). Gate after retrain: strict audit 100%.
 
 ### AUDIO LINE — PASS (2026-10-11, all gates green, 100% readable)
-Data: Yahya's 35 oggs own voice (13,529 windows, 0.4 s each; train 11,396 / val 2,133 stratified).
+Data: the maintainer's 35 oggs own voice (13,529 windows, 0.4 s each; train 11,396 / val 2,133 stratified).
 Front-end: ffmpeg decode (codec only) -> OWN numpy STFT (16 ms Hann, 8 ms hop, 0-4 kHz, 65 bins)
 -> spectral columns = patches -> the ONE concept layer (lens/audio.AudioNet, same ops/losses).
 Concepts (2, pre-gate-clean): is_silence (RMS floor), has_voiced (<2 kHz band energy > 0.75).
@@ -9104,7 +9104,7 @@ Gates: g1 val_acc 0.974 (chance 50%) PASS; g2 AUROC is_silence 0.985, has_voiced
 g3 STRICT 2/2 honest (margins 0.18/0.17) PASS. explain() exact, prints via priority order.
 
 ### VIDEO LINE — PASS (2026-10-11, all gates green, 100% readable)
-Data: Yahya's 14 clips (335 windows, 2 s each; fps=8, 32x32 luminance + |frame-difference|
+Data: the maintainer's 14 clips (335 windows, 2 s each; fps=8, 32x32 luminance + |frame-difference|
 channel v4 — the diff-channel was THE lever: has_motion AUROC 0.72->0.95, strict margin 0.68).
 Front-end: ffmpeg frames (codec only) -> luminance+difference planes -> the ONE concept layer
 (lens/audio.AudioNet structure, concept-only loss so each neuron trains independently).
@@ -9924,7 +9924,7 @@ Rowan/hellaswag and allenai/winogrande (no license declared), roneneldan/TinySto
 (cdla-sharing-1.0), uoft-cs/cifar10 (unknown), medmnist/bloodmnist (API 401, not verifiable).
 MNIST UNBLOCKED HONESTLY: the original page states no license (hence the earlier block), but the
 author's own HF mirror `ylecun/mnist` declares MIT -- recorded in DATA_LICENSES.md as such.
-BASE CORPUS IDENTITY CORRECTED: the talk corpus was NOT Yahya's own transcripts -- it is
+BASE CORPUS IDENTITY CORRECTED: the talk corpus was NOT the maintainer's own transcripts -- it is
 Anthropic HH-RLHF (`chosen` field, MIT), 86,360 conversations, 13.3M tokens. Now recorded.
 MERGED CORPUS: 156,521 conversations / 38.8M tokens (hh 13.3M + oasst1 7.5M + ultrachat 12.0M +
 orca-math 6.0M), same tokenizer (imported, not re-implemented), vocab from train only, and the
@@ -10080,14 +10080,14 @@ resume for epochs 2-3:
 CAVEAT, recorded: checkpoints written BEFORE this change (e.g. the attention run's ep174) have no
 RNG sidecar, so resuming one gives exact PARAMETERS but a different batch order for the remaining
 epochs. Every checkpoint written from now on carries the sidecar, so future resumes are exact.
-NIGHT PLAN: Yahya is shutting the PC down. The long overnight supervisor was STOPPED on purpose
+NIGHT PLAN: the maintainer is shutting the PC down. The long overnight supervisor was STOPPED on purpose
 (it would have started the 3-hour merged run at ~21:50 and the ~10-hour matrix after it, only to be
 killed at power-off). A short detached NIGHT FINISH job now waits for the attention run, measures it
 on the common yardstick, runs the strict honesty audit, writes the result to LOG.md and STOPS.
 Tomorrow: finish the attention run if incomplete (resume), then merged-192, then the six-option
 matrix -- all of it resumable now.
 
-### GPU STOPPED ON YAHYA'S INSTRUCTION (2026-10-14 ~21:40)
+### GPU STOPPED ON the maintainer'S INSTRUCTION (2026-10-14 ~21:40)
 He wanted the machine quiet to shut down; the attention run was still training, so it was killed at
 **ep180/192** (12 epochs short). Checkpoints: 180 files kept, nothing deleted.
 State: nvidia-smi now idle (7% util, 151 MiB, 15.7 W, down from ~1158 MiB and ~80%+).
@@ -10095,12 +10095,12 @@ Tomorrow resumes from `t12_attn_d512_ep180.npz` for the last 12 epochs. NOTE for
 checkpoint PREDATES the RNG-sidecar change, so parameters restore exactly but the batch order for
 the final 12 epochs will differ from an uninterrupted run -- stated, not hidden.
 Lesson recorded: when the user says he is shutting down, STOP THE GPU immediately. Leaving a job
-running "to land the result" is not my call to make on his machine.
+running "to land the result" is not my call to make on the development machine.
 
 ### MORNING RESTART (2026-10-15 15:31) — one bug found, fixed, and hardened
 The pipeline is running detached again and every step is now resume-aware.
 1. ATTENTION RUN RESUMED from `t12_attn_d512_ep180.npz` -> ep181 written at 15:34. It was killed at
-   ep180 on Yahya's shutdown order; 12 epochs remain (~12 min), then it is measured on the common
+   ep180 on the maintainer's shutdown order; 12 epochs remain (~12 min), then it is measured on the common
    yardstick and honesty-audited.
 2. BUG (mine, caught by the loader refusing rather than silently proceeding): I resumed the attention
    run pointing at `prepared_splitfix`, but that run belongs to the CURATED corpus lineage --
@@ -10158,7 +10158,7 @@ difference. Note: each resume overwrites `_log.json`, so the original ep1-29 his
 the logger should append history instead of overwriting (recorded as a fix to make).
 
 ### 2026-10-16 13:09 — "WORD SALAD" IS NOW A NUMBER, AND OUR BEST MODEL FAILS IT
-Yahya's order for today: fix the SMALL model first, then the BIG one, then release. Started by making
+the maintainer's order for today: fix the SMALL model first, then the BIG one, then release. Started by making
 the small model's biggest known problem measurable instead of debatable.
 
 METRIC v1 WAS FALSIFIED BY ITS OWN CONTROL (my error, caught the same morning).
@@ -10643,7 +10643,7 @@ VERDICT: the answer-layer bottleneck was REAL and is now measurably relieved (th
 detail; it could not before). It is NOT the only problem. The new binding constraint is visible in the numbers:
 the new capacity went into MEMORISING the training text rather than generalising - train accuracy 44.14% against
 masked val 27.37%, peak at epoch 4, perplexity tripling afterwards. That is exactly the memorisation problem
-Yahya keeps naming, now measured with a number attached, and it is the next thing to attack (early stop at the
+the maintainer keeps naming, now measured with a number attached, and it is the next thing to attack (early stop at the
 peak plus the learn-not-memorise work), together with the model being small for the data (0.36 tokens/parameter).
 
 ## SELF-WAKE 2026-10-22 18:4x-18:5x - THE FULL-CORPUS CHECKPOINT GOES THROUGH THE DECIDER
@@ -10683,7 +10683,7 @@ MEASURED, one line per number, each naming its file:
    (new file; log lens/runs/TIED-D512-FULL.txt; tag ct_d512_full169_fix3; predictions P69a-e written BEFORE it
    was queued, in lens/runs/TIED-D512-FULL-PREDICTIONS-P69.txt). It replaces nothing: the old run_tied_d512.sh
    arm stays on disk with its legacy numbers. The watchdog will not start it while a trainer runs, which is
-   correct - two trainers at once caused an OOM on this machine before.
+   correct - two trainers at once caused an OOM on tthe development machine before.
 
 4. THE RUN IN FLIGHT: ct_d256_full169_fix3 (mask-fix, full corpus, d=256, 3 epochs), started 18:27 by the
    watchdog in scope glassnet-q-3902145281-182758, PID 1184011, RSS 3.7 GB, GPU busy. No epoch line yet at
@@ -10762,7 +10762,7 @@ The run the watchdog started at 15:46 (ours_d256_full_3, our method on the full 
 stopped at 17:11, and the reason is a measurement rather than a change of mind: lens/runs/OURS-METHOD-COST.txt.
 Our method (relgrad + gap gate + agreement gate) runs at 1.44 steps/s on this corpus, i.e. 10.8-12.7 h per
 epoch and 33-41 h for the three epochs asked for, against 16-18 min per epoch for the same recipe on the old
-loop. The trainer saved only at epoch boundaries and this machine is stopped most nights, so that launch could
+loop. The trainer saved only at epoch boundaries and tthe development machine is stopped most nights, so that launch could
 never have written a single artifact; it had done 7,405 steps (3.74% of the run) with 77.6% of gap-gate checks
 refused. Its logs and per-step JSONLs are kept; its GPU time is recorded as lost.
 

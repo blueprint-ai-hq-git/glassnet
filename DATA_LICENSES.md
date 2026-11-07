@@ -1,8 +1,8 @@
 # DATA_LICENSES.md — every dataset used by GlassNet
 
-Project rule (Yahya, 2026-10-01): ONLY these licenses may enter the project —
+Project rule (the maintainer, 2026-10-01): ONLY these licenses may enter the project —
 **MIT, Apache-2.0, CC0, CC BY 4.0**. Anything with an unclear license is
-BLOCKED and listed here with the reason, until Yahya explicitly approves it.
+BLOCKED and listed here with the reason, until the maintainer explicitly approves it.
 
 ---
 
@@ -22,7 +22,7 @@ BLOCKED and listed here with the reason, until Yahya explicitly approves it.
   raw.githubusercontent.com/karpathy/char-rnn/master/Readme.md). The repo
   has no separate LICENSE file but its README is the explicit grant.
 - **Decision record:** PD content is not literally on the 4-license list;
-  Yahya approved use of tiny_shakespeare on 2026-10-02 via an explicit
+  the maintainer approved use of tiny_shakespeare on 2026-10-02 via an explicit
   choice ("tiny_shakespeare — PD content, verified, go now") after seeing
   this exact verification report. sha256 of the downloaded file:
   `86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed`
@@ -211,7 +211,7 @@ author's HF mirror declared license = MIT (recorded 2026-10-14); requirements "m
 set distribution".
 
 **Retrieval:** all downloads go through the `hf` CLI (snapshot download) into
-`data/external/<name>/`, inside the project folder on Hard Disk 4. No site scraping, no paid APIs,
+`data/external/<name>/`, inside the project folder on the project disk. No site scraping, no paid APIs,
 no data sent anywhere. Sizes and checksums are appended after the transfer completes.
 
 ### Download sizes and the base-corpus license (recorded 2026-10-14, after transfer)
@@ -258,7 +258,7 @@ allenai/ai2_arc (CC BY-SA 4.0), google/boolq (CC BY-SA 3.0), winogrande (none), 
 (none). SKIPPED as too large for this window (reason recorded): cerebras/SlimPajama-627B,
 allenai/OLMo-mix-1124, HuggingFaceTB/finemath.
 Disk note: `data/external` reached the 20 GB self-imposed guard, so the tail of the bulk download
-was STOPPED rather than quietly exceeded. Yahya then said the Wi-Fi is unlimited and to download
+was STOPPED rather than quietly exceeded. the maintainer then said the Wi-Fi is unlimited and to download
 everything, so the guard was raised to 30 GB (stated in lens/scripts/bulk_license_and_download.py)
 and the download resumed. Disk free at that point: 133 GB.
 

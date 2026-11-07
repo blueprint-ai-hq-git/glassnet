@@ -15,10 +15,10 @@ handle without breaking."*
 ```
 RAM      14.5 GB total, 10.6 GB available
 CPU      Ryzen 5 PRO 4650G, 12 threads
-GPU      GTX 1660 SUPER, 6144 MiB, 5545 MiB free, no tensor cores
+GPU      a 6 GB consumer GPU, 6144 MiB, 5545 MiB free, no tensor cores
 DISK     228.3 GB free; GlassNet uses 8.84 GB (limit 20 GB growth)
 
-params     train mem    fits 5GB VRAM?    100M tokens takes
+params     train mem    fits a modest VRAM budget?    100M tokens takes
   2,000,000      184 MB   yes               21 min
   5,000,000      460 MB   yes               53 min
  10,000,000      920 MB   yes              1.8 h
@@ -109,7 +109,7 @@ face dataset and approve it as an exception. **Nothing is downloaded until this 
 - VRAM under 5 GB; disk growth under 20 GB; a checkpoint every 2 hours at most
 - safe licences only (MIT / Apache-2.0 / CC0 / CC-BY-4.0), recorded in DATA_LICENSES.md
 - from scratch: no pretrained weights, no outside training code
-- no scraping, no paid APIs, nothing leaves this machine
+- no scraping, no paid APIs, nothing leaves tthe development machine
 - gates are BINARY and fixed BEFORE the run; never reworded after a result
 - 3 seeds for key results; a win smaller than seed noise is "no difference"
 - every number comes from a log; failed runs are kept

@@ -58,5 +58,5 @@ submit to BabyLM, replicate TinyStories/llm.c.
 
 ## Not finished (re-run tomorrow, ~4 min)
 Track 2 (interpretability evaluation + licensing/provenance standards) was interrupted mid-write on
-Yahya's stop order. Its raw log is research/task-2.log. It had already verified: TCAV, alpha-TCAV
+the maintainer's stop order. Its raw log is research/task-2.log. It had already verified: TCAV, alpha-TCAV
 (2026), ERASER, concept leakage, completeness. Re-run it in the morning to get the written deliverable.

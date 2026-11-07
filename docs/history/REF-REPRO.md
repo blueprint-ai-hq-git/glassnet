@@ -46,7 +46,7 @@ differences over 1 pp are real" at this rung has to be re-argued.
   three-run spread above - i.e. the seed-to-seed and run-to-run variation at this rung are the same order.
 * P1's band (10.0-12.5) is +/-1.25 around a single draw (11.02). If the distribution is ~1 pp wide, that
   band is a coin flip for any single arm, so P1 cannot function as a control at n=1 seed. That is a rules
-  question - what the gate should require - and it belongs to Yahya, not to this worker.
+  question - what the gate should require - and it belongs to the maintainer, not to this worker.
 
 ## What was not done
 

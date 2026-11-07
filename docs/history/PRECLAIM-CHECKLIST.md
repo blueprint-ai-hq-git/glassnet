@@ -1,6 +1,6 @@
 # PRE-CLAIM CHECKLIST (adopted 2026-10-16 from the evaluation-standards research)
 
-Run this BEFORE telling Yahya any number, and before any release. Each item says WHY and what we
+Run this BEFORE telling the maintainer any number, and before any release. Each item says WHY and what we
 currently do or do not have. Sources: research/eval-standards-and-provenance.md (verified citations).
 
 ## The one thing the literature says is genuinely open (our strongest asset)

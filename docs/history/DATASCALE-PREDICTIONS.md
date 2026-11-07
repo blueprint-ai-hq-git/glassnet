@@ -43,6 +43,6 @@ D3  NO SIGNIFICANCE CLAIM. One seed. The measured run-to-run spread at this rung
 
 * It does not touch the wall arms, their logs, or their verdicts, and its number is not pooled with them:
   200k windows is a different experiment, not a bigger sample of the same one.
-* It does not settle the P1 gate reading or the n-seed rule question, which are still Yahya's to decide.
+* It does not settle the P1 gate reading or the n-seed rule question, which are still the maintainer's to decide.
 * It makes no "smart", talk-quality or ship claim. Next-token accuracy at 200k windows is all it measures.
 * It costs ~65 min of a free GPU at ~400 MiB. Checkpoints are written every epoch by the trainer.

@@ -1,6 +1,6 @@
 # ONE TRAINING METHOD - status (2026-10-20)
 
-Yahya: "make one single training method for distillation and RL, there is no SFT ... one training method and
+the maintainer: "make one single training method for distillation and RL, there is no SFT ... one training method and
 that is it ... in easy mode just a few lines of change, in hard mode all the settings."
 
 ## WHAT IS BUILT

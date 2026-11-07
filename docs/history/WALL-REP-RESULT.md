@@ -54,5 +54,5 @@ argued away.
 The honest next step is not another pair of seeds - four already exist - but a decision on what the gate
 should be, given a measured per-seed effect of 1.4-3.4 pp against a measured per-arm spread of 1.2-1.5 pp:
 either a pre-registered n-seed rule with a stated statistic, or accepting that this rung can only support
-"the no-bypass arm was ahead on all four seeds" and nothing more precise. That is Yahya's call; this block
+"the no-bypass arm was ahead on all four seeds" and nothing more precise. That is the maintainer's call; this block
 does not decide it, and no commit from this run writes a delta as a result.

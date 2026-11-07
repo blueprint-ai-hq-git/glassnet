@@ -1,6 +1,6 @@
 # HIDDEN_DEFAULTS.md — every number living inside the auto-pilot (Phase 3)
 
-Per Yahya's rule: *"some numbers still exist inside the defaults. List them.
+Per the maintainer's rule: *"some numbers still exist inside the defaults. List them.
 Nothing secret."* This file lists EVERY numeric default the auto-pilot uses,
 what it does, and why that number. The code's single source of truth is
 `AUTO_PILOT_DEFAULTS` in `glassnet/autopilot.py`; `phase3_autopilot.py`

@@ -56,7 +56,7 @@ its ceiling was measured from four independent directions today.**
   (official statement; a contradictory wiki claim was not relied on). Needs licence-clean source.
 
 ## HOUSEKEEPING
-* Root disk 87% full (31 GB) — watch; Hard Disk 4 fine (213 GB).
+* Root disk 87% full (31 GB) — watch; the project disk fine (213 GB).
 * Game guard live on every run; GPU idle after ktest completion.
 * Failed/partial artifacts all KEPT and labelled: eyes v1, teacher v1 (no-control), gradcheck
   probe failures, caption v1 scoring rule, tiny2 no-artifact run, ktest_SMOKE.

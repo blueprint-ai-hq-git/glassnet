@@ -1,12 +1,12 @@
 # SCALING AND SMARTNESS - the honest path (written 2026-10-18)
 
-Correcting an overstatement I made: I said a 1B model "cannot be trained on this machine". That was
+Correcting an overstatement I made: I said a 1B model "cannot be trained on tthe development machine". That was
 wrong. It is an engineering problem with three real constraints, and here they are measured.
 
 ## The machine (measured today)
-- GPU: GTX 1660 SUPER, **6,144 MiB VRAM** (~5.0 usable), no tensor cores, fp32 ~5 TFLOPS
+- GPU: a 6 GB consumer GPU, **6,144 MiB VRAM** (~5.0 usable), no tensor cores, fp32 ~5 TFLOPS
 - RAM: 14 GB total, ~4 GB free right now
-- Disk: Hard Disk 4, 466 GB total, **101 GB free**
+- Disk: the project disk, 466 GB total, **101 GB free**
 - CPU: 12 threads
 
 ## Constraint 1 - memory (solvable, and we know how)
@@ -17,7 +17,7 @@ Plain training in VRAM needs, for N parameters in fp32:
   time to the GPU, update it, write it back. Resident footprint becomes one layer, not the model:
   a 4096x4096 layer = 67 MB fp32. Fits in 6 GB with room for activations.
 - Activation checkpointing on top of that keeps batch memory flat.
-This is the same family of techniques used before on this machine for far bigger models (disk-backed
+This is the same family of techniques used before on tthe development machine for far bigger models (disk-backed
 layer-by-layer training of 70B, MoE upcycling at 2x3072 inside 6 GB). GlassNet does not have such a
 trainer yet; writing it is a concrete, testable job.
 
@@ -40,7 +40,7 @@ Training compute is roughly 6 x parameters x tokens. For 1B x 20 B tokens that i
 So: possible, not impossible - but a months-long campaign, not a weekend.
 
 ## What that means for "beat every model in the world"
-Honest statement, not a surrender: with 2-9 months of a 1660 SUPER and 20 B tokens, a 1B model we train
+Honest statement, not a surrender: with 2-9 months of a 6 GB consumer GPU and 20 B tokens, a 1B model we train
 would NOT beat frontier models, because they used thousands of GPUs and trillions of tokens. Saying
 otherwise would be inventing a result, which this project forbids.
 What IS achievable, and what nobody else has:

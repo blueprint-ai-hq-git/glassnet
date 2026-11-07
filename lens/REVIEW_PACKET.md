@@ -1,6 +1,6 @@
 # LENS / GLASSNET — STATE OF THE SYSTEM, 2026-10-13
 
-One self-contained file. Everything below is a MEASURED number from a run on this machine, with
+One self-contained file. Everything below is a MEASURED number from a run on tthe development machine, with
 the command that produced it and the artifact it lives in. Nothing here is estimated. Where a
 gate failed, the failure is printed with its number. Where a number was WRONG in an earlier
 report, both the old and the new number are shown.

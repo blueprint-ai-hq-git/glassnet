@@ -72,4 +72,4 @@ The decision this leaves is a rule decision, not a measurement one: either
   (a) keep P1 as coded (VAL acc vs a band built from ASST) and keep "no delta is quotable", or
   (b) re-derive the band from the column it names, which makes the control pass and makes the A/B's
       off-vs-on deltas quotable (+1.39 / +3.11 pp on VAL acc, +1.58 / +2.91 pp on ASST),
-and it is Yahya's to make, not this worker's.
+and it is the maintainer's to make, not this worker's.

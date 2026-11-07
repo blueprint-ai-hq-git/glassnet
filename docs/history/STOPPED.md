@@ -4,7 +4,7 @@
 
 MILESTONE (rung-3, iter33, banking77): TEST touch — readable 87.76% ± 0.24% (30149 params) vs same-size normal 86.95% ± 0.28% (30149 params) -> delta +0.81 pts
 
-LABEL (Yahya's relabel, 2026-10-02): **Rung 3 = PASSED on the SECOND test
+LABEL (the maintainer's relabel, 2026-10-02): **Rung 3 = PASSED on the SECOND test
 touch.** Touch #5 (iter-032 models, 20:10) FAILED the gate: readable 86.15 ±
 0.20 vs normal 86.95 ± 0.28, delta -0.80 (within 2 pts: True | readable >=
 normal: False | GATE: not yet). The models then changed (epochs 768 ->
@@ -14,7 +14,7 @@ quarantined test, every touch logged).
 
 ## ⚠ SUPERSEDING VERDICT (2026-10-02): RUNG 3 IS **NOT A WIN**
 
-Yahya ordered the fair comparison: give the NORMAL the same tuning budget
+the maintainer ordered the fair comparison: give the NORMAL the same tuning budget
 the readable got (27 validation-only iterations over epochs, lr, batch,
 hidden at ~30k params). Result, VALIDATION only, test untouched:
 
@@ -28,7 +28,7 @@ second test touch" line stands only as a procedural record of the gate
 run; the substantive rung-3 verdict is NOT A WIN. Test set NOT re-touched.
 Logs: runs/rung3_normal_tune/results.json, confirm_best.json.
 
-Per the mission's stop conditions: a rung's gate passes -> stop and wait for Yahya before the next rung.
+Per the mission's stop conditions: a rung's gate passes -> stop and wait for the maintainer before the next rung.
 
 ---
 

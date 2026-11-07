@@ -25,7 +25,7 @@ python tests/test_gradcheck.py     # must be all PASS before anything else
 | **Readability tests** | run `explain()`, tell us when the stated reason is wrong - that is a bug we care about |
 | **Negative results** | tried an idea that did not work? That is publishable here |
 | **Docs fixes** | anything confusing is a bug in the docs, not in you |
-| **Small-model efficiency** | runs must fit in 5 GB VRAM and not freeze the user's desktop |
+| **Small-model efficiency** | a run must fit in modest consumer GPU memory and leave the machine responsive for normal work |
 
 ## Ground rules
 

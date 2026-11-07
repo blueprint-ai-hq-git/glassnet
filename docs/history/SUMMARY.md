@@ -48,5 +48,5 @@ no — those 5 lying concepts · too-strong supervision (fidelity up,
 accuracy down) · a few code bugs (missing imports, wrong axis) — all
 written in LOG.md with their numbers. Nothing deleted.
 
-**Where we stopped:** Rung 1 gate passed → STOPPED.md → waiting for Yahya
+**Where we stopped:** Rung 1 gate passed → STOPPED.md → waiting for the maintainer
 before Rung 2 (a harder image set — license must be checked first).

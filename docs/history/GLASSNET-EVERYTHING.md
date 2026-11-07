@@ -171,7 +171,7 @@ Rules: 3 seeds, same-size normal comparison, hypothesis before the run.
   leftover python (0% CPU, harmless). Cause: Roblox + desktop on a 6 GB card
   exhausted the ~300 MB headroom → gnome-shell died with the GPU.
 - Fix: reboot (nothing of ours was running against the GPU — all GlassNet
-  work is CPU-only). Verified after reboot: GTX 1660 SUPER, driver 595.91.07,
+  work is CPU-only). Verified after reboot: a 6 GB consumer GPU, driver 595.91.07,
   497 MiB, 42°C, idle — healthy.
 - **Prevention for next time**: GPU watchdog script runs every 3 minutes
   (VRAM + error-state → `runs/gpu_watch_gaming.log`, alarm file on danger);

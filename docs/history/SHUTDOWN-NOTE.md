@@ -26,7 +26,7 @@ no watch loop. Safe to shut down. (Hermes cannot issue a shutdown itself - use R
 5. Build ONE self-contained publish package for external review (architecture + trainer + audit
    harness + all numbers + licenses), then decide the release.
 
-## Open decision for Yahya (license)
+## Open decision for the maintainer (license)
 Recommended, adoption-first: code Apache-2.0 (explicit patent grant + attribution NOTICE), docs and
 data CC BY 4.0, weights Apache-2.0 with a model card that leads with the limits, plus a DATED public
 release (Zenodo DOI / arXiv preprint) so the method is prior art and nobody can patent it against us.

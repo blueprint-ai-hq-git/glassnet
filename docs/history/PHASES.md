@@ -1,9 +1,9 @@
-# GlassNet — the roadmap, verbatim from Yahya (2026-10-01) + status
+# GlassNet — the roadmap, verbatim from the maintainer (2026-10-01) + status
 
 Global rules he set:
 - Change only ONE new thing per phase; keep the rest known.
 - Every phase has a TEST GATE. Do not start the next phase until the gate
-  passes AND Yahya approves.
+  passes AND the maintainer approves.
 - After EVERY phase: (1) show test results, (2) explain what you built in
   simple words, (3) list what failed or surprised you, (4) list risks,
   (5) wait for approval.

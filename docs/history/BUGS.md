@@ -197,7 +197,7 @@ Every entry: what broke, in which scenario, with the measured numbers. A line is
 ### [BUG-PGREP-WITHOUT-F] — MY OWN, and it produced a false alarm about the brand-new arm within two minutes of
 ### it starting. SCENARIO: checking whether the self-context arm was still alive, `pgrep -c "[t]rain_chat"`
 ### returned 0 while the scope read active. That reads as "the trainer died", and I nearly re-queued the arm —
-### which would have been a SECOND trainer on a 6 GB GPU, the shape that OOM-killed scopes on this machine before.
+### which would have been a SECOND trainer on a 6 GB GPU, the shape that OOM-killed scopes on tthe development machine before.
 ### CAUSE: WITHOUT -f, pgrep matches the process NAME (comm), which for every trainer here is `python3`; the
 ### bracket trick only guards against pgrep matching itself, not against matching the wrong field. WITH -f the same
 ### pattern matches the command line and the arm was there all along (pid 709850, RSS 8.2 GB). FIX / RULE: every
@@ -300,7 +300,7 @@ so `${tag}` was the empty string: all three arms wrote ONE file, `lens/runs/_tmp
 lens/runs/UNK-DROP-PREFLIGHT.txt). The grading step then died with
   `FileNotFoundError: 'lens/runs/_tmp/unkpf_prechange.out'`
 which reads like "the run produced nothing" and was actually "the harness wrote one file with no tag".
-PROOF, side by side in one script (home/yahya/.hermes/cache/scratch/tagtest.sh):
+PROOF, side by side in one script (home/maintainer/.hermes/cache/scratch/tagtest.sh):
   A `local tag="$1" ... f="$TMP/unkpf_${tag}.out"`  ->  f=[.../unkpf_.out]                      WRONG
   B `local tag="$1"` then `local f="$TMP/unkpf_${tag}.out"` -> f=[.../unkpf_prechange.out]      right
 FIX: split into two `local` lines (lens/scripts/unk_drop_preflight.sh), re-run as ATTEMPT 3 (logged).
@@ -1365,7 +1365,7 @@ keep their printed lines as the record of what happened, and this entry is the c
 ### val-pass artefact: the TRAIN loss differs too (4.107312078971887 against 4.107398886527908, a 8.7e-05 gap),
 ### so the runs diverge during training.
 ### WHY IT MATTERS MORE THAN A FAILED CONTROL USUALLY WOULD: the tolerance was never measured, it was assumed,
-### and it is now known to be ~7x tighter than this machine achieves for a same-recipe rerun — so every small
+### and it is now known to be ~7x tighter than tthe development machine achieves for a same-recipe rerun — so every small
 ### delta this project has quoted (<0.1 point) has been read without its own noise floor beside it, and any
 ### reproduction control that "passes to the digit" was passing on a run whose drift happened to be small.
 ### THE NUMBER TO CARRY FORWARD: same-recipe rerun drift is of order **0.07 points of held-out accuracy and
@@ -1414,7 +1414,7 @@ keep their printed lines as the record of what happened, and this entry is the c
 ###   RUN A EXIT=127
 ###   (the same for RUN B and for the grader, whole block 5 s, no history row, no checkpoint, no number)
 ### CAUSE: `PY="${DRIFT_PYTHON:-$PWD/.venv-gpu/bin/python3}"` was used as bare `$PY`, and this project's own path
-### contains a SPACE ("HARD DISK 4"), so the shell word-split the interpreter path into `<disk>/HARD` +
+### contains a SPACE ("the project disk"), so the shell word-split the interpreter path into `<disk>/HARD` +
 ### `DISK 4/...`. Nothing else about the runner was wrong. THE SCENARIO IS THIS PROJECT'S OWN PATH — every runner
 ### here cds into it — and it would have fired identically under the watchdog, i.e. a queue line that produces two
 ### EXIT=127 lines and no numbers while holding the GPU. There is also a second, quieter fact in this: the
@@ -1561,7 +1561,7 @@ keep their printed lines as the record of what happened, and this entry is the c
 ### same line printed `vocab[-2:]=['<|im_start|>', '<|im_end|>']`, i.e. the evidence for the opposite verdict sat
 ### on the failing line. FIXED IN PLACE before anything was queued: the check now reads
 ### `len(vocab) > 12001 and vocab[12000] == "<|im_start|>" and vocab[12001] == "<|im_end|>"` and the re-run
-### prints PASS with the same corpus. GENERALISATION (this machine's most repeated bug class — a right fact with
+### prints PASS with the same corpus. GENERALISATION (tthe development machine's most repeated bug class — a right fact with
 ### a wrong verdict): when a check compares a value to a container, print the CONTAINER'S TYPE and the element
 ### actually read, not just the verdict; an index check and a membership check are not interchangeable here.
 ### Second instance of the same class in the same file, recorded together: [BUG-FLAG-SCAN-MATCHES-RULES] — the
