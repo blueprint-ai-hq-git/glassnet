@@ -165,6 +165,7 @@ from both logs), so the extra data cannot have come from resizing the scored set
 | `wall_off` | 2 | 20,000 | 13.40% | 13.83% | 384.39 | `lens/runs/WALL-REP.txt:329`, reproduced exactly by `DATASCALE-20K-S2.txt` |
 | `datascale_honest_s1` | 1 | 200,000 | **19.71%** | **20.82%** | **184.32** | `lens/runs/DATASCALE-HONEST-s1.txt:262` |
 | `datascale_honest_s2` | 2 | 200,000 | **20.50%** | **21.47%** | **180.30** | `lens/runs/DATASCALE-HONEST-s2.txt:256` |
+| `datascale_500k_s0` | 0 | **500,000** | **20.81%** | **21.82%** | **171.47** | `lens/runs/DATASCALE-500K.txt:392` |
 
 **Three seeds, three matched pairs: mean gain +6.42 pp.** Val acc 17.43% / 19.71% / 20.50% against 20k
 baselines of 12.18% / 12.79% / 13.40%, so the paired gains are **+5.25, +6.92 and +7.10 pp** (mean **+6.42**),
@@ -175,6 +176,16 @@ concepts C1); seed 2's band check **failed by 0.32 pp on the high side**, the di
 pre-named as "the band was too conservative", while its mean and concept checks passed. Graders:
 `lens/scripts/datascale_grade.py`, `lens/scripts/datascale_seed2_grade.py`; write-ups
 `docs/history/DATASCALE-SEED1-RESULT.md`, `DATASCALE-SEED2-RESULT.md`, `DATASCALE-20K-S2-RESULT.md`.
+
+**The lever had not flattened at 200k.** 500,000 windows at seed 0 reached **20.81% VAL / 21.82% ASST / ppl
+171.47**, concepts 36/36, and passed all four pre-registered checks (`docs/history/DATASCALE-500K-PREDICTIONS.md`
+-> C1 VAL >= 18.93, C2 ppl < 207.29, C3 concepts >= 36, C4 ep3 >= ep2). Paired to the same seed: **17.43% ->
+20.81%, +3.38 pp for 2.5x data**, after +5.25 pp for the first 10x. In pp per doubling that is **1.58 -> 2.56**,
+i.e. the marginal gain rose rather than decayed - on one seed, so the steepening itself is not established, only
+that the curve was still rising at 500k. Checkpoint verified (1 arm, 0 provenance problems), best checkpoint is
+epoch 3. Source: `lens/runs/DATASCALE-500K.txt:392`; grader `lens/scripts/datascale_500k_grade.py`; write-up
+`docs/history/DATASCALE-500K-RESULT.md`. This is the highest d=256 value measured, and still 16.56 pp below the
+d=512 headline.
 
 The concept jump was not predicted by D1/D2, and it repeated: the audit went **20/36 at 20k windows ->
 36/36 at 200k** on both seeds, counted from the AUROC rows rather than from the summary lines.

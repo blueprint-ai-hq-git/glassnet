@@ -291,6 +291,7 @@ two seeds:
 | `d=256`, 200,000 windows, seed 1 | **19.71%** | `lens/runs/DATASCALE-HONEST-s1.txt:262` |
 | `d=256`, 20,000 windows, seed 2 | 13.40% | `lens/runs/WALL-REP.txt:329` (reproduced exactly by `DATASCALE-20K-S2.txt`) |
 | `d=256`, 200,000 windows, seed 2 | **20.50%** | `lens/runs/DATASCALE-HONEST-s2.txt:256` |
+| `d=256`, **500,000** windows, seed 0 | **20.81%** | `lens/runs/DATASCALE-500K.txt:392` |
 
 Paired within-seed gains **+5.25, +6.92 and +7.10 points (mean +6.42)**; three-seed mean held-out accuracy
 **19.21%**, and perplexity down from 399.50/395.80/384.39 to 207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
@@ -298,6 +299,11 @@ concepts on all three seeds, at the same parameter count. The three draws span *
 the 1.03 pp run-to-run noise at 20k - so these are the values and their mean, not an interval. The
 architectural levers tried at 20k windows - attention (-2.81), window 64 (-1.57), the concept bypass
 (-1.4 to -3.4) - all went the other way.
+
+**It had not flattened at 200k.** Pushing the same seed to 500,000 windows gives **20.81%** (ASST 21.82%,
+ppl 171.47): 17.43% -> 20.81%, **+3.38 pp for 2.5x more data**, after +5.25 pp for the first 10x - 1.58 then
+2.56 pp per doubling, so the marginal gain rose rather than decayed (one seed, so the steepening is not
+established - only that the curve was still rising at 500k).
 Doubling the schedule at this rung (6 epochs, seed 0) reached final VAL 18.43% - +1.00 pp over the
 3-epoch run, with the best checkpoint at epoch 5 - so more epochs are not what this rung is missing.
 Write-ups: `docs/history/DATASCALE-RESULT.md`, `docs/history/DATASCALE-SEED1-RESULT.md`,
