@@ -295,6 +295,7 @@ two seeds:
 | `d=256`, **2,000,000** windows, seed 0 | **21.29%** | `lens/runs/DATASCALE-2M.txt:1142` |
 | `d=256`, 500,000 windows, seed 0, **gates OFF** | **22.05%** | `lens/runs/DATASCALE-500K-NOGATE.txt:69` |
 | `d=256`, 500,000 windows, seed 0, **plain SGD**, gates OFF | 19.81% | `lens/runs/SGD-500K.txt:66` |
+| `d=256`, 2,000,000 windows, seed 0, **gates OFF** | **23.12%** | `lens/runs/DATASCALE-2M-NOGATE.txt:69` |
 
 Paired within-seed gains **+5.25, +6.92 and +7.10 points (mean +6.42)**; three-seed mean held-out accuracy
 **19.21%**, and perplexity down from 399.50/395.80/384.39 to 207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
@@ -303,11 +304,12 @@ the 1.03 pp run-to-run noise at 20k - so these are the values and their mean, no
 architectural levers tried at 20k windows - attention (-2.81), window 64 (-1.57), the concept bypass
 (-1.4 to -3.4) - all went the other way.
 
-**It bends flat at 2M.** The same seed at 500,000 windows gives **20.81%** (ASST 21.82%, ppl 171.47) and at
-2,000,000 windows **21.29%** (ASST 22.60%, ppl 149.14): 1.58, then 2.56, then **0.24 pp per doubling**. 100x
-data bought +9.11 pp in total and the last 4x bought 5.3% of it - accuracy stops rising while perplexity keeps
-falling (399.50 -> 149.14), and at one seed the last rung sits inside the 3.07 pp seed spread. The best
-checkpoint is epoch 2 (ASST 22.82%), not the final epoch.
+**In the gated method it bends flat at 2M - and the ungated rung shows that was partly the gates.** Gated: 500,000
+windows **20.81%**, 2,000,000 windows **21.29%** - 1.58, then 2.56, then **0.24 pp per doubling**. With the gates
+off the same two rungs give **22.05%** and **23.12%** (**0.54 pp/doubling**), i.e. still climbing, and 23.12% is
+the highest d=256 held-out number on record. Both ungated arms also run ~8x faster than their gated twins. So
+"more data stopped helping" was true of the gated method, not of the data: the curve flattens, the gated one
+flattens harder, and the best d256 configuration measured here is our step rule with the gates off.
 
 **And the gates cost more than data ever bought.** At the same 500k rung, same step rule, same data, switching
 the gap and agreement gates off gives **22.05%** instead of 20.81% (+1.24 pp) and runs **7.7x faster**

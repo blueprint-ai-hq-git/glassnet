@@ -176,6 +176,7 @@ from both logs), so the extra data cannot have come from resizing the scored set
 | `datascale_2m_s0` | 0 | **2,000,000** | **21.29%** | **22.60%** | **149.14** | `lens/runs/DATASCALE-2M.txt:1142`; best checkpoint ep2 ASST **22.82%** at `lens/runs/DATASCALE-2M.txt:817` |
 | `datascale_500k_nogate_s0` (**gates OFF** control) | 0 | 500,000 | **22.05%** | **23.22%** | **140.27** | `lens/runs/DATASCALE-500K-NOGATE.txt:69` |
 | `sgd_500k_s0` (**plain SGD**, gates OFF) | 0 | 500,000 | 19.81% | 20.38% | 221.78 | `lens/runs/SGD-500K.txt:66` (concepts 31/36) |
+| `datascale_2m_nogate_s0` (**gates OFF**, 2M) | 0 | 2,000,000 | **23.12%** | **24.96%** | **104.71** | `lens/runs/DATASCALE-2M-NOGATE.txt:69` |
 
 **Three seeds, three matched pairs: mean gain +6.42 pp.** Val acc 17.43% / 19.71% / 20.50% against 20k
 baselines of 12.18% / 12.79% / 13.40%, so the paired gains are **+5.25, +6.92 and +7.10 pp** (mean **+6.42**),
@@ -187,7 +188,7 @@ pre-named as "the band was too conservative", while its mean and concept checks 
 `lens/scripts/datascale_grade.py`, `lens/scripts/datascale_seed2_grade.py`; write-ups
 `docs/history/DATASCALE-SEED1-RESULT.md`, `DATASCALE-SEED2-RESULT.md`, `DATASCALE-20K-S2-RESULT.md`.
 
-**The lever bends flat between 500k and 2M - and that is the answer.** 2,000,000 windows at seed 0 reached
+**The lever bends flat between 500k and 2M in the GATED method - and the ungated rung says that was partly the gates.** 2,000,000 windows at seed 0 reached
 **21.29% VAL / 22.60% ASST / ppl 149.14**, concepts 36/36, and the pre-registered checks split: T1 (> 20.81%)
 PASS at **+0.48 pp**, T3 and T4 PASS, **T2 FAIL** (landed 0.21 pp below its 21.5% floor) and **C4 FAIL** (epoch 3
 at 21.29% is 0.40 pp *below* epoch 2, so the best checkpoint - ASST 22.82% - is epoch 2, not the final one). The
@@ -198,6 +199,19 @@ the rung above it: the curve rose one more step and then flattened, and 0.24 pp/
 seed spread, so the last rung is not distinguishable from noise on one seed. Source: `lens/runs/DATASCALE-2M.txt:1142`;
 grader `lens/scripts/datascale_ladder_grade.py 2m`; write-up `docs/history/DATASCALE-2M-RESULT.md`. Not
 comparable to the older 2M result at batch 1024 (24.20%) - different batch and sampling path.
+
+**Re-run at 2M with the gates off, the flat curve moves: 23.12% VAL / 24.96% ASST / ppl 104.71**, against the gated
+twin's 21.29 / 22.60 / 149.14 - **+1.83 pp for the same data, and 8.75x faster** (249 s/epoch against 2,081-2,279).
+All five pre-registered checks pass except U2, which missed *high*: I predicted at most +1.0 pp over the ungated
+500k arm and it bought **+1.07 pp** (21.5-23.0 band, got 23.12) - the direction its own falsifier named as "above
+23.0 reopens the ladder". So the two curves are 500k 20.81 -> 2M 21.29 gated (**0.24 pp/doubling**) and 22.05 ->
+23.12 ungated (**0.54 pp/doubling**): both flatten, the gated one flattens hardest, and the ungated curve is still
+climbing. **23.12% is the highest d=256 held-out number on record** (previous best 21.29% gated), and still 14.25 pp
+below the d=512 headline. The gates-off effect has now been measured at two rungs, same direction, similar size
+(+1.24 pp at 500k, +1.83 pp at 2M), with the mechanism visible in train accuracy (35.10% ungated vs 21.14% gated).
+Source: `lens/runs/DATASCALE-2M-NOGATE.txt:69`; write-up `docs/history/NOGATE-2M-RESULT.md`. One seed per
+configuration - the 3.07 pp seed spread at 200k is larger than either delta, so direction and speed are solid and
+effect size is not.
 
 **The gates were part of that ceiling, and the headline was never gated.** Same 500k rung, same step rule, same
 data, gates OFF: **22.05% VAL / 23.22% ASST / ppl 140.27** against the gated arm's 20.81 / 21.82 / 171.47 - and
