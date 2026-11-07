@@ -19,7 +19,13 @@ SEED="${1:-0}"
 cd "/run/media/yahya/HARD DISK 4/GlassNet" || exit 1
 unset PYTHONPATH PYTHONHOME
 export OPENBLAS_NUM_THREADS=2
-LOG="lens/runs/DATASCALE-HONEST.txt"
+LOG="lens/runs/DATASCALE-HONEST-s${SEED}.txt"   # ONE LOG PER SEED. Measured reason (2026-11-07): a foreign
+                                                # job (/tmp/run_seed1.sh, plain SGD, dialogue-only corpus)
+                                                # appended to the shared log and wrote into the seed-1 tag,
+                                                # so one file held two different experiments
+                                                # (docs/history/DATASCALE-S1-PROVENANCE.md). Seed 0's history
+                                                # is in the original DATASCALE-HONEST.txt.
+BLOCK_LOGS="lens/runs/DATASCALE-HONEST*.txt"    # the skip test below searches all of them
 CLAIM="lens/runs/GPU-CLAIM"
 SAVED="lens/runs/chat"
 TAG="datascale_honest_s${SEED}"
@@ -33,8 +39,8 @@ source lens/scripts/lib_trainer_alive.sh
 
 say() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOG"; }
 
-if [ -e "$SAVED/${TAG}_ep3.npz" ] && grep -q "saved to .*${TAG}_\*" "$LOG" 2>/dev/null; then
-  say "===== SKIP: $TAG already has an epoch-3 checkpoint and a save line; nothing to do"
+if [ -e "$SAVED/${TAG}_ep3.npz" ] && grep -lq "saved to .*${TAG}_\*" $BLOCK_LOGS 2>/dev/null; then
+  say "===== SKIP: $TAG already has an epoch-3 checkpoint and a save line in $BLOCK_LOGS; nothing to do"
   exit 0
 fi
 if trainer_alive; then
