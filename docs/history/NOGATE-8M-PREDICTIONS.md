@@ -50,3 +50,20 @@ The chain now refuses a file that `bash -n` cannot parse, with a message naming 
 * Not the project's d256 record: full-corpus d256 reaches 35.72% by position (`docs/history/STATE.md:146`).
 * The gates are not tested at this rung.
 * Cost ~49 min + assembly; checkpoints every epoch (~16 min), inside the 2 h rule; VRAM ~490 MiB.
+
+## ADDENDUM 2026-11-07 18:52 - the machine rebooted after epoch 1; the arm resumes rather than restarting
+
+`uptime` reads 0 minutes at 18:52:56 and `who -b` shows a fresh boot: the 8M run was killed mid-epoch-2 with no exit
+line (a hard stop, not a SIGTERM). What survived, measured on disk:
+
+    datascale_8m_nogate_s0_ep1.npz          15,262,368 B   18:37
+    datascale_8m_nogate_s0_ep1_rng.json       175 B        18:37
+    datascale_8m_nogate_s0_best.npz        15,262,368 B   18:37
+    epoch 1: VAL 23.46%  ASST 25.29%  ppl 95.71  (NEW BEST held-out 25.29% at epoch 1)
+
+So 17 minutes of work is intact. `train_chat.py` has a documented resume path (`--resume <npz> --resume-ep N`, which
+sets `start_ep = N+1` and restores the shuffle RNG from the sidecar, refusing on a corpus mismatch), so the arm
+continues from epoch 2 instead of restarting. The resumed runner records the `RESUME: loaded ...` line and requires
+it - a resume that did not actually load would be reported INCOMPLETE, not as a result.
+
+Predictions X1-X5 are unchanged; epoch 1 is not a verdict (X1 needs the finished arm above 23.74%).
