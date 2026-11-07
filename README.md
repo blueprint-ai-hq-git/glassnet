@@ -298,6 +298,7 @@ two seeds:
 | `d=256`, 2,000,000 windows, seed 0, **gates OFF** | **23.12%** | `lens/runs/DATASCALE-2M-NOGATE.txt:69` |
 | `d=256`, 4,000,000 windows, seed 0, **gates OFF** | **23.74%** | `lens/runs/DATASCALE-4M-NOGATE.txt:69` |
 | `d=256`, 4,000,000 windows, seed 0, **gates OFF**, 6 epochs | **23.92%** | `lens/runs/DATASCALE-4M-NOGATE-EP6.txt:73` |
+| `d=256`, 4,000,000 windows, **gates OFF**, seeds 1 and 2 | **24.13% / 24.03%** | `lens/runs/DATASCALE-4M-NOGATE-SEEDS.txt:69` and `lens/runs/DATASCALE-4M-NOGATE-SEEDS.txt:219` |
 | `d=256`, 8,000,000 windows, seed 0, **gates OFF** | **24.51%** | `lens/runs/DATASCALE-8M-NOGATE.txt:235` |
 
 Paired within-seed gains **+5.25, +6.92 and +7.10 points (mean +6.42)**; three-seed mean held-out accuracy
@@ -317,8 +318,9 @@ the previous step**, so the rate is not decaying. It did plateau on accuracy bet
 **doubling the epochs to six bought only +0.18 pp** (23.92%, ppl 93.72) against **+0.62 pp for doubling the data** -
 so the plateau was not a step shortage, and data is the better buy per GPU-minute. **8,000,000 windows then bought
 another +0.77 pp (24.51% VAL, ASST 26.46%, ppl 87.55, `lens/runs/DATASCALE-8M-NOGATE.txt:235`) - more than the
-+0.62 pp the previous doubling paid, so at d=256 the rate is not decaying at the last rung measured.** The prepared
-mix holds ~18.4M windows, so one more doubling is all the data there is. The best configuration measured here is our
++0.62 pp the previous doubling paid, so at d=256 the rate is not decaying at the last rung measured.** The prepared mix holds ~18.4M windows, so one more doubling is all the data there is. **The rung reproduces:**
+three seeds at 4M give 23.74 / 24.13 / 24.03% - a 0.10 pp spread, against 3.07 pp at the 200k rung - so 24.51%
+at 8M is above every one of the three 4M seeds (`docs/history/NOGATE-4M-SEEDS-RESULT.md:9`). The best configuration measured here is our
 step rule with the gates off. 24.51% is the best number in this capped-window ladder (<=8M windows, 3 epochs, one
 seed); it is not the best d256 number in the project - full-corpus d256 runs reach 35.72% by position
 (`docs/history/STATE.md:146`), 11.21 pp higher on the comparable metric.
