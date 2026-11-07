@@ -152,7 +152,7 @@ Supervisor: lens/scripts/run_wall_ab_resume2.sh via the chain (label wall_ab_res
 ## Data scale at d=256 - the first lever that moved this rung (2026-11-06 19:29)
 
 One flag changed (`--max-windows 20000` -> `200000`), everything else identical: same corpus, same command,
-same 36-concept set, **same 3,811,534 parameters**, no bypass, seed 0 - and the **same 87,035-window
+same concept module (the auto-kept set is data-dependent: 37 kept at 20k windows, 36 at 200k), **same 3,811,534 parameters**, no bypass, seed 0 - and the **same 87,035-window
 held-out set** in both runs (`n=44418` masked / `n=58191` assistant positions in each epoch-3 line, verified
 from both logs), so the extra data cannot have come from resizing the scored set.
 
@@ -161,18 +161,19 @@ from both logs), so the extra data cannot have come from resizing the scored set
 | `wall_off` | 0 | 20,000 | 12.18% | 13.00% | 399.50 | `lens/runs/WALL-AB.txt:116` |
 | `datascale_honest_s0` | 0 | 200,000 | **17.43%** | 18.61% | 207.29 | `lens/runs/DATASCALE-HONEST.txt:230` |
 | `wall_off` | 1 | 20,000 | 12.79% | 13.21% | 395.80 | `lens/runs/WALL-AB.txt:850` |
+| `wall_off` | 2 | 20,000 | 13.40% | 13.83% | 384.39 | `lens/runs/WALL-REP.txt:329`, reproduced exactly by `DATASCALE-20K-S2.txt` |
 | `datascale_honest_s1` | 1 | 200,000 | **19.71%** | **20.82%** | **184.32** | `lens/runs/DATASCALE-HONEST-s1.txt:262` |
 | `datascale_honest_s2` | 2 | 200,000 | **20.50%** | **21.47%** | **180.30** | `lens/runs/DATASCALE-HONEST-s2.txt:256` |
 
-**Three seeds, all pre-registered, all 36/36 concepts.** Val acc 17.43% / 19.71% / 20.50%, ASST 18.61% /
-20.82% / 21.47%, mean VAL **19.21%** and mean gain **+6.73 pp** against the 20k baseline mean of 12.485%
-(paired gains +5.25 and +6.92 pp; seed 2 has no matched 20k arm). Both seed-1 checks passed (VAL in band R1,
-ppl < 300 R2, concepts C1); seed 2's band check **failed by 0.32 pp on the high side** - the direction its own
-prediction doc had pre-named as "the band was too conservative" - while its mean and concept checks passed.
-The three draws span **3.07 pp**, three times the 1.03 pp run-to-run noise at the 20k rung, so the values and
-their mean are published and no +/- interval is invented. Graders: `lens/scripts/datascale_grade.py`,
-`lens/scripts/datascale_seed2_grade.py`; write-ups `docs/history/DATASCALE-SEED1-RESULT.md`,
-`docs/history/DATASCALE-SEED2-RESULT.md`.
+**Three seeds, three matched pairs: mean gain +6.42 pp.** Val acc 17.43% / 19.71% / 20.50% against 20k
+baselines of 12.18% / 12.79% / 13.40%, so the paired gains are **+5.25, +6.92 and +7.10 pp** (mean **+6.42**),
+mean VAL **19.21%**. The baseline and the arm rise together - a seed that gives a stronger 20k run also gives a
+stronger 200k run - which is why the paired gain spans only 1.85 pp while the 200k values themselves span
+3.07 pp; the paired gain is the number to quote. Seed 1 passed every pre-registered check (band R1, ppl R2,
+concepts C1); seed 2's band check **failed by 0.32 pp on the high side**, the direction its prediction doc had
+pre-named as "the band was too conservative", while its mean and concept checks passed. Graders:
+`lens/scripts/datascale_grade.py`, `lens/scripts/datascale_seed2_grade.py`; write-ups
+`docs/history/DATASCALE-SEED1-RESULT.md`, `DATASCALE-SEED2-RESULT.md`, `DATASCALE-20K-S2-RESULT.md`.
 
 The concept jump was not predicted by D1/D2, and it repeated: the audit went **20/36 at 20k windows ->
 36/36 at 200k** on both seeds, counted from the AUROC rows rather than from the summary lines.

@@ -279,8 +279,8 @@ different settings; we publish both rather than only the flattering one.
 
 ### One lever that moved: more data at a fixed configuration
 
-Same command, same corpus, same 36-concept set, same **3,811,534** parameters, no bypass - only
-`--max-windows` changed, and the same 87,035-window held-out set scored every run. Measured 2026-11-06/07,
+Same command, same corpus, same concept module (37 auto-kept at 20k windows, 36 at 200k), same
+**3,811,534** parameters, no bypass - only `--max-windows` changed, and the same 87,035-window held-out set scored every run. Measured 2026-11-06/07,
 two seeds:
 
 | Configuration | Held-out accuracy | Source |
@@ -289,11 +289,11 @@ two seeds:
 | `d=256`, 200,000 windows, seed 0 | **17.43%** | `lens/runs/DATASCALE-HONEST.txt:230` |
 | `d=256`, 20,000 windows, seed 1 | 12.79% | `lens/runs/WALL-AB.txt:850` |
 | `d=256`, 200,000 windows, seed 1 | **19.71%** | `lens/runs/DATASCALE-HONEST-s1.txt:262` |
-| `d=256`, 200,000 windows, seed 2 (no matched 20k arm) | **20.50%** | `lens/runs/DATASCALE-HONEST-s2.txt:256` |
+| `d=256`, 20,000 windows, seed 2 | 13.40% | `lens/runs/WALL-REP.txt:329` (reproduced exactly by `DATASCALE-20K-S2.txt`) |
+| `d=256`, 200,000 windows, seed 2 | **20.50%** | `lens/runs/DATASCALE-HONEST-s2.txt:256` |
 
-Paired within-seed gains **+5.25 and +6.92 points**; three-seed mean held-out accuracy **19.21%**, a mean
-**+6.73 points** against the 20k baseline mean of 12.485%, and perplexity down from 399.50/395.80 to
-207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
+Paired within-seed gains **+5.25, +6.92 and +7.10 points (mean +6.42)**; three-seed mean held-out accuracy
+**19.21%**, and perplexity down from 399.50/395.80/384.39 to 207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
 concepts on all three seeds, at the same parameter count. The three draws span **3.07 points** - three times
 the 1.03 pp run-to-run noise at 20k - so these are the values and their mean, not an interval. The
 architectural levers tried at 20k windows - attention (-2.81), window 64 (-1.57), the concept bypass
