@@ -45,9 +45,18 @@ if [ "$free_mb" -lt 3000 ]; then
   say "===== BLOCKED: only ${free_mb} MiB VRAM free"
   exit 3
 fi
+# A GPU-CLAIM whose owner process no longer exists is stale: the machine rebooted at 18:52 and the claim from the
+# killed run (pid 3293760) survived it, blocking this resume at 18:53:41 with "BLOCKED: GPU-CLAIM held by ...". The
+# claim is only a mutex, not a result, so it is taken over - but only after proving the pid is gone, and the takeover
+# is recorded.
 if [ -e "$CLAIM" ] && ! grep -q "^owner: run_datascale_8m_nogate_resume" "$CLAIM" 2>/dev/null; then
-  say "===== BLOCKED: GPU-CLAIM held by $(head -1 "$CLAIM")"
-  exit 3
+  oldpid=$(awk '/^pid:/{print $2}' "$CLAIM" 2>/dev/null)
+  if [ -n "${oldpid:-}" ] && [ ! -d "/proc/$oldpid" ]; then
+    say "  STALE GPU-CLAIM taken over: owner $(head -1 "$CLAIM" | cut -d' ' -f2-) pid $oldpid is not running"
+  else
+    say "===== BLOCKED: GPU-CLAIM held by $(head -1 "$CLAIM") (pid ${oldpid:-unknown} is alive)"
+    exit 3
+  fi
 fi
 printf 'owner: run_datascale_8m_nogate_resume\npid: %s\nsince: %s\n' "$$" "$(date '+%F %T')" > "$CLAIM"
 cleanup() { [ -e "$CLAIM" ] && grep -q "^owner: run_datascale_8m_nogate_resume" "$CLAIM" 2>/dev/null && rm -f "$CLAIM"; }
