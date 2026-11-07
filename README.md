@@ -298,6 +298,7 @@ two seeds:
 | `d=256`, 2,000,000 windows, seed 0, **gates OFF** | **23.12%** | `lens/runs/DATASCALE-2M-NOGATE.txt:69` |
 | `d=256`, 4,000,000 windows, seed 0, **gates OFF** | **23.74%** | `lens/runs/DATASCALE-4M-NOGATE.txt:69` |
 | `d=256`, 4,000,000 windows, seed 0, **gates OFF**, 6 epochs | **23.92%** | `lens/runs/DATASCALE-4M-NOGATE-EP6.txt:73` |
+| `d=256`, 8,000,000 windows, seed 0, **gates OFF** | **24.51%** | `lens/runs/DATASCALE-8M-NOGATE.txt:236` |
 
 Paired within-seed gains **+5.25, +6.92 and +7.10 points (mean +6.42)**; three-seed mean held-out accuracy
 **19.21%**, and perplexity down from 399.50/395.80/384.39 to 207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
@@ -314,10 +315,13 @@ the highest d=256 held-out number on record. Both ungated arms also run ~8x fast
 reaches **23.74%** (ASST 25.71%, ppl 95.99) - **+0.62 pp for 2x data, i.e. 0.62 pp/doubling, higher than the 0.54 of
 the previous step**, so the rate is not decaying. It did plateau on accuracy between epochs 2 and 3 (23.75 -> 23.74), but
 **doubling the epochs to six bought only +0.18 pp** (23.92%, ppl 93.72) against **+0.62 pp for doubling the data** -
-so the plateau was not a step shortage, and data is the better buy per GPU-minute. The best configuration measured here is our step
-rule with the gates off. 23.74% is the best number in this capped-window ladder (<=4M windows, 3 epochs); it is not
-the best d256 number in the project - full-corpus d256 runs reach 35.72% by position (`docs/history/STATE.md:146`),
-10.01 pp higher on the comparable metric.
+so the plateau was not a step shortage, and data is the better buy per GPU-minute. **8,000,000 windows then bought
+another +0.77 pp (24.51% VAL, ASST 26.46%, ppl 87.55, `lens/runs/DATASCALE-8M-NOGATE.txt:236`) - more than the
++0.62 pp the previous doubling paid, so at d=256 the rate is not decaying at the last rung measured.** The prepared
+mix holds ~18.4M windows, so one more doubling is all the data there is. The best configuration measured here is our
+step rule with the gates off. 24.51% is the best number in this capped-window ladder (<=8M windows, 3 epochs, one
+seed); it is not the best d256 number in the project - full-corpus d256 runs reach 35.72% by position
+(`docs/history/STATE.md:146`), 11.21 pp higher on the comparable metric.
 
 **And the gates cost more than data ever bought.** At the same 500k rung, same step rule, same data, switching
 the gap and agreement gates off gives **22.05%** instead of 20.81% (+1.24 pp) and runs **7.7x faster**

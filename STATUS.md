@@ -183,6 +183,7 @@ from both logs), so the extra data cannot have come from resizing the scored set
 | `datascale_2m_nogate_s0` (**gates OFF**, 2M) | 0 | 2,000,000 | **23.12%** | **24.96%** | **104.71** | `lens/runs/DATASCALE-2M-NOGATE.txt:69` |
 | `datascale_4m_nogate_s0` (**gates OFF**, 4M) | 0 | 4,000,000 | **23.74%** | **25.71%** | **95.99** | `lens/runs/DATASCALE-4M-NOGATE.txt:69` |
 | `datascale_4m_nogate_ep6_s0` (**gates OFF**, 4M, 6 epochs) | 0 | 4,000,000 | **23.92%** | **25.92%** | **93.72** | `lens/runs/DATASCALE-4M-NOGATE-EP6.txt:73` |
+| `datascale_8m_nogate_s0` (**gates OFF**, 8M) | 0 | 8,000,000 | **24.51%** | **26.46%** | **87.55** | `lens/runs/DATASCALE-8M-NOGATE.txt:236` |
 
 **Three seeds, three matched pairs: mean gain +6.42 pp.** Val acc 17.43% / 19.71% / 20.50% against 20k
 baselines of 12.18% / 12.79% / 13.40%, so the paired gains are **+5.25, +6.92 and +7.10 pp** (mean **+6.42**),
@@ -232,13 +233,15 @@ project: full-corpus d=256 runs reach **35.72% by position** (`docs/history/STAT
 6 epochs), 10.01 pp higher on the comparable metric. Source for the 23.74% row: `lens/runs/DATASCALE-4M-NOGATE.txt:69`. One seed;
 the 3.07 pp spread at 200k dwarfs the +0.62 pp. Write-up: `docs/history/NOGATE-4M-RESULT.md`.
 
+**The data axis has not flattened: doubling to 8M paid more than the doubling below it.** 8,000,000 windows, gates off, seed 0, three epochs: **24.51% VAL / 26.46% ASST / ppl 87.55**, concepts 36/36 (`lens/runs/DATASCALE-8M-NOGATE.txt:236`). The 4M rung was 23.74%, so this doubling bought **+0.77 pp** against **+0.62 pp** for 2M -> 4M - the gain grew rather than decaying, which falsifies the expectation written into the prediction (X2 was centred below a repeat of 0.62). Path 23.46 / 24.03 / 24.51 with ppl 95.71 / 91.04 / 87.55. Two limits travel with it: the prepared mix holds ~18.4M windows, so only one more doubling is available before the axis runs out of data, and with one seed this says the axis has not turned down, not that 0.77 pp is precise (the 200k rung's three-seed spread was 3.07 pp). The machine rebooted mid-arm at 18:52; the arm resumed from its epoch-1 checkpoint (about 11 minutes lost, not 51).
+
 **Doubling the steps was not the lever.** Six epochs at the same 4M windows reached **23.92% VAL / 25.92% ASST /
 ppl 93.72** (`lens/runs/DATASCALE-4M-NOGATE-EP6.txt:73`) - **+0.18 pp** for doubling the updates from 46,875 to
 93,750. The hypothesis behind that arm ("the plateau is step-limited") was falsified by its own pre-registered
 threshold (W1 needed >= 24.04, got 23.92). At this rung, **doubling the data bought +0.62 pp and doubling the steps
 bought +0.18 pp**, so data is worth ~3.4x what steps are worth per doubling; ppl fell the whole way (95.89 ->
 93.72) while accuracy wobbled in a +-0.3 pp band. Neither closes the **11.80 pp** gap to the project's d256 record
-(35.72% by position, full corpus, `docs/history/STATE.md:146`). Next: 8M windows rather than more epochs. One seed;
+(35.72% by position, full corpus, `docs/history/STATE.md:146`). 8M windows were then run: 24.51%. One seed;
 only the ratio of the two deltas is readable, not their sizes. Note: `docs/history/NOGATE-4M-EP6-RESULT.md`.
 
 **The gates were part of that ceiling, and the headline was never gated.** Same 500k rung, same step rule, same
