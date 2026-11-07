@@ -114,6 +114,12 @@ def main() -> int:
           % (s2["concepts"], "PASS" if passed >= 30 else ("FAIL (concept jump not stable)" if passed < 25 else "WEAK")))
 
     print("\nNo significance test from three seeds; the values and their mean are what is reported.")
+    print("NOTE (2026-11-07 10:1x): S2 above is the PRE-REGISTERED cross-seed form (mean of the two baselines that\n"
+          "  existed when it was written). Seed 2 turned out to have a matched 20k baseline after all -\n"
+          "  wall_rep_off_s2, VAL 13.40%, WALL-REP.txt:329 - so the number to quote is the within-seed pairing:\n"
+          "  %+.2f pp (%.2f - 13.40), and the three paired gains are +5.25 / +6.92 / %+.2f, mean %+.2f pp\n"
+          "  (docs/history/DATASCALE-20K-S2-RESULT.md)."
+          % (s2["val"] - 13.40, s2["val"], s2["val"] - 13.40, (5.25 + 6.92 + (s2["val"] - 13.40)) / 3))
     print("No talk number, no ship, no 'smart'.")
     return 0 if ok else 1
 

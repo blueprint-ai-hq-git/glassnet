@@ -47,3 +47,13 @@ when it showed three runs of one configuration spanning 1.03 pp.
 
 No significance test from three seeds, no headline change (37.37% at d=512 remains the best number), no talk
 or ship claim, and the 6-epoch arm is still excluded from any averaging (E4).
+
+## CORRECTION - 2026-11-07 10:1x
+
+Two statements above are superseded, and the numbers they carried are replaced, not deleted:
+
+* "20k baselines (seeds 0 and 1 only)" - false. Seed 2's 20k baseline existed all along as `wall_rep_off_s2`
+  (`lens/runs/WALL-REP.txt:329`, VAL 13.40%), and it was re-measured on 2026-11-07 with an identical result.
+* "+8.02 pp for seed 2 ... against the baseline mean" - a cross-seed comparison, now replaced by the
+  within-seed **+7.10 pp** (20.50 - 13.40). Three paired gains: +5.25, +6.92, +7.10, mean **+6.42 pp**.
+  Full record: `docs/history/DATASCALE-20K-S2-RESULT.md`.

@@ -90,3 +90,10 @@ this rung, not only by the concept design.
 `run_datascale_honest.sh` now writes a standard arm marker (`----- off seed 0 : ... --max-windows 200000`)
 before the trainer starts, so the checkpoint verifier and any future results parser can find an arm in this
 log. The completed run's log is left exactly as it was written; its provenance is proved above instead.
+
+## CORRECTION - 2026-11-07 10:1x (concept set)
+
+This file says every arm used "the same 36 kept concept set". Not exact: the keep/drop test runs on the sampled
+training windows, so the 20k arms keep **37** concepts (`37 kept, 6 dropped`) and the 200k arms keep **36**
+(`36 kept, 7 dropped`). Command, corpus, parameters and held-out set are still identical; one concept crosses
+the support floor differently at the two rungs. Recorded in `docs/history/DATASCALE-20K-S2-RESULT.md`.

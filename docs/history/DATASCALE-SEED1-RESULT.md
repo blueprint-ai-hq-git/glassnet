@@ -56,3 +56,10 @@ so the architecture really is unchanged between the two window counts.
 * It is still **two seeds**, so no p-value is quoted and no interval is invented; the mean and the two raw
   values are what is published.
 * It says nothing about talk quality, "smart", or shipping.
+
+## CORRECTION - 2026-11-07 10:1x (concept set)
+
+This file says every arm used "the same 36 kept concept set". Not exact: the keep/drop test runs on the sampled
+training windows, so the 20k arms keep **37** concepts (`37 kept, 6 dropped`) and the 200k arms keep **36**
+(`36 kept, 7 dropped`). Command, corpus, parameters and held-out set are still identical; one concept crosses
+the support floor differently at the two rungs. Recorded in `docs/history/DATASCALE-20K-S2-RESULT.md`.
