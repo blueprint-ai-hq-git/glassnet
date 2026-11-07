@@ -30,11 +30,13 @@ CKPT = os.path.join(ROOT, "lens/runs/chat")
 # Markers can carry a timestamp prefix (run_wall_rep.sh publishes them through say(), so "-----" is not at
 # column 0: "2026-11-06 18:31:30 ----- off seed 2 attempt 1/2 : ..."). The prefix is optional here, and the
 # runner's failure lines ("-----off seed 2 GAVE UP ...", "----- SKIP ...") must not open a block.
-RE_START = re.compile(r"^(?:\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\s+)?-----\s*(off|on|r64)\s+seed\s+(\d+)\b")
+# Any run marker, not just the wall A/B three arms: newer runners write "----- probe d512 : ...",
+# "----- off seed 0 : ...", "----- command: ...". Group 1 is the label, group 2 the seed if present.
+RE_START = re.compile(r"^(?:\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\s+)?-----\s*([A-Za-z0-9_]+)(?:[^\n]*?seed\s+(\d+))?")
 SKIPWORDS = ("GAVE UP", "SKIP", "INCOMPLETE", "DONE")
 RE_FINAL = re.compile(r"final VAL ppl ([\d.]+)\s+acc ([\d.]+)%\s+concepts (\d+)/(\d+)")
 RE_BEST = re.compile(r"NEW BEST held-out ([\d.]+)% at epoch (\d+) .*?-> saved (\S+_best\.npz)")
-RE_EP = re.compile(r"^\s+ep (\d+)/3 .*VAL ppl ([\d.]+) acc ([\d.]+)%")
+RE_EP = re.compile(r"^\s+ep (\d+)/(\d+) .*VAL ppl ([\d.]+) acc ([\d.]+)%")
 RE_PARAMS = re.compile(r"model: ([\d,]+) params")
 # the block's own "saved to .../chat/<tag>_*" line names the tag, so a block whose tags are not
 # wall_<arm>_s<seed> (e.g. wall_rep_off_s2) can be verified without a flag and without guessing.
@@ -61,7 +63,11 @@ def blocks(lines):
     UNMARKED, and let the save line inside it supply the tag.
     """
     first_marker = None
+    ANNOT = {"command", "result", "epoch", "note", "final", "skip", "done", "predictions", "launch"}
     for i, line in enumerate(lines):
+        _m = RE_START.match(line)
+        if _m and _m.group(1).lower() in ANNOT:
+            continue
         if RE_START.match(line) and not any(w in line for w in SKIPWORDS):
             first_marker = i
             break
@@ -71,12 +77,19 @@ def blocks(lines):
             yield ["UNMARKED", -1, head]
     lines = lines[first_marker:] if first_marker is not None else []
     cur = None
+    # Markers that annotate a run rather than start one: "----- result lines (read from the log above)",
+    # "----- epoch 3 and final result", "----- command: ...". Treated as ordinary lines so they cannot fake an arm.
+    ANNOTATIONS = {"command", "result", "epoch", "note", "final", "skip", "done", "predictions", "launch"}
     for line in lines:
         m = RE_START.match(line)
+        if m and m.group(1).lower() in ANNOTATIONS:
+            if cur is not None:
+                cur[2].append(line)
+            continue
         if m and not any(w in line for w in SKIPWORDS):
             if cur:
                 yield cur
-            cur = [m.group(1), int(m.group(2)), [line]]
+            cur = [m.group(1), int(m.group(2)) if m.group(2) else -1, [line]]
             continue
         if line.startswith("-----") and cur:
             yield cur
@@ -110,7 +123,7 @@ def main():
                 continue
             m = RE_EP.match(line)
             if m:
-                eps[int(m.group(1))] = (float(m.group(2)), float(m.group(3)))
+                eps[int(m.group(1))] = (float(m.group(3)), float(m.group(4)))
                 continue
             m = RE_PARAMS.search(line)
             if m and params_announced is None:
@@ -121,7 +134,12 @@ def main():
                 saved_tag = m.group(1)
         if final is None:
             continue  # aborted/restarted block, no arm number to verify
-        tag = saved_tag or ("wall_%s_s%d" % (arm, seed))
+        # A block that never wrote a checkpoint is not an arm: the runners echo "final VAL" and "----- all ..."
+        # banners after a run, and those echoes were being counted as extra arms (and then as provenance
+        # failures, because no such checkpoint exists). An arm must carry its own save line.
+        if saved_tag is None:
+            continue
+        tag = saved_tag
         rows.append(dict(arm=arm, seed=seed, tag=tag, final=final, best=best, eps=eps,
                          params_announced=params_announced))
 
@@ -131,7 +149,10 @@ def main():
     bad = 0
     for r in rows:
         tag = r["tag"]
-        ep3 = os.path.join(CKPT, tag + "_ep3.npz")
+        # the last epoch is whatever the log actually ran, not always 3: the d512 probe ran ONE epoch and the
+        # hardcoded _ep3 made a perfectly good checkpoint look like a provenance failure (FileNotFoundError).
+        last_ep = max(r["eps"]) if r["eps"] else 3
+        ep3 = os.path.join(CKPT, "%s_ep%d.npz" % (tag, last_ep))
         bestp = os.path.join(CKPT, tag + "_best.npz")
         note = []
         meta_ok = "?"

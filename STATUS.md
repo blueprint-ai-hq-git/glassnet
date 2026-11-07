@@ -224,6 +224,18 @@ took 1,720 s/epoch at that scale (`docs/history/STATE.md:2771`). One seed per co
 sit inside the 3.07 pp seed spread: the ordering is a direction, not a settled effect. Write-up:
 `docs/history/SGD-500K-RESULT.md`.
 
+**What one d512 epoch actually costs, and a confound that blocks the obvious conclusion.** A one-epoch probe in
+the headline's own configuration (d=512, `--direct --direct-mode tied`, batch 1024, lr 0.3, 16.9M windows, our
+step rule, gates off) took **2,854 s** - so six epochs scale to **~4.8 h** - and reached **25.18% VAL / 26.67%
+ASST / ppl 110.24**, against the headline's epoch 1 at **31.52% / 33.46% / 46.99** (`lens/runs/PROBE-D512.txt`,
+headline at `TIED-D512-EXT6.txt:83`). That is **-6.34 pp** and 1.66x slower per epoch. It is **not** evidence
+against our step rule: the probe's train accuracy is **21.12%** against the headline's **42.01%**, and its log
+shows the step size is still the constant calibrated at d=256 (`opt_lr 0.0441256`, `--lr` unused by this rule)
+while the headline ran SGD at lr 0.3. A step that is too small explains both the deficit and the slower
+convergence, and this arm cannot separate that from a weaker rule - the next step is to calibrate the step size at
+d=512, not to run six epochs. One epoch, one seed, and 12.19 pp below the headline: nothing here changes 37.37%.
+Note: `docs/history/D512-PROBE-RESULT.md`.
+
 The concept jump was not predicted by D1/D2, and it repeated: the audit went **20/36 at 20k windows ->
 36/36 at 200k** on both seeds, counted from the AUROC rows rather than from the summary lines.
 
