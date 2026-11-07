@@ -827,9 +827,15 @@ def main():
         net._net.pos_weight[j] *= float(mult)
         log(f"     BOOST concept {name} pos_weight x{mult}")
     log(f"  model: {net.n_params():,} params  (d={a.d}, K={net.K})")
-    tpp = len(Xtr) / max(net.n_params(), 1)
+    # FIXED 2026-11-07: this used to print len(Xtr)/params under the label "tokens per parameter", but len(Xtr)
+    # counts WINDOWS, so every figure was low by the window length (32) - a 4M-window d=512 arm printed 0.26
+    # "UNDER-TRAINED" when it really had 8.22 tokens/param ("adequate"). The old ratio is kept on its own line
+    # so historical logs remain comparable; the verdict now uses the token figure it claims to use.
+    tpp = len(Xtr) * int(getattr(a, "window", 1)) / max(net.n_params(), 1)
+    wpp = len(Xtr) / max(net.n_params(), 1)
     log(f"  tokens per parameter: {tpp:.2f}  "
-        f"({'well trained' if tpp > 10 else 'adequate' if tpp > 4 else 'UNDER-TRAINED'})")
+        f"({'well trained' if tpp > 10 else 'adequate' if tpp > 4 else 'UNDER-TRAINED'})"
+        f"   [windows/params {wpp:.3f}; windows {len(Xtr):,} x {int(getattr(a, 'window', 1))} tokens]")
 
     rng = np.random.default_rng(a.seed)
     start_ep = 1
