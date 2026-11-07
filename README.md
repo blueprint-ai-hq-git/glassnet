@@ -279,19 +279,23 @@ different settings; we publish both rather than only the flattering one.
 
 ### One lever that moved: more data at a fixed configuration
 
-Same command, same corpus, same 36-concept set, same **3,811,534** parameters, no bypass, seed 0 - only
-`--max-windows` changed. Measured 2026-11-06:
+Same command, same corpus, same 36-concept set, same **3,811,534** parameters, no bypass - only
+`--max-windows` changed, and the same 87,035-window held-out set scored every run. Measured 2026-11-06/07,
+two seeds:
 
 | Configuration | Held-out accuracy | Source |
 |---|---:|---|
-| `d=256`, 20,000 windows (the rung every other lever was compared on) | 12.18% | `lens/runs/WALL-AB.txt:116` |
-| `d=256`, 200,000 windows (same command, 10x the windows) | **17.43%** | `lens/runs/DATASCALE-HONEST.txt:230` |
+| `d=256`, 20,000 windows, seed 0 (the rung every other lever was compared on) | 12.18% | `lens/runs/WALL-AB.txt:116` |
+| `d=256`, 200,000 windows, seed 0 | **17.43%** | `lens/runs/DATASCALE-HONEST.txt:230` |
+| `d=256`, 20,000 windows, seed 1 | 12.79% | `lens/runs/WALL-AB.txt:850` |
+| `d=256`, 200,000 windows, seed 1 | **19.71%** | `lens/runs/DATASCALE-HONEST-s1.txt:262` |
 
-That is **+5.25 points** and a final perplexity of 207.29 against 399.50 (48.1% lower). One seed, and the
-20k rung's measured run-to-run spread is 1.03 points, so the gain is 5.1x the noise rather than a proof;
-the architectural levers tried at 20k windows - attention (-2.81), window 64 (-1.57), the concept bypass
-(-1.4 to -3.4) - all went the other way. The same 10x also moved the named-concept audit from **20/36 to
-36/36** passing concepts, at the same parameter count. Write-up: `docs/history/DATASCALE-RESULT.md`.
+Within-seed gains: **+5.25 and +6.92 points, mean +6.09**; mean held-out accuracy 18.57%, and perplexity
+fell from 399.50/395.80 to 207.29/184.32. The same 10x also moved the named-concept audit from **20/36 to
+36/36** passing concepts, on both seeds, at the same parameter count. Two seeds and a 2.28 pp spread between
+them, so these are the values and their mean, not an interval; the architectural levers tried at 20k windows
+- attention (-2.81), window 64 (-1.57), the concept bypass (-1.4 to -3.4) - all went the other way.
+Write-ups: `docs/history/DATASCALE-RESULT.md` and `docs/history/DATASCALE-SEED1-RESULT.md`.
 
 ## Install and run
 
