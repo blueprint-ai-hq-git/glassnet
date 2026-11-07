@@ -35,6 +35,14 @@ SPECS = {
         "prev": {"name": "gated 500k @ seed 0", "val": 20.81, "ppl": 171.47, "train_acc": 22.25,
                  "file": ROOT / "lens/runs/DATASCALE-500K.txt", "line": 392},
     },
+    "nogate8m": {
+        "log": ROOT / "lens/runs/DATASCALE-8M-NOGATE.txt",
+        "pred": "docs/history/NOGATE-8M-PREDICTIONS.md",
+        # X1 VAL > 23.74 strict; X2 lands 24.0-24.6; X3 ppl < 95.99; X5 concepts >= 36
+        "c1_min": 23.74, "c1_strict": True, "band": (24.0, 24.6), "c2_max": 95.99, "c3_min": 36, "c4": True,
+        "prev": {"name": "4M ungated, 3 epochs", "val": 23.74, "ppl": 95.99, "train_acc": 34.68,
+                 "file": ROOT / "lens/runs/DATASCALE-4M-NOGATE.txt", "line": 69},
+    },
     "nogate4m_ep6": {
         "log": ROOT / "lens/runs/DATASCALE-4M-NOGATE-EP6.txt",
         "pred": "docs/history/NOGATE-4M-EP6-PREDICTIONS.md",
