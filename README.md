@@ -394,7 +394,7 @@ licensing. Two rules matter more than style here:
 
 ## Hardware
 
-the reference GPU SUPER (6 GB VRAM, no tensor cores), the reference CPU, 14 GB RAM. `float32` only; no `bfloat16`.
+a 6 GB consumer GPU (6 GB VRAM, no tensor cores), a mid-range CPU, 14 GB RAM. `float32` only; no `bfloat16`.
 Datasets are used only where the licence is recorded in [`DATA_LICENSES.md`](DATA_LICENSES.md).
 
 ---
