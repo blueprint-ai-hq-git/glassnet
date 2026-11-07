@@ -38,3 +38,21 @@ different conventions. That is the collision risk worth naming.
 The chat ladder's arms are unaffected in validity by the other loop's work: separate configs, separate tags, separate
 logs. The one caveat is throughput - epochs are timed while another process is running, so per-epoch seconds here are
 upper bounds on a quiet machine, not the engine's best. Stated in the results rather than silently averaged.
+
+## MEASURED 2026-11-07 19:30 - the other loop costs the chat ladder ~60% of an epoch
+
+Same arm, same config, two consecutive epochs:
+
+    epoch 1 (before the other job ramped)   1,021 s   VAL 23.46%    load ~5.2
+    epoch 2 (both jobs running)             >27 min   still running  load 7.68
+
+The trainer is pinned to cores 0,1 and its CPU time grows 2 min per 30 s wall (179-180% CPU), so it is not stalled -
+it is being starved of its two cores. That is a throughput fact, not a validity problem: the same data, the same
+optimiser, the same seed. But it changes two things in the write-ups:
+
+1. per-epoch seconds in the 8M result are UPPER BOUNDS on a quiet machine, not the engine's best;
+2. an ETA computed from a quieter epoch is wrong by ~60% while another loop is training - future ETAs must be
+   measured, not extrapolated across a load change.
+
+Nothing was touched on the other loop to fix this: its work is not mine to re-prioritise, and the 5 GB VRAM cap is
+not at risk (377 MiB total).
