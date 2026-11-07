@@ -98,7 +98,7 @@ summary from the raw log instead of naming a path that has nothing in it.
 
 | Claim | Raw log | Tracked summary |
 |---|---|---|
-| 37.37% d512 ext6 | `lens/runs/TIED-D512-EXT6.txt:98` `ASST(by-position) ... acc 37.37% (n=58191)`, `:181` "best ep6 37.37%; LEGACY 28.57%" | `docs/history/STATE.md:2768`, `docs/RESULTS.md` |
+| 37.37% d512 ext6 | `lens/runs/TIED-D512-EXT6.txt:98` `ASST(by-position) ... acc 37.37% (n=58191)`, `:181` "best ep6 37.37%; LEGACY 28.57%" | `docs/history/STATE.md:2770`, `docs/RESULTS.md` |
 | attention -5.41 points | `lens/runs/GATE-B-VERDICT.txt:5-8` "attention 18.69 (ep3) / no-attention 24.10 (ep3), 5.41 points WORSE, ppl 135.1 vs 123.3" | `docs/RESULTS.md` |
 | architecture -1.73 points | `lens/runs/ARCH-OURS-VERDICT.txt:4-7` "PLAIN 5.53 / OURS 3.87; PLAIN 5.87 / OURS 4.07" (means 5.70 vs 3.97) | `docs/RESULTS.md` |
 

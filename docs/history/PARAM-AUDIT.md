@@ -30,7 +30,7 @@ vocab 12,002, K=36 (36 concepts kept after the 0.005 support floor, GPU-BEST.txt
     total                     5,908,686
 
   CROSS-CHECK: 35 run logs print exactly "model: 5,908,686 params  (d=256, K=36)"
-  (grep -rl over lens/runs/*.txt), including lens/runs/GPU-BEST.txt:57 (the 24.20% run).
+  (grep -rl over lens/runs/*.txt), including lens/runs/GPU-BEST.txt:57 (params) whose own best held-out is 24.20% at `lens/runs/GPU-BEST.txt:65`.
   The number 7,081,122 appears in ZERO run logs: `grep -rl 7,081,122 lens/runs/*.txt` returns only
   lens/runs/PUBLIC-NUMBER-AUDIT.txt:90, i.e. the previous audit's own to-do line.
 

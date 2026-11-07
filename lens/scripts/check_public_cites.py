@@ -38,11 +38,10 @@ def main() -> int:
             if not cites:
                 continue
             pcts = PCT.findall(line)
-            if not pcts:
-                continue
+            texts = []
+            total += 1                     # one cited ROW (a row may carry several file:line cites)
             for rel, lineno in cites:
                 target = ROOT / rel
-                total += 1
                 if not target.exists():
                     missing_files.add(rel)
                     bad.append((name, n, rel, lineno, "FILE MISSING", pcts))
@@ -52,16 +51,24 @@ def main() -> int:
                 except IndexError:
                     bad.append((name, n, rel, lineno, "LINE BEYOND END", pcts))
                     continue
-                # every percentage quoted on that public line must be explained by this cited line
-                hits = [p for p in pcts if p in tline]
-                if hits:
-                    ok += 1
-                else:
-                    bad.append((name, n, rel, lineno, "NO QUOTED VALUE ON THAT LINE", pcts))
+                if not tline.strip():
+                    bad.append((name, n, rel, lineno, "CITED LINE IS BLANK", pcts))
+                    continue
+                texts.append(tline)
+            # a quoted number is supported if it appears on ANY cited line of that row
+            union = "\n".join(texts)
+            unsupported = [q for q in pcts if q not in union]
+            if unsupported:
+                if texts:
+                    bad.append((name, n, cites[0][0], cites[0][1], "NO QUOTED VALUE ON ANY CITED LINE",
+                                unsupported))
+            elif texts:
+                ok += 1
 
-    print("citations checked: %d   resolve: %d   problems: %d" % (total, ok, len(bad)))
+    print("cited rows checked: %d   fully resolved: %d   problems: %d" % (total, ok, len(bad)))
     for page, n, rel, lineno, why, pcts in bad:
-        print("  %s:%d -> %s:%s  %s  quoted %s" % (page, n, rel, lineno, why, ", ".join(p + "%" for p in pcts)))
+        print("  %s:%d -> %s:%s  %s  quoted %s" % (page, n, rel, lineno, why,
+                                                    ", ".join(p + "%" for p in pcts) or "(no number)"))
     if missing_files:
         print("missing cited files:", ", ".join(sorted(missing_files)))
     if bad:
