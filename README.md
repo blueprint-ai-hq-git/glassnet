@@ -295,7 +295,10 @@ fell from 399.50/395.80 to 207.29/184.32. The same 10x also moved the named-conc
 36/36** passing concepts, on both seeds, at the same parameter count. Two seeds and a 2.28 pp spread between
 them, so these are the values and their mean, not an interval; the architectural levers tried at 20k windows
 - attention (-2.81), window 64 (-1.57), the concept bypass (-1.4 to -3.4) - all went the other way.
-Write-ups: `docs/history/DATASCALE-RESULT.md` and `docs/history/DATASCALE-SEED1-RESULT.md`.
+Doubling the schedule at this rung (6 epochs, seed 0) reached final VAL 18.43% - +1.00 pp over the
+3-epoch run, with the best checkpoint at epoch 5 - so more epochs are not what this rung is missing.
+Write-ups: `docs/history/DATASCALE-RESULT.md`, `docs/history/DATASCALE-SEED1-RESULT.md`,
+`docs/history/DATASCALE-EP6-RESULT.md`.
 
 ## Install and run
 
