@@ -33,10 +33,12 @@ T3  PERPLEXITY. ppl < 171.47.
 
 T4  CONCEPTS. Audit >= 36 of the kept set.
 
-Context that is NOT a prediction: at 2M x 32 = 64M tokens for 3,811,534 params this arm is **16.80
-tokens/param**, the first rung in this family that is not merely "adequate" but close to the 10-20 range the
-trainer's own rule calls well-trained - and note that the trainer now prints this figure correctly
-(`docs/history/TOKENS-PER-PARAM-MISLABEL.md`).
+Context that is NOT a prediction: at 2M x 32 = 64M tokens for 3,811,534 params this arm is **16.79
+tokens/param**. Observed in its own header after the launch:
+`tokens per parameter: 16.79  (well trained)   [windows/params 0.525; windows 2,000,000 x 32 tokens]`
+(`DATASCALE-2M.txt`) - the first rung in this family the trainer calls "well trained", and the first run to
+print the figure correctly (the old label would have said 0.53, under the "UNDER-TRAINED" line;
+`docs/history/TOKENS-PER-PARAM-MISLABEL.md`).
 
 ## What will not be claimed
 
