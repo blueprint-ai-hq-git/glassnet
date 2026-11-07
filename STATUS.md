@@ -171,6 +171,7 @@ from both logs), so the extra data cannot have come from resizing the scored set
 | `datascale_500k_s0` | 0 | **500,000** | **20.81%** | **21.82%** | **171.47** | `lens/runs/DATASCALE-500K.txt:392` |
 | `datascale_2m_s0` | 0 | **2,000,000** | **21.29%** | **22.60%** | **149.14** | `lens/runs/DATASCALE-2M.txt:1142`; best checkpoint ep2 ASST **22.82%** at `lens/runs/DATASCALE-2M.txt:817` |
 | `datascale_500k_nogate_s0` (**gates OFF** control) | 0 | 500,000 | **22.05%** | **23.22%** | **140.27** | `lens/runs/DATASCALE-500K-NOGATE.txt:69` |
+| `sgd_500k_s0` (**plain SGD**, gates OFF) | 0 | 500,000 | 19.81% | 20.38% | 221.78 | `lens/runs/SGD-500K.txt:66` (concepts 31/36) |
 
 **Three seeds, three matched pairs: mean gain +6.42 pp.** Val acc 17.43% / 19.71% / 20.50% against 20k
 baselines of 12.18% / 12.79% / 13.40%, so the paired gains are **+5.25, +6.92 and +7.10 pp** (mean **+6.42**),
@@ -206,6 +207,18 @@ while the run behind the **37.37%** headline prints `METHOD: standard (the old l
 method vs the old loop" has never been measured at a matched rung - that is the next arm. One seed, one rung, and
 +1.24 pp is inside the 3.07 pp seed spread, so this is a direction, not a settled effect; the 7.7x is a measured
 ratio. Write-up: `docs/history/NOGATE-500K-RESULT.md`.
+
+**And the step rule is worth more than the gates.** Adding the third configuration - plain SGD, gates off, same
+rung and seed - gives **19.81% / 20.38% ASST / ppl 221.78**, concepts only **31/36** (`lens/runs/SGD-500K.txt:66`).
+The matched three-way at 500k is therefore **relgrad ungated 22.05 > relgrad gated 20.81 > plain SGD 19.81**: our
+step rule is worth **+2.24 pp** over the loop this project used before, the gates cost **1.24 pp**, and plain SGD
+is 2.3x cheaper per epoch while learning the least. That is awkward for the headline: **37.37% was produced by
+plain SGD** on 16.9M windows in 6 epochs (`TIED-D512-EXT6.txt`), so the best number sits on the weakest-measured
+step rule. The next test is that configuration at that scale - d=512, full corpus, 6 epochs, relgrad, gates off -
+and it needs a **one-epoch cost probe** first, because relgrad is ~2.3x plain SGD per epoch while plain SGD already
+took 1,720 s/epoch at that scale (`docs/history/STATE.md:2771`). One seed per configuration and all three deltas
+sit inside the 3.07 pp seed spread: the ordering is a direction, not a settled effect. Write-up:
+`docs/history/SGD-500K-RESULT.md`.
 
 The concept jump was not predicted by D1/D2, and it repeated: the audit went **20/36 at 20k windows ->
 36/36 at 200k** on both seeds, counted from the AUROC rows rather than from the summary lines.
