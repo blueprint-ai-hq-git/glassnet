@@ -177,6 +177,7 @@ from both logs), so the extra data cannot have come from resizing the scored set
 | `datascale_500k_nogate_s0` (**gates OFF** control) | 0 | 500,000 | **22.05%** | **23.22%** | **140.27** | `lens/runs/DATASCALE-500K-NOGATE.txt:69` |
 | `sgd_500k_s0` (**plain SGD**, gates OFF) | 0 | 500,000 | 19.81% | 20.38% | 221.78 | `lens/runs/SGD-500K.txt:66` (concepts 31/36) |
 | `datascale_2m_nogate_s0` (**gates OFF**, 2M) | 0 | 2,000,000 | **23.12%** | **24.96%** | **104.71** | `lens/runs/DATASCALE-2M-NOGATE.txt:69` |
+| `datascale_4m_nogate_s0` (**gates OFF**, 4M) | 0 | 4,000,000 | **23.74%** | **25.71%** | **95.99** | `lens/runs/DATASCALE-4M-NOGATE.txt:69` |
 
 **Three seeds, three matched pairs: mean gain +6.42 pp.** Val acc 17.43% / 19.71% / 20.50% against 20k
 baselines of 12.18% / 12.79% / 13.40%, so the paired gains are **+5.25, +6.92 and +7.10 pp** (mean **+6.42**),
@@ -212,6 +213,17 @@ below the d=512 headline. The gates-off effect has now been measured at two rung
 Source: `lens/runs/DATASCALE-2M-NOGATE.txt:69`; write-up `docs/history/NOGATE-2M-RESULT.md`. One seed per
 configuration - the 3.07 pp seed spread at 200k is larger than either delta, so direction and speed are solid and
 effect size is not.
+
+**And it is still paying at 4M.** 4,000,000 windows, gates off: **23.74% VAL / 25.71% ASST / ppl 95.99**, concepts
+36/36, 484-490 s per epoch (`lens/runs/DATASCALE-4M-NOGATE.txt:69`). Paired to the 2M ungated arm that is **+0.62 pp
+for 2x data = 0.62 pp/doubling**, against 0.54 pp/doubling for the 500k->2M step: the ungated rate has not decayed,
+which is the opposite of what the gated ladder reported. All five pre-registered checks passed (V1 > 23.12, V2 inside
+23.4-24.6, V3 ppl < 104.71, V4 mechanical, V5 concepts), and the one generic check that failed is C4 - **epoch 3
+equals epoch 2 to two decimals (23.75 -> 23.74)** while perplexity kept falling, so the arm plateaued on accuracy
+inside the run. That plateau is the next question, not more data: the arm is limited by its 15,625 steps x 3 epochs,
+so "more epochs at 4M" and "bigger batches" are different experiments and neither has been run. **23.74% is the best
+d=256 held-out number on record**, 2.45 pp above the gated 2M arm and 13.63 pp below the d512 headline. One seed;
+the 3.07 pp spread at 200k dwarfs the +0.62 pp. Write-up: `docs/history/NOGATE-4M-RESULT.md`.
 
 **The gates were part of that ceiling, and the headline was never gated.** Same 500k rung, same step rule, same
 data, gates OFF: **22.05% VAL / 23.22% ASST / ppl 140.27** against the gated arm's 20.81 / 21.82 / 171.47 - and

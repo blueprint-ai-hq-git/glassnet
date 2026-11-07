@@ -296,6 +296,7 @@ two seeds:
 | `d=256`, 500,000 windows, seed 0, **gates OFF** | **22.05%** | `lens/runs/DATASCALE-500K-NOGATE.txt:69` |
 | `d=256`, 500,000 windows, seed 0, **plain SGD**, gates OFF | 19.81% | `lens/runs/SGD-500K.txt:66` |
 | `d=256`, 2,000,000 windows, seed 0, **gates OFF** | **23.12%** | `lens/runs/DATASCALE-2M-NOGATE.txt:69` |
+| `d=256`, 4,000,000 windows, seed 0, **gates OFF** | **23.74%** | `lens/runs/DATASCALE-4M-NOGATE.txt:69` |
 
 Paired within-seed gains **+5.25, +6.92 and +7.10 points (mean +6.42)**; three-seed mean held-out accuracy
 **19.21%**, and perplexity down from 399.50/395.80/384.39 to 207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
@@ -308,8 +309,11 @@ architectural levers tried at 20k windows - attention (-2.81), window 64 (-1.57)
 windows **20.81%**, 2,000,000 windows **21.29%** - 1.58, then 2.56, then **0.24 pp per doubling**. With the gates
 off the same two rungs give **22.05%** and **23.12%** (**0.54 pp/doubling**), i.e. still climbing, and 23.12% is
 the highest d=256 held-out number on record. Both ungated arms also run ~8x faster than their gated twins. So
-"more data stopped helping" was true of the gated method, not of the data: the curve flattens, the gated one
-flattens harder, and the best d256 configuration measured here is our step rule with the gates off.
+"more data stopped helping" was true of the gated method, not of the data. At 4,000,000 windows the ungated arm
+reaches **23.74%** (ASST 25.71%, ppl 95.99) - **+0.62 pp for 2x data, i.e. 0.62 pp/doubling, higher than the 0.54 of
+the previous step**, so the rate is not decaying. It did plateau on accuracy between epochs 2 and 3 (23.75 ->
+23.74), which points at steps rather than data as the next limit. The best configuration measured here is our step
+rule with the gates off, and 23.74% is the best d256 held-out number on record.
 
 **And the gates cost more than data ever bought.** At the same 500k rung, same step rule, same data, switching
 the gap and agreement gates off gives **22.05%** instead of 20.81% (+1.24 pp) and runs **7.7x faster**
