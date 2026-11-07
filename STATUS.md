@@ -173,6 +173,15 @@ tight interval. Grader: `lens/scripts/datascale_grade.py`; write-up `docs/histor
 The concept jump was not predicted by D1/D2, and it repeated: the audit went **20/36 at 20k windows ->
 36/36 at 200k** on both seeds, counted from the AUROC rows rather than from the summary lines.
 
+**Is the 3-epoch schedule truncating it? No.** A 6-epoch arm at 200k, seed 0, one knob changed
+(`docs/history/DATASCALE-EP6-PREDICTIONS.md` written first), reached final VAL **18.43% / ppl 201.69** - a gain
+of **+1.00 pp** over the 3-epoch 17.43, landing exactly on the predicted threshold, so E1 is graded **PARTIAL**
+by its own wording (E2 ppl PASS). The path there was a swing, not a climb: 17.48, 17.90, 17.43, **15.13**,
+**19.68**, 18.43 - and the best saved checkpoint is epoch 5 (ASST 20.83% vs 18.87% for the 3-epoch arm). So
+doubling the schedule doubles the cost for +1.00 pp of endpoint and a better best-checkpoint, and this rung is
+unstable epoch-to-epoch. Write-up: `docs/history/DATASCALE-EP6-RESULT.md`; the 3-epoch result is not averaged
+with it.
+
 Caveats, stated because they matter: **two seeds**, so no p-value and no invented interval - the two values
 and their mean are what is published. The 20k rung's measured run-to-run spread is 1.03 pp
 (`docs/history/REF-REPRO.md`), and the two seeds themselves differ by 2.28 pp, i.e. seed-to-seed variation at
