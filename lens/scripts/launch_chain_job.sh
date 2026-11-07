@@ -17,7 +17,7 @@ UNIT="glassnet-chain-${LABEL}"
 LOG="lens/runs/CHAIN-LAUNCH-${LABEL}.txt"
 
 [ -f "$WORK" ] || { echo "REFUSED: $WORK is not a file (pass a script path, not a command line)" | tee -a "$LOG"; exit 2; }
-bash -n "$WORK" || { echo "REFUSED: $WORK does not parse as bash" | tee -a "$LOG"; exit 2; }
+bash -n "$WORK" 2>/dev/null || { echo "REFUSED: $WORK does not parse as bash (a binary or a broken script)" | tee -a "$LOG"; exit 2; }
 
 {
   echo "=== $(date '+%F %T') launch chain label=$LABEL work=$WORK unit=$UNIT"
