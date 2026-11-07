@@ -313,7 +313,9 @@ the highest d=256 held-out number on record. Both ungated arms also run ~8x fast
 reaches **23.74%** (ASST 25.71%, ppl 95.99) - **+0.62 pp for 2x data, i.e. 0.62 pp/doubling, higher than the 0.54 of
 the previous step**, so the rate is not decaying. It did plateau on accuracy between epochs 2 and 3 (23.75 ->
 23.74), which points at steps rather than data as the next limit. The best configuration measured here is our step
-rule with the gates off, and 23.74% is the best d256 held-out number on record.
+rule with the gates off. 23.74% is the best number in this capped-window ladder (<=4M windows, 3 epochs); it is not
+the best d256 number in the project - full-corpus d256 runs reach 35.72% by position (`docs/history/STATE.md:146`),
+10.01 pp higher on the comparable metric.
 
 **And the gates cost more than data ever bought.** At the same 500k rung, same step rule, same data, switching
 the gap and agreement gates off gives **22.05%** instead of 20.81% (+1.24 pp) and runs **7.7x faster**
