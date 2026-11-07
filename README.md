@@ -360,6 +360,8 @@ without losing work. Long runs are launched through small scripts so the machine
 
 ## Repository map
 
+`models/` - the published checkpoints, their measured accuracy and their checksums.
+
 ```
 lens/                 the model and its engine
   tensor.py           Tensor, ops, backward pass  (9/9 gradient checks PASS)
