@@ -1,3 +1,7 @@
+## 2026-11-07
+
+Today's changes, each with its log line: `docs/history/DAILY-2026-11-07.md`.
+
 # Where GlassNet is right now
 
 Updated: 2026-11-06. Every figure below comes from a run recorded in `docs/history/` or `lens/runs/`.
