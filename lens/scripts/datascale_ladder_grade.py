@@ -62,7 +62,7 @@ SPECS = {
     },
 }
 
-EP = re.compile(r"ep (\d)/3\s+loss ([\d.]+)\s+concept ([\d.]+)\s+acc ([\d.]+)%\s+VAL ppl ([\d.]+)\s+acc ([\d.]+)%.*?"
+EP = re.compile(r"ep (\d)/(\d+)\s+loss ([\d.]+)\s+concept ([\d.]+)\s+acc ([\d.]+)%\s+VAL ppl ([\d.]+)\s+acc ([\d.]+)%.*?"
                 r"ASST\(by-position\) ppl ([\d.]+)\s+acc ([\d.]+)%")
 FINAL = re.compile(r"final VAL ppl ([\d.]+)\s+acc ([\d.]+)%\s+concepts (\d+)/(\d+)")
 KEPT = re.compile(r"concepts: (\d+) kept, (\d+) dropped")
@@ -98,8 +98,8 @@ def main() -> int:
 
     eps = {}
     for match in EP.finditer(text):
-        eps[int(match.group(1))] = {"ppl": float(match.group(5)), "val": float(match.group(6)),
-                                    "asst": float(match.group(8))}
+        eps[int(match.group(1))] = {"ppl": float(match.group(6)), "val": float(match.group(7)),
+                                    "asst": float(match.group(9))}
     fin = FINAL.search(text)
     verdict_ep = (max(eps, key=lambda k: eps[k]["val"]) if (spec.get("best_of_all_epochs") and eps) else 3)
     if verdict_ep not in eps or not fin:
