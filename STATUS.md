@@ -156,20 +156,28 @@ same 36-concept set, **same 3,811,534 parameters**, no bypass, seed 0 - and the 
 held-out set** in both runs (`n=44418` masked / `n=58191` assistant positions in each epoch-3 line, verified
 from both logs), so the extra data cannot have come from resizing the scored set.
 
-| run | windows | VAL acc | ASST acc | final ppl | source |
-|---|---:|---:|---:|---:|---|
-| `wall_off` seed 0 | 20,000 | 12.18% | 13.00% | 399.50 | `lens/runs/WALL-AB.txt:116` |
-| `datascale_honest_s0` | 200,000 | **17.43%** | 18.61% | **207.29** | `lens/runs/DATASCALE-HONEST.txt:230` |
+| run | seed | windows | VAL acc | ASST acc | final ppl | source |
+|---|---:|---:|---:|---:|---:|---|
+| `wall_off` | 0 | 20,000 | 12.18% | 13.00% | 399.50 | `lens/runs/WALL-AB.txt:116` |
+| `datascale_honest_s0` | 0 | 200,000 | **17.43%** | 18.61% | 207.29 | `lens/runs/DATASCALE-HONEST.txt:230` |
+| `wall_off` | 1 | 20,000 | 12.79% | 13.21% | 395.80 | `lens/runs/WALL-AB.txt:850` |
+| `datascale_honest_s1` | 1 | 200,000 | **19.71%** | **20.82%** | **184.32** | `lens/runs/DATASCALE-HONEST-s1.txt:262` |
 
-**+5.25 points** and perplexity 48.1% lower (399.50 -> 207.29); best held-out checkpoint is epoch 2 at ASST
-18.87%. A second effect, not predicted: the concept audit went from **20/36 to 36/36** passing at the same
-36-concept set and the same parameter count (counted from the AUROC rows in both logs, not from the summary
-line). Pre-registered predictions: D1 wanted +3 to +8 pp (got +5.25, **PASS, inside the band**), D2 wanted
-ppl < 300 (got 207.29, **PASS**); both of D1's falsifiers were registered in advance and neither fired.
+**Replicated on the second seed.** Seed 1 was pre-registered (`docs/history/DATASCALE-SEED1-PREDICTIONS.md`)
+and passed every check: VAL 19.71% inside the 15.18-20.18% band (R1 PASS), ppl 184.32 < 300 (R2 PASS), and the
+concept audit again **36/36** (C1 PASS). Within-seed gains: **+5.25 pp (seed 0) and +6.92 pp (seed 1), mean
++6.09**; mean VAL 18.57%, mean ASST 19.71%. The two seeds differ by 2.28 pp, which is larger than the 1.03 pp
+run-to-run spread measured at the 20k rung, so the honest statement is the two values and their mean, not a
+tight interval. Grader: `lens/scripts/datascale_grade.py`; write-up `docs/history/DATASCALE-SEED1-RESULT.md`.
 
-Caveats, stated because they matter: **one seed**; the 20k rung's measured run-to-run spread is 1.03 pp
-(`docs/history/REF-REPRO.md`), so the gain is 5.1x the noise, not a significance test. The headline number
-is unchanged - best held-out accuracy is still **37.37%** (d=512, full corpus, 6 epochs). Checkpoint
-provenance verified directly on the files this run: params counted off `ep3` = 3,811,534 (matches the log),
-`best.npz` is byte- and array-identical to `ep2` (the epoch the log named) and differs from `ep3`, meta says
-seed 0 / no bypass. Full write-up: `docs/history/DATASCALE-RESULT.md`.
+The concept jump was not predicted by D1/D2, and it repeated: the audit went **20/36 at 20k windows ->
+36/36 at 200k** on both seeds, counted from the AUROC rows rather than from the summary lines.
+
+Caveats, stated because they matter: **two seeds**, so no p-value and no invented interval - the two values
+and their mean are what is published. The 20k rung's measured run-to-run spread is 1.03 pp
+(`docs/history/REF-REPRO.md`), and the two seeds themselves differ by 2.28 pp, i.e. seed-to-seed variation at
+this rung is the larger of the two. The headline is unchanged - best held-out accuracy is still **37.37%**
+(d=512, full corpus, 6 epochs). Checkpoints verified with `verify_wall_ab_ckpt.py`: the seed-1 arm is 1/1
+clean, the parameter count off the stored arrays is 3,811,534 in both seeds, and `best.npz` equals the epoch
+the log named. Write-ups: `docs/history/DATASCALE-RESULT.md` (seed 0) and
+`docs/history/DATASCALE-SEED1-RESULT.md` (seed 1).
