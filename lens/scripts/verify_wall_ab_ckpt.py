@@ -106,7 +106,11 @@ def main():
         lines = f.readlines()
 
     rows = []
+    skipped_nofinal = 0   # block seen, no "final VAL" line yet (a live or killed arm)
+    skipped_nosave = 0    # block with a final line but no checkpoint save line (an echoed banner)
+    nblocks = 0
     for arm, seed, body in blocks(lines):
+        nblocks += 1
         final = None
         best = None
         eps = {}
@@ -133,11 +137,13 @@ def main():
             if m:
                 saved_tag = m.group(1)
         if final is None:
+            skipped_nofinal += 1
             continue  # aborted/restarted block, no arm number to verify
         # A block that never wrote a checkpoint is not an arm: the runners echo "final VAL" and "----- all ..."
         # banners after a run, and those echoes were being counted as extra arms (and then as provenance
         # failures, because no such checkpoint exists). An arm must carry its own save line.
         if saved_tag is None:
+            skipped_nosave += 1
             continue
         tag = saved_tag
         rows.append(dict(arm=arm, seed=seed, tag=tag, final=final, best=best, eps=eps,
@@ -215,6 +221,14 @@ def main():
             " ".join(n for n in note if n)))
 
     print("")
+    if skipped_nofinal or skipped_nosave:
+        print("blocks seen: %d  skipped: %d without a 'final VAL' line (live or killed arm), "
+              "%d without a save line (echoed banner)" % (nblocks, skipped_nofinal, skipped_nosave))
+    if not rows:
+        # A vacuous summary is worse than no summary: "0 arms verified, 0 problems" reads like a clean pass.
+        # Measured 2026-11-07 on the 8M log, which had epoch 1 and a resume but no final line yet.
+        print("NOTHING VERIFIED - no block has both a final line and a save line. This is NOT a pass.")
+        return 3
     print("arms verified: %d, arms with a provenance problem: %d" % (len(rows), bad))
     print("NOTE: a number is only quoted in docs from the log line; this script proves the")
     print("      checkpoint that carries it is the one the log named, not a restarted twin.")
