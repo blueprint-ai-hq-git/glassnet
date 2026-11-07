@@ -52,7 +52,24 @@ def sha256(path):
 
 
 def blocks(lines):
-    """Split the log into (arm, seed, body) runs; SKIP/failure markers are not runs."""
+    """Split the log into (arm, seed, body) runs; SKIP/failure markers are not runs.
+
+    A log whose FIRST run predates the marker convention has no "----- off seed N" line at the top (the seed-0
+    200k run in DATASCALE-HONEST.txt is one). Without this, that run is invisible and the tool reports only
+    whatever was appended after it - which is how a stale 41-concept block got to look like the published 17.43%
+    arm. So: if the first marker is not the first content line, emit the leading text as its own arm, labelled
+    UNMARKED, and let the save line inside it supply the tag.
+    """
+    first_marker = None
+    for i, line in enumerate(lines):
+        if RE_START.match(line) and not any(w in line for w in SKIPWORDS):
+            first_marker = i
+            break
+    if first_marker is None or first_marker > 0:
+        head = lines[:first_marker] if first_marker is not None else lines
+        if any("METHOD:" in l or "final VAL" in l for l in head):
+            yield ["UNMARKED", -1, head]
+    lines = lines[first_marker:] if first_marker is not None else []
     cur = None
     for line in lines:
         m = RE_START.match(line)
@@ -130,9 +147,19 @@ def main():
             zb = np.load(bestp, allow_pickle=False)
             m3 = json.loads(str(z3["__meta__"]))
             mb = json.loads(str(zb["__meta__"]))
-            exp = {"off": ("off", False), "on": ("tied", True), "r64": ("lowrank", True)}[r["arm"]]
-            meta_ok = (m3["direct_mode"] == exp[0] and bool(m3["direct"]) == exp[1]
-                       and m3["seed"] == r["seed"])
+            KNOWN = {"off": ("off", False), "on": ("tied", True), "r64": ("lowrank", True)}
+            if r["arm"] in KNOWN:
+                exp = KNOWN[r["arm"]]
+                meta_ok = (m3["direct_mode"] == exp[0] and bool(m3["direct"]) == exp[1]
+                           and m3["seed"] == r["seed"])
+            else:
+                # not a wall-A/B arm (datascale / nogate / sgd / UNMARKED): there is no pinned expectation for
+                # the direct head, so report what the checkpoint says instead of inventing a verdict. The seed
+                # is only comparable when the block carried a marker.
+                dm, dd = m3.get("direct_mode"), bool(m3.get("direct"))
+                meta_ok = ("seed ok" if r["seed"] >= 0 and m3["seed"] == r["seed"]
+                           else ("seed n/a" if r["seed"] < 0 else "SEED-DIFF"))
+                note.append("direct=%s/%s" % (dm, dd))
             params = int(sum(z3[k].size for k in z3.files if k != "__meta__"))
             if r["params_announced"] and params != r["params_announced"]:
                 note.append("PARAMS-DIFF %d vs log %d" % (params, r["params_announced"]))
@@ -146,7 +173,12 @@ def main():
         except Exception as e:  # noqa: BLE001 - report, never hide
             note.append("ERROR %s: %s" % (type(e).__name__, e))
             params = -1
-        ok = meta_ok is True and arrays_ok is True and sha_ok is True and not any(
+        # meta_ok is True for the wall A/B arms (pinned expectation) and a short string for arms that have no
+        # pinned expectation ("seed ok" / "seed n/a"). Both are acceptable; SEED-DIFF is not. Counting the
+        # string case as a failure made a perfectly verified checkpoint (17.43%, sha and arrays identical) print
+        # as a provenance problem, which is the opposite of this tool's job.
+        meta_pass = meta_ok is True or (isinstance(meta_ok, str) and meta_ok in ("seed ok", "seed n/a"))
+        ok = meta_pass and arrays_ok is True and sha_ok is True and not any(
             n.startswith(("FOREIGN", "PARAMS-DIFF", "ERROR")) for n in note)
         bad += 0 if ok else 1
         print("%-14s %-9s %-7.2f %-7s %-6d %-12s %-9s %-7s %s %s" % (
