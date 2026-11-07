@@ -289,12 +289,15 @@ two seeds:
 | `d=256`, 200,000 windows, seed 0 | **17.43%** | `lens/runs/DATASCALE-HONEST.txt:230` |
 | `d=256`, 20,000 windows, seed 1 | 12.79% | `lens/runs/WALL-AB.txt:850` |
 | `d=256`, 200,000 windows, seed 1 | **19.71%** | `lens/runs/DATASCALE-HONEST-s1.txt:262` |
+| `d=256`, 200,000 windows, seed 2 (no matched 20k arm) | **20.50%** | `lens/runs/DATASCALE-HONEST-s2.txt:256` |
 
-Within-seed gains: **+5.25 and +6.92 points, mean +6.09**; mean held-out accuracy 18.57%, and perplexity
-fell from 399.50/395.80 to 207.29/184.32. The same 10x also moved the named-concept audit from **20/36 to
-36/36** passing concepts, on both seeds, at the same parameter count. Two seeds and a 2.28 pp spread between
-them, so these are the values and their mean, not an interval; the architectural levers tried at 20k windows
-- attention (-2.81), window 64 (-1.57), the concept bypass (-1.4 to -3.4) - all went the other way.
+Paired within-seed gains **+5.25 and +6.92 points**; three-seed mean held-out accuracy **19.21%**, a mean
+**+6.73 points** against the 20k baseline mean of 12.485%, and perplexity down from 399.50/395.80 to
+207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
+concepts on all three seeds, at the same parameter count. The three draws span **3.07 points** - three times
+the 1.03 pp run-to-run noise at 20k - so these are the values and their mean, not an interval. The
+architectural levers tried at 20k windows - attention (-2.81), window 64 (-1.57), the concept bypass
+(-1.4 to -3.4) - all went the other way.
 Doubling the schedule at this rung (6 epochs, seed 0) reached final VAL 18.43% - +1.00 pp over the
 3-epoch run, with the best checkpoint at epoch 5 - so more epochs are not what this rung is missing.
 Write-ups: `docs/history/DATASCALE-RESULT.md`, `docs/history/DATASCALE-SEED1-RESULT.md`,

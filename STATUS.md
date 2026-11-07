@@ -162,13 +162,17 @@ from both logs), so the extra data cannot have come from resizing the scored set
 | `datascale_honest_s0` | 0 | 200,000 | **17.43%** | 18.61% | 207.29 | `lens/runs/DATASCALE-HONEST.txt:230` |
 | `wall_off` | 1 | 20,000 | 12.79% | 13.21% | 395.80 | `lens/runs/WALL-AB.txt:850` |
 | `datascale_honest_s1` | 1 | 200,000 | **19.71%** | **20.82%** | **184.32** | `lens/runs/DATASCALE-HONEST-s1.txt:262` |
+| `datascale_honest_s2` | 2 | 200,000 | **20.50%** | **21.47%** | **180.30** | `lens/runs/DATASCALE-HONEST-s2.txt:256` |
 
-**Replicated on the second seed.** Seed 1 was pre-registered (`docs/history/DATASCALE-SEED1-PREDICTIONS.md`)
-and passed every check: VAL 19.71% inside the 15.18-20.18% band (R1 PASS), ppl 184.32 < 300 (R2 PASS), and the
-concept audit again **36/36** (C1 PASS). Within-seed gains: **+5.25 pp (seed 0) and +6.92 pp (seed 1), mean
-+6.09**; mean VAL 18.57%, mean ASST 19.71%. The two seeds differ by 2.28 pp, which is larger than the 1.03 pp
-run-to-run spread measured at the 20k rung, so the honest statement is the two values and their mean, not a
-tight interval. Grader: `lens/scripts/datascale_grade.py`; write-up `docs/history/DATASCALE-SEED1-RESULT.md`.
+**Three seeds, all pre-registered, all 36/36 concepts.** Val acc 17.43% / 19.71% / 20.50%, ASST 18.61% /
+20.82% / 21.47%, mean VAL **19.21%** and mean gain **+6.73 pp** against the 20k baseline mean of 12.485%
+(paired gains +5.25 and +6.92 pp; seed 2 has no matched 20k arm). Both seed-1 checks passed (VAL in band R1,
+ppl < 300 R2, concepts C1); seed 2's band check **failed by 0.32 pp on the high side** - the direction its own
+prediction doc had pre-named as "the band was too conservative" - while its mean and concept checks passed.
+The three draws span **3.07 pp**, three times the 1.03 pp run-to-run noise at the 20k rung, so the values and
+their mean are published and no +/- interval is invented. Graders: `lens/scripts/datascale_grade.py`,
+`lens/scripts/datascale_seed2_grade.py`; write-ups `docs/history/DATASCALE-SEED1-RESULT.md`,
+`docs/history/DATASCALE-SEED2-RESULT.md`.
 
 The concept jump was not predicted by D1/D2, and it repeated: the audit went **20/36 at 20k windows ->
 36/36 at 200k** on both seeds, counted from the AUROC rows rather than from the summary lines.
@@ -182,10 +186,10 @@ doubling the schedule doubles the cost for +1.00 pp of endpoint and a better bes
 unstable epoch-to-epoch. Write-up: `docs/history/DATASCALE-EP6-RESULT.md`; the 3-epoch result is not averaged
 with it.
 
-Caveats, stated because they matter: **two seeds**, so no p-value and no invented interval - the two values
-and their mean are what is published. The 20k rung's measured run-to-run spread is 1.03 pp
-(`docs/history/REF-REPRO.md`), and the two seeds themselves differ by 2.28 pp, i.e. seed-to-seed variation at
-this rung is the larger of the two. The headline is unchanged - best held-out accuracy is still **37.37%**
+Caveats, stated because they matter: **three seeds**, so no p-value and no invented interval - the three
+values and their mean are what is published. The 20k rung's measured run-to-run spread is 1.03 pp
+(`docs/history/REF-REPRO.md`), and the three seeds span 3.07 pp, i.e. seed-to-seed variation at this rung is
+three times the measurement noise and is what limits precision here. The headline is unchanged - best held-out accuracy is still **37.37%**
 (d=512, full corpus, 6 epochs). Checkpoints verified with `verify_wall_ab_ckpt.py`: the seed-1 arm is 1/1
 clean, the parameter count off the stored arrays is 3,811,534 in both seeds, and `best.npz` equals the epoch
 the log named. Write-ups: `docs/history/DATASCALE-RESULT.md` (seed 0) and
