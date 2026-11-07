@@ -55,3 +55,26 @@ string (only prose in `LOG.md`, `ARCHITECTURE-FIX.md`, `AUTOPILOT-LOG.md`), so n
 The 500k arm in flight is unaffected - Python loaded the file at launch, and its log keeps the old line.
 
 **Old logs are not rewritten.** They are the record; this note is the correction attached to them.
+
+## ADDENDUM 2026-11-07 15:3x: the figure counts token INSTANCES, and with stride 16 half of each window duplicates its neighbour
+
+The fix above made the line count tokens instead of windows. There is a second, smaller unit question under it.
+`chat_data.py:166` sets `stride = window // 2`, so consecutive windows share **half their tokens**. The printed
+figure is therefore window-instances x window / params, not distinct corpus tokens seen.
+
+For the 37.37% headline (16,900,000 windows x 32 = **540,800,000 token-instances**, corpus 294,225,090 tokens,
+15,567,566 params):
+
+    instances / corpus       = 1.838   -> each token is covered by ~1.84 windows
+    printed figure, 1 epoch  = 34.74   tokens/param  (instance count)
+    distinct tokens/param    = 18.90   (= corpus / params, i.e. one full pass of the corpus)
+    six epochs               = 208.4 instances/param, 113.4 distinct tokens/param
+
+So the headline is **well trained by either count** (18.9 and 113.4 both exceed the tool's 10 threshold), which is
+why the earlier correction's conclusion stands. But the thresholds are being applied to numbers roughly **twice**
+the distinct-token coverage: the d=256/500k arm prints `4.20 (adequate)` while its distinct coverage is about
+**2.1 tokens/param**, and the 20k arm prints `0.17` for about `0.084`. Anyone reasoning about over- or
+under-training from that line should halve it first.
+
+What was NOT changed: the thresholds themselves. Moving them would silently reclassify every historical run, and
+they are his call, not mine.
