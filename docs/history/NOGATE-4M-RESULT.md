@@ -36,8 +36,11 @@ The per-doubling rate has not decayed (0.54 then 0.62) - the ungated data lever 
 opposite of what the gated ladder said at 2M this morning. Cost grows linearly with data: 2x windows cost 1.95x
 epoch time (487 s against 249.5 s).
 
-**23.74% is the best d=256 held-out number this project has measured**, 2.45 pp above the gated 2M arm and 13.63 pp
-below the d512 headline (37.37%).
+23.74% is the best d=256 number **in the capped-window ladder** (<=4M windows, 3 epochs), 2.45 pp above the gated 2M arm
+and 13.63 pp below the d512 headline (37.37%). **It is not the best d=256 number in the project**: full-corpus d=256
+runs reach **35.72% by position** (`docs/history/STATE.md:146`, 16.9M windows, 6 epochs), 10.01 pp higher on the
+comparable metric. The earlier wording here and on the front page said "best on record", which was wrong and is
+corrected in the same edit.
 
 ## What the plateau inside the run cautions
 

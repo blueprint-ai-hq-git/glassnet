@@ -7,7 +7,8 @@
     20k    12.18%   (gated; the only 20k value that exists)
     200k   17.43%   (gated)
     500k   22.05%   (gates off)  0.54 pp/doubling from 500k to 2M
-    2M     23.12%   (gates off)  <- best d256 on record
+    2M     23.12%   (gates off)  <- best in this capped-window ladder so far (not the project's best d256 -
+                                       full-corpus d256 reaches 35.72% by position, STATE.md:146)
 
 The 2M ungated arm was the first rung where the ungated curve was measured against another ungated rung, and it was
 still rising (+1.07 pp for 4x, which overshot my own band). So the next rung is the honest one to spend GPU on:

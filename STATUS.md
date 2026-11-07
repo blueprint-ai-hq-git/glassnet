@@ -221,8 +221,10 @@ which is the opposite of what the gated ladder reported. All five pre-registered
 23.4-24.6, V3 ppl < 104.71, V4 mechanical, V5 concepts), and the one generic check that failed is C4 - **epoch 3
 equals epoch 2 to two decimals (23.75 -> 23.74)** while perplexity kept falling, so the arm plateaued on accuracy
 inside the run. That plateau is the next question, not more data: the arm is limited by its 15,625 steps x 3 epochs,
-so "more epochs at 4M" and "bigger batches" are different experiments and neither has been run. **23.74% is the best
-d=256 held-out number on record**, 2.45 pp above the gated 2M arm and 13.63 pp below the d512 headline. One seed;
+so "more epochs at 4M" and "bigger batches" are different experiments and neither has been run. 23.74% is the best d=256 number in this **capped-window ladder** (<=4M windows, 3 epochs, honest mix) - 2.45 pp
+above the gated 2M arm and 13.63 pp below the d512 headline - but it is **not** the best d=256 number in the
+project: full-corpus d=256 runs reach **35.72% by position** (`docs/history/STATE.md:146`, 16.9M windows,
+6 epochs), 10.01 pp higher on the comparable metric. Source for the 23.74% row: `lens/runs/DATASCALE-4M-NOGATE.txt:69`. One seed;
 the 3.07 pp spread at 200k dwarfs the +0.62 pp. Write-up: `docs/history/NOGATE-4M-RESULT.md`.
 
 **The gates were part of that ceiling, and the headline was never gated.** Same 500k rung, same step rule, same
