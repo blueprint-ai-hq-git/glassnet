@@ -294,6 +294,7 @@ two seeds:
 | `d=256`, **500,000** windows, seed 0 | **20.81%** | `lens/runs/DATASCALE-500K.txt:392` |
 | `d=256`, **2,000,000** windows, seed 0 | **21.29%** | `lens/runs/DATASCALE-2M.txt:1142` |
 | `d=256`, 500,000 windows, seed 0, **gates OFF** | **22.05%** | `lens/runs/DATASCALE-500K-NOGATE.txt:69` |
+| `d=256`, 500,000 windows, seed 0, **plain SGD**, gates OFF | 19.81% | `lens/runs/SGD-500K.txt:66` |
 
 Paired within-seed gains **+5.25, +6.92 and +7.10 points (mean +6.42)**; three-seed mean held-out accuracy
 **19.21%**, and perplexity down from 399.50/395.80/384.39 to 207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
@@ -314,7 +315,14 @@ the gap and agreement gates off gives **22.05%** instead of 20.81% (+1.24 pp) an
 more (gap 13.15 pp vs 1.44) while held-out accuracy still rises - so at this rung the gates were suppressing
 learning that generalised. Note what the headline above actually is: the 37.37% run prints `METHOD: standard
 (the old loop: plain SGD, our gates OFF)`, so the project's best number comes from the ungated old loop, and
-our own method has never been compared to it at a matched rung. That comparison is the next experiment.
+our own method has never been compared to it at a matched rung.
+
+**So that comparison was run, at 500k.** Three configurations, same rung, same seed, same data: our step rule
+with the gates off **22.05%**, our step rule with the gates on 20.81%, and plain SGD with the gates off
+**19.81%** (and only 31/36 concepts). Our step rule is worth **+2.24 pp** over the loop used before, and the
+gates cost 1.24 pp. Since the 37.37% headline was produced by plain SGD, the headline configuration has never
+been run with the step rule that now measures best - that is the next experiment, starting with a one-epoch
+cost probe at d=512.
 Doubling the schedule at this rung (6 epochs, seed 0) reached final VAL 18.43% - +1.00 pp over the
 3-epoch run, with the best checkpoint at epoch 5 - so more epochs are not what this rung is missing.
 Write-ups: `docs/history/DATASCALE-RESULT.md`, `docs/history/DATASCALE-SEED1-RESULT.md`,
