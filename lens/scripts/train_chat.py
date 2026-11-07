@@ -422,6 +422,11 @@ def main():
                          "held-out probe, and a step the detector refuses is SKIPPED (the weights do not "
                          "move). 'gap+agreement' runs both. The agreement numbers go to "
                          "<out>_agreement.jsonl so the gap gate's schema is untouched.")
+    ap.add_argument("--no-gates", action="store_true",
+                    help="CONTROL ARM ONLY (2026-11-07): run --method ours (our relgrad step rule) with the gap and "
+                         "agreement gates OFF. Without this, --method ours forces a.gates = gap+agreement and there "
+                         "is no way to test whether a ceiling comes from the data or from the gates refusing most "
+                         "late steps (see docs/history/GATE-REFUSALS-VS-LENGTH.md). Default off = unchanged behaviour.")
     ap.add_argument("--gate-variant", default="ema_band",
                     choices=["ema_band", "divergence", "best_band", "gap_level", "rate_ratio",
                              "trend_band", "gap_trend", "off"],
@@ -511,6 +516,10 @@ def main():
         a.agree_variant = "vs_probe"         # the method's own default
         method_note = ("OURS (relgrad step rule + gap gate + agreement gate; "
                        "lens/opt.py + lens/unified.py)")
+        if getattr(a, "no_gates", False):
+            a.gates = "off"
+            method_note = ("OURS STEP RULE, GATES OFF (control arm - relgrad, no gap gate, no agreement gate; "
+                           "everything else identical to the gated arms)")
 
     log("=" * 96)
     log("A MODEL THAT TALKS — licensed human dialogue, our own architecture")
