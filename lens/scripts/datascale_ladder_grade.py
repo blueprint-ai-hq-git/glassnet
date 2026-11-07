@@ -35,6 +35,15 @@ SPECS = {
         "prev": {"name": "gated 500k @ seed 0", "val": 20.81, "ppl": 171.47, "train_acc": 22.25,
                  "file": ROOT / "lens/runs/DATASCALE-500K.txt", "line": 392},
     },
+    "nogate4m_ep6": {
+        "log": ROOT / "lens/runs/DATASCALE-4M-NOGATE-EP6.txt",
+        "pred": "docs/history/NOGATE-4M-EP6-PREDICTIONS.md",
+        # W1 best VAL >= 24.04 (23.74 + 0.3); W2 best in 24.0-25.5; W3 ppl < 95.99; W5 concepts >= 36
+        "c1_min": 24.04, "band": (24.0, 25.5), "c2_max": 95.99, "c3_min": 36, "c4": False,
+        "best_of_all_epochs": True,
+        "prev": {"name": "4M ungated, 3 epochs", "val": 23.74, "ppl": 95.99, "train_acc": 34.68,
+                 "file": ROOT / "lens/runs/DATASCALE-4M-NOGATE.txt", "line": 69},
+    },
     "nogate4m": {
         "log": ROOT / "lens/runs/DATASCALE-4M-NOGATE.txt",
         "pred": "docs/history/NOGATE-4M-PREDICTIONS.md",
@@ -92,16 +101,17 @@ def main() -> int:
         eps[int(match.group(1))] = {"ppl": float(match.group(5)), "val": float(match.group(6)),
                                     "asst": float(match.group(8))}
     fin = FINAL.search(text)
-    if 3 not in eps or not fin:
-        print("\nprogress: epochs seen %s - no epoch 3 yet -> UNDETERMINED" % (sorted(eps) or "none"))
+    verdict_ep = (max(eps, key=lambda k: eps[k]["val"]) if (spec.get("best_of_all_epochs") and eps) else 3)
+    if verdict_ep not in eps or not fin:
+        print("\nprogress: epochs seen %s - no verdict epoch yet -> UNDETERMINED" % (sorted(eps) or "none"))
         for n in sorted(eps):
             print("  ep %d  VAL %.2f%%  ppl %.2f" % (n, eps[n]["val"], eps[n]["ppl"]))
         return 0 if pin_ok else 1
 
-    val, ppl, asst = eps[3]["val"], eps[3]["ppl"], eps[3]["asst"]
+    val, ppl, asst = eps[verdict_ep]["val"], eps[verdict_ep]["ppl"], eps[verdict_ep]["asst"]
     cpass, ctot = int(fin.group(3)), int(fin.group(4))
-    print("\nresult: VAL %.2f%%  ASST %.2f%%  ppl %.2f  concepts %d/%d  (kept %s)"
-          % (val, asst, ppl, cpass, ctot, kept))
+    print("\nresult (verdict epoch %d): VAL %.2f%%  ASST %.2f%%  ppl %.2f  concepts %d/%d  (kept %s)"
+          % (verdict_ep, val, asst, ppl, cpass, ctot, kept))
     print("paired against %s: %.2f%% -> %.2f%%  (%+.2f pp)"
           % (prev["name"], prev["val"], val, val - prev["val"]))
 
