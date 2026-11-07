@@ -25,7 +25,15 @@ bash -n "$WORK" 2>/dev/null || { echo "REFUSED: $WORK does not parse as bash (a 
     echo "REFUSED: $UNIT is already active - one chain job per label at a time"
     exit 0
   fi
+  # A stopped/killed transient unit stays "loaded" in /run/user/$UID/systemd/transient, and systemd-run then
+  # refuses: "Unit ... was already loaded or has a fragment file" (measured 19:01:21, exactly when a killed chain
+  # needed relaunching under the same label). Clear the leftover definition before creating it again.
   systemctl --user reset-failed "$UNIT" 2>/dev/null || true
+  if [ -e "/run/user/$(id -u)/systemd/transient/$UNIT.service" ]; then
+    rm -f "/run/user/$(id -u)/systemd/transient/$UNIT.service"
+    systemctl --user daemon-reload 2>/dev/null || true
+    echo "cleared leftover transient unit $UNIT"
+  fi
   systemd-run --user --unit="$UNIT" \
     -p MemoryMax=14G -p KillMode=process -p TimeoutStopSec=infinity \
     -p CPUWeight=20 -p IOWeight=20 \
