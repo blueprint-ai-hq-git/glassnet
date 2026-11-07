@@ -35,6 +35,14 @@ SPECS = {
         "prev": {"name": "gated 500k @ seed 0", "val": 20.81, "ppl": 171.47, "train_acc": 22.25,
                  "file": ROOT / "lens/runs/DATASCALE-500K.txt", "line": 392},
     },
+    "nogate16m": {
+        "log": ROOT / "lens/runs/DATASCALE-16M-NOGATE.txt",
+        "pred": "docs/history/NOGATE-16M-PREDICTIONS.md",
+        # Y1 VAL > 24.51 strict; Y2 lands 24.7-25.4; Y3 ppl < 87.55; Y5 concepts >= 36
+        "c1_min": 24.51, "c1_strict": True, "band": (24.7, 25.4), "c2_max": 87.55, "c3_min": 36, "c4": True,
+        "prev": {"name": "8M ungated", "val": 24.51, "ppl": 87.55, "train_acc": 34.31,
+                 "file": ROOT / "lens/runs/DATASCALE-8M-NOGATE.txt", "line": 235},
+    },
     "nogate8m": {
         "log": ROOT / "lens/runs/DATASCALE-8M-NOGATE.txt",
         "pred": "docs/history/NOGATE-8M-PREDICTIONS.md",
