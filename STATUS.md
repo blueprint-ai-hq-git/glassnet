@@ -70,7 +70,8 @@ A wrong number is worse than a missing one, so these are listed with the correct
 | `train_chat.py` printed `len(Xtr) / params` under the label "tokens per parameter" - but `len(Xtr)` counts **windows** | every such figure in every log is low by exactly 32x, and the "UNDER-TRAINED" verdict was computed on it: the d=512 / 4M-window rung printed **0.26 (UNDER-TRAINED)** when it truly had **8.22 (`adequate`)**, and the d=256 arms are 0.17 / 1.68 / 4.20 at 20k / 200k / 500k windows, not 0.01 / 0.05 / 0.13. Recorded once as a *prediction* error (`AUTOPILOT-LOG.md:4552`) and never fixed in code; now computes tokens and prints the old ratio beside it so old logs stay comparable | `docs/history/TOKENS-PER-PARAM-MISLABEL.md`, `lens/scripts/train_chat.py:830` |
 | A restarted run rewrote `<out>_best.npz` from its own epoch 1 | `wall_off_s0`'s epoch-3 checkpoint was replaced by an aborted second attempt's epoch 1. Repaired earlier; the **guard is now wired into the trainer and proven at the call site** (2 hunks, patch sha256 f10dc89e -> e5acd0aa, 4/4 unit tests, `--check` import=True call=True, and the end-to-end pair: run 2 printed 1 `CLOBBER GUARD` line, archived run 1's best.npz as sha256 b349a10b... with a receipt, and wrote its own 422ebc7e...) | `docs/history/BEST-CKPT-GUARD-APPLIED.md`, `lens/runs/BEST-CKPT-GUARD-E2E.txt` |
 
-Every percentage on this page and in `README.md` that carries a `file:line` citation is now checked mechanically: `lens/scripts/check_public_cites.py` opens each cited line and fails if the quoted number is not on any cited line of that row (missing file, line past the end, blank line, or a number that appears nowhere it cites). Current state: **31 cited rows on these two pages and 54 across all of `docs/history`, 0 problems**. It has already earned its keep twice - it found a citation to a **blank** line (`STATE.md:2768`, the 37.37% claim, now `:2770`) and a table row that cited the `final VAL` line while also quoting that arm's ASST, a number only on the epoch line (`WALL-AB.txt:850` -> `:765`). It does not judge which column a number came from - that mistake (P1, VAL vs ASST) still needs a human eye.
+Every percentage on this page and in `README.md` that carries a `file:line` citation is now checked mechanically: `lens/scripts/check_public_cites.py` opens each cited line and fails if the quoted number is not on any cited line of that row (missing file, line past the end, blank line, or a number that appears nowhere it cites). Current state: **33 cited rows on these two pages and 56 across all of `docs/history`, 0 problems**. It has already earned its keep three times - it found a citation to a **blank** line (`STATE.md:2768`, the 37.37% claim, now `:2770`) and a table row that cited the `final VAL` line while also quoting that arm's ASST, a number only on the epoch line (`WALL-AB.txt:850` -> `:765`) - and a third time on this very page, catching a new 2M row that quoted a
+best-checkpoint 22.82% cited only to the final-epoch line. It does not judge which column a number came from - that mistake (P1, VAL vs ASST) still needs a human eye.
 
 ## Wall A/B (concept-wall bottleneck) - FINISHED 2026-11-06 17:51, six arms, P1 FAILs as coded (band mixes two columns)
 
@@ -168,6 +169,7 @@ from both logs), so the extra data cannot have come from resizing the scored set
 | `datascale_honest_s1` | 1 | 200,000 | **19.71%** | **20.82%** | **184.32** | `lens/runs/DATASCALE-HONEST-s1.txt:262` |
 | `datascale_honest_s2` | 2 | 200,000 | **20.50%** | **21.47%** | **180.30** | `lens/runs/DATASCALE-HONEST-s2.txt:256` |
 | `datascale_500k_s0` | 0 | **500,000** | **20.81%** | **21.82%** | **171.47** | `lens/runs/DATASCALE-500K.txt:392` |
+| `datascale_2m_s0` | 0 | **2,000,000** | **21.29%** | **22.60%** | **149.14** | `lens/runs/DATASCALE-2M.txt:1142`; best checkpoint ep2 ASST **22.82%** at `lens/runs/DATASCALE-2M.txt:817` |
 
 **Three seeds, three matched pairs: mean gain +6.42 pp.** Val acc 17.43% / 19.71% / 20.50% against 20k
 baselines of 12.18% / 12.79% / 13.40%, so the paired gains are **+5.25, +6.92 and +7.10 pp** (mean **+6.42**),
@@ -179,15 +181,17 @@ pre-named as "the band was too conservative", while its mean and concept checks 
 `lens/scripts/datascale_grade.py`, `lens/scripts/datascale_seed2_grade.py`; write-ups
 `docs/history/DATASCALE-SEED1-RESULT.md`, `DATASCALE-SEED2-RESULT.md`, `DATASCALE-20K-S2-RESULT.md`.
 
-**The lever had not flattened at 200k.** 500,000 windows at seed 0 reached **20.81% VAL / 21.82% ASST / ppl
-171.47**, concepts 36/36, and passed all four pre-registered checks (`docs/history/DATASCALE-500K-PREDICTIONS.md`
--> C1 VAL >= 18.93, C2 ppl < 207.29, C3 concepts >= 36, C4 ep3 >= ep2). Paired to the same seed: **17.43% ->
-20.81%, +3.38 pp for 2.5x data**, after +5.25 pp for the first 10x. In pp per doubling that is **1.58 -> 2.56**,
-i.e. the marginal gain rose rather than decayed - on one seed, so the steepening itself is not established, only
-that the curve was still rising at 500k. Checkpoint verified (1 arm, 0 provenance problems), best checkpoint is
-epoch 3. Source: `lens/runs/DATASCALE-500K.txt:392`; grader `lens/scripts/datascale_500k_grade.py`; write-up
-`docs/history/DATASCALE-500K-RESULT.md`. This is the highest d=256 value measured, and still 16.56 pp below the
-d=512 headline.
+**The lever bends flat between 500k and 2M - and that is the answer.** 2,000,000 windows at seed 0 reached
+**21.29% VAL / 22.60% ASST / ppl 149.14**, concepts 36/36, and the pre-registered checks split: T1 (> 20.81%)
+PASS at **+0.48 pp**, T3 and T4 PASS, **T2 FAIL** (landed 0.21 pp below its 21.5% floor) and **C4 FAIL** (epoch 3
+at 21.29% is 0.40 pp *below* epoch 2, so the best checkpoint - ASST 22.82% - is epoch 2, not the final one). The
+whole seed-0 ladder is now 12.18 -> 17.43 -> 20.81 -> 21.29%, i.e. **1.58, then 2.56, then 0.24 pp per
+doubling**: 100x data bought +9.11 pp in total and the last 4x bought 5.3% of it, while perplexity kept falling
+(399.50 -> 149.14) as accuracy stopped rising. So the earlier "not flattened at 200k" note is now completed by
+the rung above it: the curve rose one more step and then flattened, and 0.24 pp/doubling is inside the 3.07 pp
+seed spread, so the last rung is not distinguishable from noise on one seed. Source: `lens/runs/DATASCALE-2M.txt:1142`;
+grader `lens/scripts/datascale_ladder_grade.py 2m`; write-up `docs/history/DATASCALE-2M-RESULT.md`. Not
+comparable to the older 2M result at batch 1024 (24.20%) - different batch and sampling path.
 
 The concept jump was not predicted by D1/D2, and it repeated: the audit went **20/36 at 20k windows ->
 36/36 at 200k** on both seeds, counted from the AUROC rows rather than from the summary lines.
