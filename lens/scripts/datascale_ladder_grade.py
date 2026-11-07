@@ -27,6 +27,14 @@ SPECS = {
         "prev": {"name": "seed 0 @ 200k", "val": 17.43, "ppl": 207.29,
                  "file": ROOT / "lens/runs/DATASCALE-HONEST.txt", "line": 230},
     },
+    "nogate": {
+        "log": ROOT / "lens/runs/DATASCALE-500K-NOGATE.txt",
+        "pred": "docs/history/NOGATE-500K-PREDICTIONS.md",
+        # G1 VAL >= 21.81 (gated twin + 1.0 pp); G2 gap pair vs the gated twin; G3 mechanical; G4 concepts >= 36
+        "c1_min": 21.81, "c2_max": 171.47, "c3_min": 36, "c4": True, "gap_check": True,
+        "prev": {"name": "gated 500k @ seed 0", "val": 20.81, "ppl": 171.47, "train_acc": 22.25,
+                 "file": ROOT / "lens/runs/DATASCALE-500K.txt", "line": 392},
+    },
     "2m": {
         "log": ROOT / "lens/runs/DATASCALE-2M.txt",
         "pred": "docs/history/DATASCALE-2M-PREDICTIONS.md",
@@ -112,6 +120,29 @@ def main() -> int:
                   % (eps[2]["val"], val, "PASS" if val >= eps[2]["val"] else "FAIL"))
         else:
             print("  ep2 missing -> UNDETERMINED")
+
+    if spec.get("gap_check"):
+        print("\nG2 OVERFITTING SIGNATURE (train acc minus VAL acc, same epoch)")
+        t3 = None
+        for match in re.finditer(r"ep 3/3\s+loss [\d.]+\s+concept [\d.]+\s+acc ([\d.]+)%\s+VAL ppl [\d.]+\s+acc ([\d.]+)%", text):
+            t3 = (float(match.group(1)), float(match.group(2)))
+        if t3 and "train_acc" in prev:
+            print("  this arm : train %.2f%% - VAL %.2f%% = gap %.2f pp" % (t3[0], t3[1], t3[0] - t3[1]))
+            print("  gated twin: train %.2f%% - VAL %.2f%% = gap %.2f pp"
+                  % (prev["train_acc"], prev["val"], prev["train_acc"] - prev["val"]))
+            print("  -> this arm overfits %+.2f pp more, while its VAL is %+.2f pp %s"
+                  % ((t3[0] - t3[1]) - (prev["train_acc"] - prev["val"]), val - prev["val"],
+                     "BETTER" if val > prev["val"] else "worse"))
+
+    ag = len(re.findall(r"agreement step", text))
+    gs = len(re.findall(r"^\s+gate step", text, re.M))
+    method = ""
+    mm = re.search(r"METHOD: (.+)", text)
+    if mm:
+        method = mm.group(1).strip()
+    print("\nG3 MECHANICAL - arm must prove it tested what it claims")
+    print("  agreement-step lines=%d  gate-step lines=%d  METHOD=%s" % (ag, gs, method[:70]))
+    print("  -> %s" % ("PASS (gates demonstrably absent)" if (ag == 0 and gs == 0) else "FAIL - arm is void"))
 
     print("\nNo significance test. Headline (37.37%, d=512, full corpus, 6 epochs) unchanged.")
     return 0 if pin_ok else 1

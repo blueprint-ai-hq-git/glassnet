@@ -170,6 +170,7 @@ from both logs), so the extra data cannot have come from resizing the scored set
 | `datascale_honest_s2` | 2 | 200,000 | **20.50%** | **21.47%** | **180.30** | `lens/runs/DATASCALE-HONEST-s2.txt:256` |
 | `datascale_500k_s0` | 0 | **500,000** | **20.81%** | **21.82%** | **171.47** | `lens/runs/DATASCALE-500K.txt:392` |
 | `datascale_2m_s0` | 0 | **2,000,000** | **21.29%** | **22.60%** | **149.14** | `lens/runs/DATASCALE-2M.txt:1142`; best checkpoint ep2 ASST **22.82%** at `lens/runs/DATASCALE-2M.txt:817` |
+| `datascale_500k_nogate_s0` (**gates OFF** control) | 0 | 500,000 | **22.05%** | **23.22%** | **140.27** | `lens/runs/DATASCALE-500K-NOGATE.txt:69` |
 
 **Three seeds, three matched pairs: mean gain +6.42 pp.** Val acc 17.43% / 19.71% / 20.50% against 20k
 baselines of 12.18% / 12.79% / 13.40%, so the paired gains are **+5.25, +6.92 and +7.10 pp** (mean **+6.42**),
@@ -192,6 +193,19 @@ the rung above it: the curve rose one more step and then flattened, and 0.24 pp/
 seed spread, so the last rung is not distinguishable from noise on one seed. Source: `lens/runs/DATASCALE-2M.txt:1142`;
 grader `lens/scripts/datascale_ladder_grade.py 2m`; write-up `docs/history/DATASCALE-2M-RESULT.md`. Not
 comparable to the older 2M result at batch 1024 (24.20%) - different batch and sampling path.
+
+**The gates were part of that ceiling, and the headline was never gated.** Same 500k rung, same step rule, same
+data, gates OFF: **22.05% VAL / 23.22% ASST / ppl 140.27** against the gated arm's 20.81 / 21.82 / 171.47 - and
+**72 s per epoch instead of 558, 7.7x faster** (`lens/runs/DATASCALE-500K-NOGATE.txt:69`, twin at
+`DATASCALE-500K.txt:392`). All four pre-registered checks passed (G1 +1.24 pp, G2, G3 mechanical 0 gate lines,
+G4 36/36 concepts). The gates let the model fit the training set far harder (22.25% -> 35.20% train) and overfit
+far more (train-minus-VAL gap 1.44 -> 13.15 pp) **while held-out accuracy rose** - so at this rung they were
+suppressing learning that generalised. That matters beyond the rung: every ladder arm ran `--method ours` (gated),
+while the run behind the **37.37%** headline prints `METHOD: standard (the old loop: plain SGD, our gates OFF)`
+(`lens/runs/TIED-D512-EXT6.txt`). The project's best number therefore comes from the ungated old loop, and "our
+method vs the old loop" has never been measured at a matched rung - that is the next arm. One seed, one rung, and
++1.24 pp is inside the 3.07 pp seed spread, so this is a direction, not a settled effect; the 7.7x is a measured
+ratio. Write-up: `docs/history/NOGATE-500K-RESULT.md`.
 
 The concept jump was not predicted by D1/D2, and it repeated: the audit went **20/36 at 20k windows ->
 36/36 at 200k** on both seeds, counted from the AUROC rows rather than from the summary lines.
