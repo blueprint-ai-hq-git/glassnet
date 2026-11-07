@@ -32,7 +32,9 @@ CONCEPTS_MIN = 36
 # Formats verified against the real log (DATASCALE-4M-NOGATE.txt:153-154), not assumed:
 #   ep 3/3  loss 4.2678 concept 0.6257 acc 34.68%   VAL ppl 95.99 acc 23.74%   MASKED ... ASST(by-position) ppl 78.17 acc 25.71%
 #   final VAL ppl 95.99  acc 23.74%   concepts 36/36
-ARM_RE = re.compile(r"^----- off seed (\d+)\b")
+# the runner writes the arm marker through `say`, which prefixes a timestamp: the anchored pattern never matched
+# and the grader reported "no arm marker -> pending" on a log that had two of them (measured 20:31).
+ARM_RE = re.compile(r"^(?:\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\s+)?----- off seed (\d+)\b")
 EP_RE = re.compile(r"^  ep (\d+)/(\d+)\s+loss\s+[0-9.]+.*?VAL ppl ([0-9.]+) acc ([0-9.]+)%")
 ASST_EP_RE = re.compile(r"ASST\(by-position\) ppl [0-9.]+ acc ([0-9.]+)%")
 FINAL_RE = re.compile(r"^  final VAL ppl ([0-9.]+)\s+acc ([0-9.]+)%\s+concepts (\d+)/(\d+)")
