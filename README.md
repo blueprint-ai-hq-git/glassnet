@@ -293,6 +293,7 @@ two seeds:
 | `d=256`, 200,000 windows, seed 2 | **20.50%** | `lens/runs/DATASCALE-HONEST-s2.txt:256` |
 | `d=256`, **500,000** windows, seed 0 | **20.81%** | `lens/runs/DATASCALE-500K.txt:392` |
 | `d=256`, **2,000,000** windows, seed 0 | **21.29%** | `lens/runs/DATASCALE-2M.txt:1142` |
+| `d=256`, 500,000 windows, seed 0, **gates OFF** | **22.05%** | `lens/runs/DATASCALE-500K-NOGATE.txt:69` |
 
 Paired within-seed gains **+5.25, +6.92 and +7.10 points (mean +6.42)**; three-seed mean held-out accuracy
 **19.21%**, and perplexity down from 399.50/395.80/384.39 to 207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
@@ -306,6 +307,14 @@ architectural levers tried at 20k windows - attention (-2.81), window 64 (-1.57)
 data bought +9.11 pp in total and the last 4x bought 5.3% of it - accuracy stops rising while perplexity keeps
 falling (399.50 -> 149.14), and at one seed the last rung sits inside the 3.07 pp seed spread. The best
 checkpoint is epoch 2 (ASST 22.82%), not the final epoch.
+
+**And the gates cost more than data ever bought.** At the same 500k rung, same step rule, same data, switching
+the gap and agreement gates off gives **22.05%** instead of 20.81% (+1.24 pp) and runs **7.7x faster**
+(72 s/epoch against 558). The ungated arm fits the training set far harder (35.20% vs 22.25%) and overfits far
+more (gap 13.15 pp vs 1.44) while held-out accuracy still rises - so at this rung the gates were suppressing
+learning that generalised. Note what the headline above actually is: the 37.37% run prints `METHOD: standard
+(the old loop: plain SGD, our gates OFF)`, so the project's best number comes from the ungated old loop, and
+our own method has never been compared to it at a matched rung. That comparison is the next experiment.
 Doubling the schedule at this rung (6 epochs, seed 0) reached final VAL 18.43% - +1.00 pp over the
 3-epoch run, with the best checkpoint at epoch 5 - so more epochs are not what this rung is missing.
 Write-ups: `docs/history/DATASCALE-RESULT.md`, `docs/history/DATASCALE-SEED1-RESULT.md`,
