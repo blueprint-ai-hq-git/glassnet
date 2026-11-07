@@ -43,3 +43,15 @@ R5  CONCEPTS. Both arms >= 36 of the kept set.
   ungated rung itself. Stated because the difference matters: the contrast's error bar would need gated twins too,
   which is a four-arm block and not this one.
 * No headline change; 37.37% (d512, full corpus, 6 epochs) stands.
+
+## COMPARABILITY PROOF, taken 2026-11-07 20:03 before any seed finished
+
+The risk this block carries is not a wrong number, it is a number from a *different* configuration wearing the same
+label. Checked mechanically, not by reading: the `train_chat.py` invocation in `run_datascale_4m_nogate_seeds.sh` is
+token-identical to the one in `run_datascale_4m_nogate.sh` (the seed-0 rung) once `--seed` and `--out` are normalised -
+diff of the two command lines returns no other token. Both also use `CHAT_DATA_DIR=.../prepared_mix_ctrl_honest`,
+`taskset -c 0,1`, `nice -n 19`, `ionice -c3`.
+
+So: same d=256, window 32, batch 256, 3 epochs, lr 0.4, lam-concept 0.3, assistant-only, train-turn-end,
+max-windows 4,000,000, method ours, opt-lr 1.0, gates off. Only the seed and the output tag differ, which is exactly
+what a seed block is for.
