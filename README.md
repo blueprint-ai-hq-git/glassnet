@@ -264,6 +264,32 @@ scores 0 / 0.0118 ms, MLP 524,288 / 0.0841 ms.
 
 ![Measured results](docs/assets/results.png)
 
+### How the data lever moved the model
+
+![Data scale](docs/assets/data_curve.png)
+
+Ten times the training data moved held-out next-token accuracy from 12.18% to 17.43%, and the named
+concept neurons from 20 of 36 readable to 36 of 36 - at identical parameters. The full ladder and every
+seed are in `docs/history/`.
+
+### Where the time goes
+
+![Layer cost](docs/assets/layer_cost.png)
+
+Per-component cost of one forward pass, measured rather than estimated.
+
+### Ablations - what happens when a part is removed
+
+![Ablations](docs/assets/ablations.png)
+
+Removing a layer and re-measuring, so the contribution of each piece is a number and not a claim.
+
+### Our optimiser against plain gradient descent
+
+![Optimiser comparison](docs/assets/optimiser_vs_sgd.png)
+
+Our step rule against plain SGD at a matched rung. The losses are shown next to the wins.
+
 Held-out next-token accuracy, `d=256`, 32-token window, vocabulary 12,002, trained from scratch:
 
 | Configuration | Held-out accuracy |
