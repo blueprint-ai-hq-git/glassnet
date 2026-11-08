@@ -185,8 +185,8 @@ from both logs), so the extra data cannot have come from resizing the scored set
 | `datascale_4m_nogate_ep6_s0` (**gates OFF**, 4M, 6 epochs) | 0 | 4,000,000 | **23.92%** | **25.92%** | **93.72** | `lens/runs/DATASCALE-4M-NOGATE-EP6.txt:73` |
 | `datascale_4m_nogate_s1` / `_s2` (**gates OFF**, 4M, seeds 1-2) | 1, 2 | 4,000,000 | **24.13% / 24.03%** | **25.84% / 25.84%** | **93.88 / 93.52** | `lens/runs/DATASCALE-4M-NOGATE-SEEDS.txt:69` (seed 1) and `lens/runs/DATASCALE-4M-NOGATE-SEEDS.txt:219` (seed 2) |
 | `datascale_8m_nogate_s0` (**gates OFF**, 8M) | 0 | 8,000,000 | **24.51%** | **26.46%** | **87.55** | `lens/runs/DATASCALE-8M-NOGATE.txt:235` |
-| `datascale_16m_ours_s0` (**our step rule**, 16M) | 0 | 16,000,000 | **24.58%** | **26.40%** | **84.47** | `lens/runs/DATASCALE-16M-OURS.txt:226` |
-| `datascale_16m_nogate_s0` (**plain SGD**, 16M) | 0 | 16,000,000 | **28.30%** | **30.42%** | **80.15** | `lens/runs/DATASCALE-16M-NOGATE.txt:213` |
+| `datascale_16m_ours_s0` (**our step rule**, 16M) | 0 | 16,000,000 | **24.58%** | **26.40%** | **84.47** | `lens/runs/DATASCALE-16M-OURS.txt:225` (epoch line: VAL/ASST/ppl) and `lens/runs/DATASCALE-16M-OURS.txt:226` (final, concepts) |
+| `datascale_16m_nogate_s0` (**plain SGD**, 16M) | 0 | 16,000,000 | **28.30%** | **30.42%** | **80.15** | `lens/runs/DATASCALE-16M-NOGATE.txt:136` (epoch line: VAL/ASST/ppl) and `lens/runs/DATASCALE-16M-NOGATE.txt:213` (final, concepts) |
 
 **Three seeds, three matched pairs: mean gain +6.42 pp.** Val acc 17.43% / 19.71% / 20.50% against 20k
 baselines of 12.18% / 12.79% / 13.40%, so the paired gains are **+5.25, +6.92 and +7.10 pp** (mean **+6.42**),
