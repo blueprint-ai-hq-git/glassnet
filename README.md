@@ -339,8 +339,8 @@ architectural levers tried at 20k windows - attention (-2.81), window 64 (-1.57)
 
 **In the gated method it bends flat at 2M - and the ungated rung shows that was partly the gates.** Gated: 500,000
 windows **20.81%**, 2,000,000 windows **21.29%** - 1.58, then 2.56, then **0.24 pp per doubling**. With the gates
-off the same two rungs give **22.05%** and **23.12%** (**0.54 pp/doubling**), i.e. still climbing, and 23.12% is
-the highest d=256 held-out number on record. Both ungated arms also run ~8x faster than their gated twins. So
+off the same two rungs give **22.05%** and **23.12%** (**0.54 pp/doubling**), i.e. still climbing. (23.12% was the highest d=256 held-out number on record at the time; the ladder has since gone
+well past it - see the step-size paragraphs below.) Both ungated arms also run ~8x faster than their gated twins. So
 "more data stopped helping" was true of the gated method, not of the data. At 4,000,000 windows the ungated arm
 reaches **23.74%** (ASST 25.71%, ppl 95.99) - **+0.62 pp for 2x data, i.e. 0.62 pp/doubling, higher than the 0.54 of
 the previous step**, so the rate is not decaying. It did plateau on accuracy between epochs 2 and 3 (23.75 -> 23.74), but
@@ -350,7 +350,7 @@ another +0.77 pp (24.51% VAL, ASST 26.46%, ppl 87.55, `lens/runs/DATASCALE-8M-NO
 +0.62 pp the previous doubling paid, so at d=256 the rate is not decaying at the last rung measured.** The prepared mix holds ~18.4M windows, so one more doubling is all the data there is. **The rung reproduces:**
 three seeds at 4M give 23.74 / 24.13 / 24.03% - a 0.10 pp spread, against 3.07 pp at the 200k rung - so 24.51%
 at 8M is above every one of the three 4M seeds (`docs/history/NOGATE-4M-SEEDS-RESULT.md:9`). The best configuration measured here is our
-step rule with the gates off. 24.51% at the old step, while **26.76% at opt-lr 0.5** is the best number in this capped-window ladder (<=8M windows, 3 epochs, one
+step rule with the gates off. 24.51% at the old step, while **26.76% at opt-lr 0.5** is the best number in this capped-window ladder (<=16M windows, 3 epochs, one
 seed); it is not the best d256 number in the project - full-corpus d256 runs reach 35.72% by position
 (`docs/history/STATE.md:146`), 11.21 pp higher on the comparable metric.
 
