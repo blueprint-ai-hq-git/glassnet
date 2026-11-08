@@ -1,6 +1,6 @@
 # GlassNet
 
-**A neural network you can look inside.** Written from scratch — own tensors, own backward pass, own
+**A neural network you can look inside.** Written from scratch - own tensors, own backward pass, own
 optimiser, own KV cache. No PyTorch, no autograd library, no pretrained weights, no borrowed training code.
 
 [Status](STATUS.md) · [Architecture](docs/ARCHITECTURE.md) · [Results](docs/RESULTS.md) · [Test it yourself](docs/TESTING.md) · [Roadmap](docs/ROADMAP.md) · [From scratch, precisely](docs/FROM-SCRATCH.md) · [Privacy](docs/PRIVACY.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Contact](docs/CONTACT.md)
@@ -23,7 +23,7 @@ gradient is derived by hand, every layer can be opened, every middle neuron carr
 like `is_a_question`, and every claim in this repository traces back to a log file you can read.
 
 It is **not a chatbot and not a product**. It is a working research system: about 105,000 lines of Python, no
-PyTorch, no autograd library, no pretrained weights — a complete training and inspection stack written from
+PyTorch, no autograd library, no pretrained weights - a complete training and inspection stack written from
 zero, published at the stage it is actually in.
 
 **Who it is for:** people who want to learn how a model really works by reading one end to end, researchers
@@ -32,7 +32,7 @@ trusting them.
 
 **What is honest about it:** the best score is **37.37%** held-out next-token accuracy. Grammar is real,
 conversation is not. Our own proposed architecture *lost* to the simple one and we published that. If you
-are looking for a capable assistant, this is not it yet — and this file will say so when it is.
+are looking for a capable assistant, this is not it yet - and this file will say so when it is.
 
 ---
 
@@ -40,10 +40,10 @@ are looking for a capable assistant, this is not it yet — and this file will s
 
 | Built | What it does | Evidence |
 |---|---|---|
-| **Autograd engine** | every operation has a hand-written derivative; blame flows backwards through a graph | all 9 gradient checks PASS — worst absolute error **7.5e-10**, worst relative **1.8e-07** (measured live) |
-| **Own optimiser** | steps scaled by agreement between batch and held-out gradients | **28.59%** vs SGD **27.81%** best-epoch mean, 3 seeds — level with SGD, not a win |
+| **Autograd engine** | every operation has a hand-written derivative; blame flows backwards through a graph | all 9 gradient checks PASS - worst absolute error **7.5e-10**, worst relative **1.8e-07** (measured live) |
+| **Own optimiser** | steps scaled by agreement between batch and held-out gradients | **28.59%** vs SGD **27.81%** best-epoch mean, 3 seeds - level with SGD, not a win |
 | **Own KV cache** | reuses attention state instead of recomputing | **2.29x faster** measured (0.483 → 0.211 ms/token, 2,069 → 4,747 tokens/s), identical output (5.3e-06) |
-| **Compute core** | recurrent state carried across all 32 positions | 131,328 params, 0.0027 ms/token — the **proposed** variant, which lost to the plain shape by 1.73 points and is not in the shipped model |
+| **Compute core** | recurrent state carried across all 32 positions | 131,328 params, 0.0027 ms/token - the **proposed** variant, which lost to the plain shape by 1.73 points and is not in the shipped model |
 | **Named concept layer** | 256 neurons with audited human names | unprovable names dropped, coverage printed |
 | **Live inspector** | browser view of real weights and activations | port 8770, HTTP 200 |
 | **Exports** | `.npz`, `.safetensors`, `.gguf` | standard containers, our architecture |
@@ -168,9 +168,9 @@ with the sentence.
 Most small models are black boxes assembled from large frameworks: you get a number at the end and no way
 to know why. GlassNet asks a narrower, harder question:
 
-1. Can a usable model be built with **nothing hidden** — every gradient hand-derived, every layer inspectable?
+1. Can a usable model be built with **nothing hidden** - every gradient hand-derived, every layer inspectable?
 2. Can the middle of the network carry **human-readable names**, so a person can read *why* an answer came out?
-3. Can the project be **honest by construction** — publishing failed experiments instead of quietly dropping them?
+3. Can the project be **honest by construction** - publishing failed experiments instead of quietly dropping them?
 
 The third one is the part that survives contact with reality. Most of this repository is measurements,
 including the ones that killed our own ideas.
@@ -179,9 +179,9 @@ including the ones that killed our own ideas.
 
 | Component | State | Measured evidence |
 |---|---|---|
-| Autograd engine (`lens/tensor.py`) | **works** | all 9 checks PASS — worst absolute error **7.5e-10**, worst relative **1.8e-07** |
+| Autograd engine (`lens/tensor.py`) | **works** | all 9 checks PASS - worst absolute error **7.5e-10**, worst relative **1.8e-07** |
 | Our optimiser (`lens/opt.py`) | **works, level with SGD** | **28.59%** vs plain SGD **27.81%** best-epoch mean over 3 seeds (29.12% vs 27.15% at matched epoch); the pre-registered stability bar failed |
-| KV cache (`lens/kvcache.py`) | **works** | **2.29x faster** generation (0.483 → 0.211 ms/token), byte-identical output (5.3e-06) — `lens/runs/KV-CACHE-MICRO.txt` |
+| KV cache (`lens/kvcache.py`) | **works** | **2.29x faster** generation (0.483 → 0.211 ms/token), byte-identical output (5.3e-06) - `lens/runs/KV-CACHE-MICRO.txt` |
 | Live inspector (`lens/liveview.py`) | **works** | serves real weights and live neuron activations on port 8770 |
 | Exports | **works** | `.npz`, `.safetensors`, `.gguf` |
 | Named concept layer | **partial** | 256 neurons; every name audited per run, unprovable names dropped |
@@ -193,7 +193,7 @@ including the ones that killed our own ideas.
 - **Arithmetic generalisation.** Addition trained on operands `< 50` scores **0.0%** exact on unseen
   operands `50-99`, across three separate implementations (feed-forward, hand-written recurrent, and our
   own autograd path). A per-digit diagnostic is the useful result here: **digit 0 reaches 100% on unseen
-  operands**, so a partial rule genuinely forms — the complete multi-digit answer does not.
+  operands**, so a partial rule genuinely forms - the complete multi-digit answer does not.
 - **Attention.** A bare single-head attention block (no positional information, no residual, no
   normalisation) **lost by 5.41 points**: 18.69% vs 24.10% over 7 runs. The honest conclusion is that
   *that* block was worse than no attention, not that attention is worse.
@@ -428,7 +428,7 @@ produced it. Raw logs are written to `lens/runs/` in the working tree; they are 
 | attention lost 5.41 points | `docs/RESULTS.md` | `lens/runs/GATE-B-VERDICT.txt` |
 | optimiser is level with SGD | `docs/RESULTS.md`, `docs/history/STATE.md` | `lens/runs/OPT-VS-SGD-TABLE.txt` (16 arms, 3 seeds) |
 | arithmetic 0.0% unseen | `docs/RESULTS.md` | `lens/runs/ARITHMETIC.txt`, `lens/runs/ARITH_DIAG.txt` |
-| what was audited, and what was not | `docs/history/PUBLIC-NUMBER-AUDIT.md` | — |
+| what was audited, and what was not | `docs/history/PUBLIC-NUMBER-AUDIT.md` | - |
 
 ## Roadmap
 
@@ -446,14 +446,14 @@ never to a specific accuracy.
 ### Open work, in priority order
 
 1. Move the comparison onto the GPU (our normalisation still calls NumPy, which is why that run was CPU-bound).
-2. Normalise the residual so the compute core stops saturating — then re-test against the **5.53%** baseline.
+2. Normalise the residual so the compute core stops saturating - then re-test against the **5.53%** baseline.
 3. Settle the `reshape` gradient check (fails at 0.064) before building proper multi-head attention on it.
 4. Publish audited concept coverage as a printed number on every run.
 5. Ship a genuine safety layer as part of training, not as a filter bolted on afterwards.
 
 ## Licence
 
-**Blueprint AI License 1.0 (BAL-1.0)** — see [`LICENSE`](LICENSE).
+**Blueprint AI License 1.0 (BAL-1.0)** - see [`LICENSE`](LICENSE).
 
 - **Free** for individuals, students, educators, researchers and non-commercial use.
 - **Free for organisations under 1,000,000 USD annual revenue**, including commercial use.
@@ -480,7 +480,7 @@ Datasets are used only where the licence is recorded in [`DATA_LICENSES.md`](DAT
 
 ## Community
 
-GlassNet is built in the open. The most useful thing you can send is a **number we can reproduce** — including
+GlassNet is built in the open. The most useful thing you can send is a **number we can reproduce** - including
 when it is worse than ours, which we publish next to our own. Failed experiments are welcome here; a project
 that only shows wins is not measuring anything.
 
