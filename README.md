@@ -361,7 +361,7 @@ our own method has never been compared to it at a matched rung.
 
 **So that comparison was run, at 500k.** Three configurations, same rung, same seed, same data: our step rule
 with the gates off **22.05%**, our step rule with the gates on 20.81%, and plain SGD with the gates off
-**19.81%** (and only 31/36 concepts). Our step rule is worth **+2.24 pp** over the loop used before, and the
+**19.81%** (and only 31/36 concepts). Our step rule is worth **+2.24 pp** over the loop used before **at 500k** - at 16M windows plain SGD leads by 3.72 pp (`docs/history/NOGATE-16M-OURS-RESULT.md`) - and the
 gates cost 1.24 pp. Since the 37.37% headline was produced by plain SGD, the headline configuration has never
 been run with the step rule that now measures best - that is the next experiment, starting with a one-epoch
 cost probe at d=512.

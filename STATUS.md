@@ -267,7 +267,7 @@ ratio. Write-up: `docs/history/NOGATE-500K-RESULT.md`.
 **And the step rule is worth more than the gates.** Adding the third configuration - plain SGD, gates off, same
 rung and seed - gives **19.81% / 20.38% ASST / ppl 221.78**, concepts only **31/36** (`lens/runs/SGD-500K.txt:66`).
 The matched three-way at 500k is therefore **relgrad ungated 22.05 > relgrad gated 20.81 > plain SGD 19.81**: our
-step rule is worth **+2.24 pp** over the loop this project used before, the gates cost **1.24 pp**, and plain SGD
+step rule is worth **+2.24 pp** over the loop this project used before **at this rung** (at 16M windows the ordering reverses - see the paragraph above), the gates cost **1.24 pp**, and plain SGD
 is 2.3x cheaper per epoch while learning the least. That is awkward for the headline: **37.37% was produced by
 plain SGD** on 16.9M windows in 6 epochs (`TIED-D512-EXT6.txt`), so the best number sits on the weakest-measured
 step rule. The next test is that configuration at that scale - d=512, full corpus, 6 epochs, relgrad, gates off -
