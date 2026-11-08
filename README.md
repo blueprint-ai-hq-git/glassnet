@@ -331,6 +331,7 @@ two seeds:
 | `d=256`, 16,000,000 windows, seed 0, **gates OFF, opt-lr 0.5** | **26.76%** | `lens/runs/DATASCALE-16M-OURS05.txt:225` |
 | `d=256`, 4,000,000 windows, seeds 0-2, **gates OFF, opt-lr 0.5** | **26.00%** mean (26.06 / 26.10 / 25.84, range 0.26 pp) | `docs/history/NOGATE-4M-OPT05-SEEDS-RESULT.md:9` |
 | `d=256`, 4,000,000 windows, seed 0, **gates OFF, plain SGD** | **26.51%** (ppl 110.50, 11 min 18 s) | `lens/runs/DATASCALE-4M-SGD.txt:143` |
+| `d=256`, 2,000,000 windows, seed 0, **gates OFF, plain SGD** | **25.10%** (ppl 133.41, 7 min 6 s) | `lens/runs/DATASCALE-2M-SGD.txt:143` |
 
 Paired within-seed gains **+5.25, +6.92 and +7.10 points (mean +6.42)**; three-seed mean held-out accuracy
 **19.21%**, and perplexity down from 399.50/395.80/384.39 to 207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
