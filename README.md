@@ -41,7 +41,7 @@ are looking for a capable assistant, this is not it yet - and this file will say
 | Built | What it does | Evidence |
 |---|---|---|
 | **Autograd engine** | every operation has a hand-written derivative; blame flows backwards through a graph | all 9 gradient checks PASS - worst absolute error **7.5e-10**, worst relative **1.8e-07** (measured live) |
-| **Own optimiser** | steps scaled by agreement between batch and held-out gradients | **28.59%** vs SGD **27.81%** best-epoch mean, 3 seeds - level with SGD, not a win |
+| **Own optimiser** | steps scaled by agreement between batch and held-out gradients | **28.59%** vs SGD **27.81%** best-epoch mean, 3 seeds - level with SGD, not a win. **At 16M windows plain SGD is 3.72 pp ahead** (`docs/history/NOGATE-16M-OURS-RESULT.md`), so the rule is not an improvement at scale |
 | **Own KV cache** | reuses attention state instead of recomputing | **2.29x faster** measured (0.483 → 0.211 ms/token, 2,069 → 4,747 tokens/s), identical output (5.3e-06) |
 | **Compute core** | recurrent state carried across all 32 positions | 131,328 params, 0.0027 ms/token - the **proposed** variant, which lost to the plain shape by 1.73 points and is not in the shipped model |
 | **Named concept layer** | 256 neurons with audited human names | unprovable names dropped, coverage printed |
