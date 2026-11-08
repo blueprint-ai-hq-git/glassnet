@@ -326,6 +326,9 @@ two seeds:
 | `d=256`, 4,000,000 windows, seed 0, **gates OFF**, 6 epochs | **23.92%** | `lens/runs/DATASCALE-4M-NOGATE-EP6.txt:73` |
 | `d=256`, 4,000,000 windows, **gates OFF**, seeds 1 and 2 | **24.13% / 24.03%** | `lens/runs/DATASCALE-4M-NOGATE-SEEDS.txt:69` and `lens/runs/DATASCALE-4M-NOGATE-SEEDS.txt:219` |
 | `d=256`, 8,000,000 windows, seed 0, **gates OFF** | **24.51%** | `lens/runs/DATASCALE-8M-NOGATE.txt:235` |
+| `d=256`, 4,000,000 windows, seed 0, **gates OFF, opt-lr 0.5** | **26.06%** | `lens/runs/DATASCALE-4M-OPT05.txt:154` |
+| `d=256`, 8,000,000 windows, seed 0, **gates OFF, opt-lr 0.5** | **26.63%** | `lens/runs/DATASCALE-8M-OPT05.txt:154` |
+| `d=256`, 16,000,000 windows, seed 0, **gates OFF, opt-lr 0.5** | **26.76%** | `lens/runs/DATASCALE-16M-OURS05.txt:225` |
 
 Paired within-seed gains **+5.25, +6.92 and +7.10 points (mean +6.42)**; three-seed mean held-out accuracy
 **19.21%**, and perplexity down from 399.50/395.80/384.39 to 207.29/184.32/180.30. The same 10x also moved the named-concept audit from **20/36 to 36/36** passing
@@ -347,7 +350,7 @@ another +0.77 pp (24.51% VAL, ASST 26.46%, ppl 87.55, `lens/runs/DATASCALE-8M-NO
 +0.62 pp the previous doubling paid, so at d=256 the rate is not decaying at the last rung measured.** The prepared mix holds ~18.4M windows, so one more doubling is all the data there is. **The rung reproduces:**
 three seeds at 4M give 23.74 / 24.13 / 24.03% - a 0.10 pp spread, against 3.07 pp at the 200k rung - so 24.51%
 at 8M is above every one of the three 4M seeds (`docs/history/NOGATE-4M-SEEDS-RESULT.md:9`). The best configuration measured here is our
-step rule with the gates off. 24.51% is the best number in this capped-window ladder (<=8M windows, 3 epochs, one
+step rule with the gates off. 24.51% at the old step, while **26.76% at opt-lr 0.5** is the best number in this capped-window ladder (<=8M windows, 3 epochs, one
 seed); it is not the best d256 number in the project - full-corpus d256 runs reach 35.72% by position
 (`docs/history/STATE.md:146`), 11.21 pp higher on the comparable metric.
 
