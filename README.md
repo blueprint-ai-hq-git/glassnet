@@ -356,7 +356,8 @@ at 8M is above every one of the three 4M seeds (`docs/history/NOGATE-4M-SEEDS-RE
 **28.30%** (`lens/runs/DATASCALE-16M-NOGATE.txt:136`), while our own rule's best at that rung is
 (`docs/history/NOGATE-16M-OPT05-RESULT.md:6`) **26.76%**- and the comparison flips with data rather than sitting at one value:
 our rule is ahead by 2.24 pp at 500k, level at 2M-4M, and behind by 1.54-3.72 pp at 16M, while costing about 2.5x the
-compute per epoch (`docs/history/DATASCALE-4M-SGD-RESULT.md:6`). Whatever the ladder's best number is, it is not the
+compute per epoch (`docs/history/DATASCALE-4M-SGD-RESULT.md:6`). The smaller-step gain is ours alone: the same idea applied to
+SGD at 16M buys nothing on accuracy and costs 11.02 ppl (`docs/history/DATASCALE-16M-SGD-LR02-RESULT.md:6`). Whatever the ladder's best number is, it is not the
 best d256 number in the project - full-corpus d256 runs reach 35.72% by position
 (`docs/history/STATE.md:146`), 7.42 pp higher than the 16M SGD figure on the comparable metric.
 
