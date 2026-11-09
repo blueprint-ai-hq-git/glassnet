@@ -1,3 +1,11 @@
+## Batched gradient: proven wrong, not noise
+
+The batched embedding gradient is stable at **-0.00119500** across eps 1e-4 to 1e-8 while the analytic
+value is **+0.00581498** - a different number with a different sign, so it is a real error, not finite-
+difference noise, and no relu unit sits near the kink. That implementation stays unused; the single-chunk
+direct-path core passes at 2.238e-10 and is the version available for a run. Source:
+`docs/history/BATCHED-GRAD-EVIDENCE.md`.
+
 ## Batched gradient bug narrowed
 
 Per-parameter finite differences show the fault is isolated: with subset scoring only the embedding

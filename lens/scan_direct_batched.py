@@ -33,7 +33,9 @@ def train_step(p, chunks, tgt_pos, UNK, lr, clip=1.0, target_radius=None):
     dlgB = dlg.reshape(B, -1, V)
     g["Wa"] += hsel.reshape(-1, H).T @ dlg
     g["ba"] += dlg.sum(axis=0)
-    g["emb"] += dlg.T @ dsel.reshape(-1, D)                       # tied direct path
+    # explicit gather: dlg rows and dsel rows are both (b,k)-ordered; use einsum so the pairing
+    # is written down rather than implied by two independent reshapes
+    g["emb"] += np.einsum("bkv,bkd->vd", dlgB, dsel.astype(np.float64))
     dpre = np.zeros((B, T, D))
     dp = np.einsum("bkv,vd->bkd", dlgB, p["emb"].astype(np.float64))   # (B,K,D)
     dpre[:, pos] = dp * (pre[:, pos] > 0)
