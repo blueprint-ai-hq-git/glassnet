@@ -1,3 +1,10 @@
+## Direct path added to the state core
+
+The published d512 model reaches 37.37% partly because it adds a direct token-to-logits path; the
+state core did not. That path is now implemented (`lens/scan_direct.py`) with hand-written gradients
+verified numerically to **2.238e-10** abs. It becomes run 7 once run 6 finishes, against the same bar:
+KL across six prefix-free words above 0.05 nats. Source: `docs/history/DIRECT-PATH-COMPONENT.md`.
+
 ## Frequency prior ruled out
 
 Subtracting log token frequency at decode leaves input sensitivity unchanged: KL **0.0102 -> 0.0104**
