@@ -1,3 +1,11 @@
+## Why the output ignores the input
+
+Three tests on run 5's model: **capacity ruled out** (d512, 9,426,402 params, changes KL 0.0102 to
+0.0108), **bias ruled out** (input part of the logits is 33x the bias, and removing the bias leaves KL
+identical), and the mechanism found: state differences are multi-dimensional but the readout maps them
+to nearly one direction (logit cosine **0.88**) - a frequency-prior collapse. Source:
+`docs/history/READOUT-MECHANISM.md`.
+
 ## Run 5: accuracy doubled, speech still broken
 
 With the spectral fix, held-out accuracy went **2.34% -> 5.34%** (loss 7.2164 -> 7.5663) - the first
