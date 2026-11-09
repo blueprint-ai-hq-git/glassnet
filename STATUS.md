@@ -1,3 +1,10 @@
+## Spectral fix, test 1
+
+Holding the recurrent radius at 1.0 removed the saturation (state norm 15.96 to 3.5, tanh slope
+0.005 to 0.954) but the pre-registered falsifier still fired: max pairwise state cosine **0.9885**
+against a 0.9 bar. Test prompts shared a prefix, which is a confound. Source:
+`docs/history/SPECTRAL-FIX-TEST1.md`.
+
 ## State core: input-blind, cause found
 
 Four different prompts produce the same state (pairwise cosine **+1.0000**), state norm **15.96**,

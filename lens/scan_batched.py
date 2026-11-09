@@ -49,3 +49,17 @@ def train_step(p, chunks, tgt_pos, UNK, lr, clip=1.0):
     s = min(1.0, clip / (norm + 1e-12))
     for k in p: p[k] = (p[k] - lr * s * g[k]).astype(np.float32)
     return loss, acc, norm
+
+
+def renorm_recurrent(p, target=1.0):
+    """Keep the recurrent loop stable: rescale Wh to a target spectral radius.
+
+    Why: at radius 3.4 the loop saturates tanh (slope 0.005) and every prompt produced the SAME state,
+    making the model input-blind (docs/history/INPUT-BLIND-STATECORE.md). Recomputing the radius costs
+    one eigen-decomposition of an HxH matrix, which is negligible against the step itself.
+    """
+    W = p["Wh"].astype(np.float64)
+    r = float(np.max(np.abs(np.linalg.eigvals(W))))
+    if r > 0:
+        p["Wh"] = (W * (target / r)).astype(p["Wh"].dtype)
+    return r
