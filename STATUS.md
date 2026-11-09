@@ -1,3 +1,8 @@
+## Release
+
+`v0.1.0` is published: https://github.com/blueprint-ai-hq-git/glassnet/releases/tag/v0.1.0 - both checkpoints, the tested Colab, the checksums, and the
+limits stated before the features. Verified against the GitHub API on 2026-11-09.
+
 ## 2026-11-07
 
 Today's changes, each with its log line: `docs/history/DAILY-2026-11-07.md`.
