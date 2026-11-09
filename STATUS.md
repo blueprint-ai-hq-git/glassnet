@@ -1,3 +1,9 @@
+## Batched gradient bug narrowed
+
+Per-parameter finite differences show the fault is isolated: with subset scoring only the embedding
+term is wrong (**7.01e-03**), while Wx, Wd, Wh, Wa and ba agree to about **1e-10**. The suspect is the
+tied-readout term `dlg.T @ dsel` when positions are masked. Tool: `tools/diag_batched_grad.py`.
+
 ## Batched direct path: gate FAIL, not used
 
 The batched direct-path step fails its finite-difference check: worst abs **7.010e-03** at `emb[1,0]`
