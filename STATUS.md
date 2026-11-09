@@ -1,3 +1,11 @@
+## Direct path at 25 steps: D1 FAILS, ranking changed 6 of 6
+
+KL across six prefix-free words is **0.0150** nats against a pre-registered bar of 0.05, so D1 FAILS and
+the bar is not moved after the fact. The same run shows state cosine **0.0743** and **6 of 6 distinct
+top-5 sets** - the model now prefers different next tokens per input while most of the probability mass
+still sits on frequent tokens. Honest headline: ranking changed, distribution shape has not. Source:
+`docs/history/DIRECT-PATH-KL-AT-25-STEPS.md`.
+
 ## Direct path: first non-degenerate, prompt-dependent output
 
 In a 12-step smoke test of the run-7 driver (not a trained result), four different prompts produced four
