@@ -1,3 +1,9 @@
+## State core, run 4
+
+8x throughput (792 vs 99 scored tokens/s) produced held-out loss **7.2164**, accuracy **2.34%** -
+slightly worse than run 3 (6.9472 / 2.58%). More tokens at this size is not the lever. Source:
+`docs/history/SCAN-RUN4-RESULT.md`.
+
 ## Release
 
 `v0.1.0` is published: https://github.com/blueprint-ai-hq-git/glassnet/releases/tag/v0.1.0 - both checkpoints, the tested Colab, the checksums, and the
