@@ -1,3 +1,10 @@
+## Spectral fix, test 2: PASS
+
+Holding the recurrent radius at 0.9 with prefix-free prompts gives max state cosine **0.2068**
+(mean 0.1216) where run 4 gave **+1.0000** for every pair, with tanh slope **0.98964**. The
+input-blindness is a consequence of an unconstrained recurrent matrix. Source:
+`docs/history/SPECTRAL-FIX-TEST2.md`. Accuracy from the 1500-step run with this fix is pending.
+
 ## Spectral fix, test 1
 
 Holding the recurrent radius at 1.0 removed the saturation (state norm 15.96 to 3.5, tanh slope
