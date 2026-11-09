@@ -1,3 +1,10 @@
+## Decorrelation penalty verified
+
+The named alternative is implemented and gradient-checked: with lambda 0.5, finite differences match at
+**1.018e-08** (seed 5) and **1.009e-09** (seed 23); with the term off the earlier **1.684e-10** is
+unchanged, so nothing was disturbed. Run 8 pairs it with the direct path: E1 state cosine below 0.5,
+E2 KL above 0.05. Sources: `docs/history/DECORRELATION-VERIFIED.md`, `docs/history/SCAN8-PREDICTIONS.md`.
+
 ## Run 6 mid-run: state collapse returns, and my plateau call was wrong
 
 At step 3750 (`scan6_ep3750.npz`): KL across six prefix-free words **0.0091** nats (K1 needs 0.05, trending

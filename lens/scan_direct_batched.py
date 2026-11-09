@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lens import scan_direct as SD
 
 
-def train_step(p, chunks, tgt_pos, UNK, lr, clip=1.0, target_radius=None):
+def train_step(p, chunks, tgt_pos, UNK, lr, clip=1.0, target_radius=None, dec_lambda=0.0):
     B, L = chunks.shape
     D = p["emb"].shape[1]; H = p["Wh"].shape[0]; V = p["Wa"].shape[1]
     T = L - 1
@@ -40,6 +40,21 @@ def train_step(p, chunks, tgt_pos, UNK, lr, clip=1.0, target_radius=None):
     dlg[np.arange(n), tg] -= 1.0
     dlg *= wts[:, None]
     dlgB = dlg.reshape(B, -1, V)
+    # ---- state decorrelation: penalise the mean pairwise cosine of the FINAL scored state across the batch.
+    # Without it, states collapse back to one direction under longer training (run 6: cosine 0.9716 at step 3750).
+    dec_grad = None
+    if dec_lambda > 0.0 and B > 1:
+        hb = hs[:, int(pos[-1]) + 1]                      # (B,H) final scored state
+        nrm = np.linalg.norm(hb, axis=1, keepdims=True) + 1e-12
+        u = hb / nrm
+        S = u @ u.T
+        pairs = B * (B - 1)
+        loss_dec = dec_lambda * (2.0 / pairs) * np.triu(S, 1).sum()
+        G = (2.0 / pairs) * dec_lambda
+        du = G * (u.sum(axis=0, keepdims=True) - u)        # dL/du_i = G * sum_{j != i} u_j
+        dh_dec = (du - (u * du).sum(axis=1, keepdims=True) * u) / nrm
+        dec_grad = dh_dec
+        loss = loss + loss_dec
     g["Wa"] += hsel.reshape(-1, H).T @ dlg
     g["ba"] += dlg.sum(axis=0)
     # explicit gather: dlg rows and dsel rows are both (b,k)-ordered; use einsum so the pairing
@@ -52,7 +67,9 @@ def train_step(p, chunks, tgt_pos, UNK, lr, clip=1.0, target_radius=None):
     # pre[t,e] = sum_d xs[t,d] * Wd[d,e], so dL/dxs[t,d] = sum_e dpre[t,e] * Wd[d,e]
     dxs = np.einsum("bte,de->btd", dpre, p["Wd"].astype(np.float64))
     dh = np.zeros((B, T + 1, H))
-    dh[:, pos + 1] += np.einsum("bkv,hv->bkh", dlgB, p["Wa"].astype(np.float64))   # Wa is (H,V)
+    dh[:, pos + 1] += np.einsum("bkv,hv->bkh", dlgB, p["Wa"].astype(np.float64))
+    if dec_grad is not None:
+        dh[:, int(pos[-1]) + 1] += dec_grad   # Wa is (H,V)
     for t in range(T - 1, -1, -1):
         da = dh[:, t + 1] * (1.0 - hs[:, t + 1] ** 2)
         g["b"] += da.sum(axis=0)
@@ -88,14 +105,14 @@ def check_against_single(V=7, D=4, H=5, T=6, B=3, seed=3, tol=1e-11):
     return worst, where
 
 
-def check_fd(V=6, D=3, H=4, T=5, B=2, seed=5, eps=1e-6):
+def check_fd(V=6, D=3, H=4, T=5, B=2, seed=5, eps=1e-6, dec_lambda=0.0):
     """Project-standard gate: finite-difference the batched step itself on a tiny case."""
     p = {k: v.astype(np.float64) for k, v in SD.init(V, D, H, seed=seed).items()}
     rng = np.random.default_rng(seed)
     ch = rng.integers(0, V, size=(B, T + 1))
     pos = np.arange(T - 2, T)
     def loss_of(pp):
-        l, a, n, g = train_step({k: v.copy() for k, v in pp.items()}, ch, pos, 0, 0.0)
+        l, a, n, g = train_step({k: v.copy() for k, v in pp.items()}, ch, pos, 0, 0.0, dec_lambda=dec_lambda)
         return l, g
     _, g = loss_of(p)
     worst = 0.0; where = ""
