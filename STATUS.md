@@ -1,3 +1,10 @@
+## Run 5 mid-flight: fix holding
+
+At step 250 the recurrent radius is **0.900**, state norms about **2.0**, tanh slope **0.984**, and
+the pairwise state cosine across six prefix-free words is **max 0.5029** (run 4 was +1.0000). The
+fix survives training, though similarity drifted up from 0.2068 at step 120, which is being watched.
+Source: `docs/history/SCAN5-MIDRUN-STATE-CHECK.md`.
+
 ## Spectral fix, test 2: PASS
 
 Holding the recurrent radius at 0.9 with prefix-free prompts gives max state cosine **0.2068**
