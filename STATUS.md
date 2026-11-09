@@ -1,3 +1,10 @@
+## Run 5: state similarity climbing
+
+Same six prefix-free words, three checkpoints: pairwise state cosine **0.2068 -> 0.5029 -> 0.6878** at
+steps 120, 250, 500, with the radius held at 0.900 and tanh slope 0.975. The run-4 collapse is not
+happening, but the drift is monotone and heading for the 0.9 input-blindness bar. Source:
+`docs/history/SCAN5-STATE-DRIFT.md`.
+
 ## Run 5 mid-flight: fix holding
 
 At step 250 the recurrent radius is **0.900**, state norms about **2.0**, tanh slope **0.984**, and
