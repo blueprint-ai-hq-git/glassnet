@@ -1,3 +1,11 @@
+## Frequency prior ruled out
+
+Subtracting log token frequency at decode leaves input sensitivity unchanged: KL **0.0102 -> 0.0104**
+nats across six different words, and the output simply loops on a rare token instead of a common one.
+Four candidate causes are now eliminated by measurement - instability (fixed), capacity (d512 probe),
+bias (1/33 of the logit term), frequency prior. The remaining gap is structural: the readout cannot
+amplify 0.01 nats of state signal into different words. Source: `docs/history/FREQ-PRIOR-RULED-OUT.md`.
+
 ## Why the output ignores the input
 
 Three tests on run 5's model: **capacity ruled out** (d512, 9,426,402 params, changes KL 0.0102 to
