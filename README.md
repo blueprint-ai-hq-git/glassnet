@@ -353,7 +353,7 @@ another +0.77 pp (24.51% VAL, ASST 26.46%, ppl 87.55, `lens/runs/DATASCALE-8M-NO
 +0.62 pp the previous doubling paid, so at d=256 the rate is not decaying at the last rung measured.** The prepared mix holds ~18.4M windows, so one more doubling is all the data there is. **The rung reproduces:**
 three seeds at 4M give 23.74 / 24.13 / 24.03% - a 0.10 pp spread, against 3.07 pp at the 200k rung - so 24.51%
 at 8M is above every one of the three 4M seeds (`docs/history/NOGATE-4M-SEEDS-RESULT.md:9`). **The best configuration measured here is NOT our step rule.** It is plain SGD with the gates off, whose 16M rung is
-**28.30%** (`lens/runs/DATASCALE-16M-NOGATE.txt:136`), while our own rule's best at that rung is
+**28.61%** (`lens/runs/DATASCALE-16M-SGD-EP6.txt:144`) over six epochs (28.30% at three, `lens/runs/DATASCALE-16M-NOGATE.txt:136`), while our own rule's best at that rung is
 (`docs/history/NOGATE-16M-OPT05-RESULT.md:6`) **26.76%**- and the comparison flips with data rather than sitting at one value:
 our rule is ahead by 2.24 pp at 500k, level at 2M-4M, and behind by 1.54-3.72 pp at 16M, while costing about 2.5x the
 compute per epoch (`docs/history/DATASCALE-4M-SGD-RESULT.md:6`). The smaller-step gain is ours alone: the same idea applied to
