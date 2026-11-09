@@ -1,3 +1,10 @@
+## Run 5: accuracy doubled, speech still broken
+
+With the spectral fix, held-out accuracy went **2.34% -> 5.34%** (loss 7.2164 -> 7.5663) - the first
+state-core gain that came from the model reading its input. Generations still loop, and the measured
+cause is that the output distribution barely changes with input: cosine **0.991**, KL **0.0102** nats
+across six different words. Source: `docs/history/SCAN-RUN5-RESULT.md`.
+
 ## Run 5 drift: decelerating, plateau below the bar
 
 Pairwise state cosine across six prefix-free words: **0.2068, 0.5029, 0.6878, 0.7680, 0.8088** at steps
