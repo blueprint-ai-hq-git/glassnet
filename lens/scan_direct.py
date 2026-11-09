@@ -24,7 +24,7 @@ def init(V, D, H, seed=0, dtype=np.float32):
     return p
 
 
-def loss_and_grads(p, ids, targets):
+def loss_and_grads(p, ids, targets, mask=None):
     ids = np.asarray(ids, dtype=np.int64)
     T = len(ids)
     D = p["emb"].shape[1]; H = p["Wh"].shape[0]; V = p["Wa"].shape[1]
@@ -35,6 +35,8 @@ def loss_and_grads(p, ids, targets):
     pre = xs @ p["Wd"]                                         # (T, D)
     d = np.maximum(pre, 0.0)
     lg = hs[1:] @ p["Wa"] + p["ba"] + d @ p["emb"].T           # (T, V)
+    if mask is not None:
+        lg[:, mask] = -1e9
     mx = lg.max(axis=1, keepdims=True); z = np.exp(lg - mx)
     pr = z / z.sum(axis=1, keepdims=True)
     loss = float(-np.log(pr[np.arange(T), targets] + 1e-12).mean())

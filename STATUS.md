@@ -1,3 +1,9 @@
+## Batched direct path: gate FAIL, not used
+
+The batched direct-path step fails its finite-difference check: worst abs **7.010e-03** at `emb[1,0]`
+against a 1e-6 bar. No run uses it. The single-chunk direct-path core passes at **2.238e-10** and is
+the version that may be trained. Source: `docs/history/DIRECT-PATH-BATCHED-GATE-FAIL.md`.
+
 ## Direct path added to the state core
 
 The published d512 model reaches 37.37% partly because it adds a direct token-to-logits path; the
