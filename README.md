@@ -30,7 +30,7 @@ zero, published at the stage it is actually in.
 who want a small controllable base to experiment on, and testers willing to check our numbers instead of
 trusting them.
 
-**What is honest about it:** the best score is **37.37%** held-out next-token accuracy. Grammar is real,
+**What is honest about it:** the best score is **37.37%** held-out next-token accuracy (`lens/runs/TIED-D512-EXT6.txt:99`). Grammar is real,
 conversation is not. Our own proposed architecture *lost* to the simple one and we published that. If you
 are looking for a capable assistant, this is not it yet - and this file will say so when it is.
 
@@ -195,10 +195,10 @@ including the ones that killed our own ideas.
   own autograd path). A per-digit diagnostic is the useful result here: **digit 0 reaches 100% on unseen
   operands**, so a partial rule genuinely forms - the complete multi-digit answer does not.
 - **Attention.** A bare single-head attention block (no positional information, no residual, no
-  normalisation) **lost by 5.41 points**: 18.69% vs 24.10% over 7 runs. The honest conclusion is that
+  normalisation) **lost by 5.41 points**: 18.69% vs 24.10% over 7 runs (`lens/runs/GATE-B-VERDICT.txt:8`). The honest conclusion is that
   *that* block was worse than no attention, not that attention is worse.
 - **Our own proposed architecture.** "Position + recurrent compute core + concepts + direct readout" lost to
-  the plain shape on **both** seeds: **3.87% / 4.07%** vs **5.53% / 5.87%**. Cause identified in code: the
+  the plain shape on **both** seeds: **3.87% / 4.07%** vs **5.53% / 5.87%** (`lens/runs/ARCH-OURS-VERDICT.txt:4-7`). Cause identified in code: the
   residual accumulates unnormalised thirty-two times, so state magnitude grows until ReLU saturates.
 - **Complete readability.** The named layer covers part of the model, not all of it. Per-run coverage is
   printed rather than claimed as 100%.
