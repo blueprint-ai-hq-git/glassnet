@@ -1,3 +1,12 @@
+## Direct path: first non-degenerate, prompt-dependent output
+
+In a 12-step smoke test of the run-7 driver (not a trained result), four different prompts produced four
+different strings with no repetition loop: `truffles sarcastic west escaped...`, `cos constitutes
+overweight 135 graham...`, `barcelona vietnamese titanium ahead...`, `fabrics defeat fatigue wondering...`.
+Every earlier run collapsed to the identical loop `the , . the , .` for every prompt. No accuracy claim -
+twelve steps is not training - but it is the first evidence that input reaches the output. Source:
+`docs/history/DIRECT-PATH-FIRST-OUTPUT.md`.
+
 ## Batched direct path: both bugs found and fixed
 
 The gate failure had two independent causes: `einsum("btd,de->bte")` contracted the wrong axis of
