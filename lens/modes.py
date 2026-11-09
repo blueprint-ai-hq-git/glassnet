@@ -28,7 +28,7 @@ import json
 import os
 import subprocess
 
-ROOT = "/run/media/maintainer/HARD DISK 4/GlassNet"
+ROOT = os.environ.get("GLASSNET_ROOT", ".")
 RECIPES_PATH = os.path.join(ROOT, "lens", "recipes.json")
 
 # every setting hard mode insists on, grouped so the error message can say what is missing

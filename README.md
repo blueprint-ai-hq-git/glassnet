@@ -5,7 +5,7 @@ optimiser, own KV cache. No PyTorch, no autograd library, no pretrained weights,
 
 [Status](STATUS.md) · [Architecture](docs/ARCHITECTURE.md) · [Results](docs/RESULTS.md) · [Test it yourself](docs/TESTING.md) · [Roadmap](docs/ROADMAP.md) · [From scratch, precisely](docs/FROM-SCRATCH.md) · [Privacy](docs/PRIVACY.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Contact](docs/CONTACT.md)
 
-**First public release: v0.1.0, 2026-11-10.** · **Contact: blueprintai.help1@gmail.com**
+**First public release: v0.1.0, 2026-11-10.** · **Contact: open an issue on this repository**
 
 Every number in this document was produced by a run on the hardware listed at the bottom, and every
 experiment that *failed* is published here with its number. That is the point of the project.
@@ -121,7 +121,7 @@ You do not need to be an ML researcher. The most useful contributions are small 
 and what result would convince you. We will answer whether it is testable on this hardware.
 
 **How to report a problem:** open an Issue titled `BUG: <one line>` with the command, the log and what you
-expected. For anything security or privacy related, email **blueprintai.help1@gmail.com** first.
+expected. For anything security or privacy related, open an issue on this repository first.
 
 ---
 
@@ -500,7 +500,7 @@ GlassNet is built in the open. The most useful thing you can send is a **number 
 when it is worse than ours, which we publish next to our own. Failed experiments are welcome here; a project
 that only shows wins is not measuring anything.
 
-- **Email:** blueprintai.help1@gmail.com
+- **Contact:** open an issue on this repository
 - **Bugs, result reports, readability failures:** GitHub Issues
 - **Design arguments and proposals:** GitHub Discussions
 - **How to run your own tests:** [`docs/TESTING.md`](docs/TESTING.md)

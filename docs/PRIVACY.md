@@ -29,5 +29,5 @@ your machine only. No dataset, checkpoint or training log leaves your disk unles
 
 ## Reporting a privacy problem
 
-Email blueprintai.help1@gmail.com. If we published something that identifies a person, we will remove it
+Open an issue on this repository. If we published something that identifies a person, we will remove it
 first and discuss afterwards.

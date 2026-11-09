@@ -1,9 +1,10 @@
+import os
 
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 import numpy as np
-OUT = "/run/media/maintainer/HARD DISK 4/GlassNet/docs/assets/"
+OUT = os.environ.get("GLASSNET_ROOT", ".")
 BG, FG, ACC, MUT = "#0e1116", "#e6edf3", "#3fb950", "#8b949e"
 plt.rcParams.update({"figure.facecolor":BG,"axes.facecolor":BG,"savefig.facecolor":BG,
     "text.color":FG,"axes.labelcolor":FG,"xtick.color":MUT,"ytick.color":MUT,

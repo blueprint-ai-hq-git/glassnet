@@ -11,7 +11,7 @@ import os
 import sys
 import tempfile
 
-PROJ = "/run/media/maintainer/HARD DISK 4/GlassNet"
+PROJ = os.environ.get("GLASSNET_ROOT", ".")
 sys.path.insert(0, PROJ)
 sys.path.insert(0, os.path.join(PROJ, "scripts"))
 

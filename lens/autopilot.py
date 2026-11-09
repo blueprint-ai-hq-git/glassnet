@@ -23,7 +23,7 @@ import time
 
 import numpy as np
 
-PROJ = "/run/media/maintainer/HARD DISK 4/GlassNet"
+PROJ = os.environ.get("GLASSNET_ROOT", ".")
 sys.path.insert(0, PROJ)
 
 import lens                                          # noqa: E402

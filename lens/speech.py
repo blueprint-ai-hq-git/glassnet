@@ -23,7 +23,7 @@ import wave
 
 import numpy as np
 
-PROJ = "/run/media/maintainer/HARD DISK 4/GlassNet"
+PROJ = os.environ.get("GLASSNET_ROOT", ".")
 SR = 16000
 FRAME = 400       # 25 ms
 HOP = 160         # 10 ms

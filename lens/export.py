@@ -23,7 +23,7 @@ import sys
 
 import numpy as np
 
-ROOT = "/run/media/maintainer/HARD DISK 4/GlassNet"
+ROOT = os.environ.get("GLASSNET_ROOT", ".")
 sys.path.insert(0, ROOT)
 # REAL BUG FIX 2026-10-20 (evidence lens/runs/SERVE-GPU-AFTER.txt): `python3 lens/<this file>`
 # puts THIS directory -- the project's lens/ -- at sys.path[0], so the top-level name `cuda`

@@ -18,7 +18,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-ROOT = "/run/media/maintainer/HARD DISK 4/GlassNet"
+ROOT = os.environ.get("GLASSNET_ROOT", ".")
 OUTDIR = f"{ROOT}/lens/runs/figures"
 RUNS = f"{ROOT}/lens/runs"
 
