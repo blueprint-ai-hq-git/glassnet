@@ -41,6 +41,8 @@ def train_step(p, chunks, tgt_pos, UNK, lr, clip=1.0):
         g["b"] += da.sum(axis=0)
         g["Wx"] += xs[:, t].T @ da
         g["Wh"] += hs[:, t].T @ da
+        # NOTE: np.add.at measured FASTER than a per-column np.bincount here (792 vs 641 scored
+        # tokens/s at batch 32). Kept deliberately - see docs/history/SPEED-BATCHING.md.
         np.add.at(g["emb"], chunks[:, t], da @ p["Wx"].T)
         dh[:, t] += da @ p["Wh"].T
     norm = float(np.sqrt(sum((v ** 2).sum() for v in g.values())))
