@@ -1,3 +1,11 @@
+## Batched direct path: both bugs found and fixed
+
+The gate failure had two independent causes: `einsum("btd,de->bte")` contracted the wrong axis of
+`Wd` (correct: `"bte,de->btd"`), and positions whose target is `<unk>` were scored even though
+`<unk>` is banned from prediction. After both fixes, four independent seeds pass at **1.68e-10,
+1.60e-10, 2.65e-10, 2.70e-10**. The batched direct-path core is verified and runs at **792** scored
+tokens/s. Source: `docs/history/BATCHED-DIRECT-PATH-FIXED.md`.
+
 ## Batched gradient: proven wrong, not noise
 
 The batched embedding gradient is stable at **-0.00119500** across eps 1e-4 to 1e-8 while the analytic

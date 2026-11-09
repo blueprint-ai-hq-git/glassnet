@@ -24,12 +24,21 @@ def train_step(p, chunks, tgt_pos, UNK, lr, clip=1.0, target_radius=None):
     dsel = dd_[:, pos]                                            # (B,K,D)
     lg = hsel @ p["Wa"] + p["ba"] + dsel @ p["emb"].T             # (B,K,V)
     tg = chunks[:, 1:][:, pos].reshape(-1)
-    lg2 = lg.reshape(-1, V); lg2[:, UNK] = -1e9
+    n = len(tg)
+    # <unk> is banned from prediction, so a position whose TARGET is <unk> is unlearnable: weight it 0
+    # instead of scoring it. Scoring it made the analytic gradient disagree with finite differences on
+    # some seeds (the banned logit makes the numeric slope zero while the one-hot slope is not).
+    wts = (tg != UNK).astype(np.float64)
+    wts = wts / max(wts.sum(), 1.0)
+    lg2 = lg.reshape(-1, V)
+    lg2[:, UNK] = -1e9
     mx = lg2.max(axis=1, keepdims=True); z = np.exp(lg2 - mx); pr = z / z.sum(axis=1, keepdims=True)
-    loss = float(-np.log(pr[np.arange(len(tg)), tg] + 1e-12).mean())
-    acc = float((pr.argmax(axis=1) == tg).mean())
+    loss = float(-(wts * np.log(pr[np.arange(n), tg] + 1e-12)).sum())
+    acc = float(((pr.argmax(axis=1) == tg) & (wts > 0)).sum() / max((wts > 0).sum(), 1))
     g = {k: np.zeros_like(v, dtype=np.float64) for k, v in p.items()}
-    dlg = pr.copy(); dlg[np.arange(len(tg)), tg] -= 1.0; dlg /= len(tg)
+    dlg = pr.copy()
+    dlg[np.arange(n), tg] -= 1.0
+    dlg *= wts[:, None]
     dlgB = dlg.reshape(B, -1, V)
     g["Wa"] += hsel.reshape(-1, H).T @ dlg
     g["ba"] += dlg.sum(axis=0)
@@ -40,7 +49,8 @@ def train_step(p, chunks, tgt_pos, UNK, lr, clip=1.0, target_radius=None):
     dp = np.einsum("bkv,vd->bkd", dlgB, p["emb"].astype(np.float64))   # (B,K,D)
     dpre[:, pos] = dp * (pre[:, pos] > 0)
     g["Wd"] += xs.reshape(-1, D).T @ dpre.reshape(-1, D)
-    dxs = np.einsum("btd,de->bte", dpre, p["Wd"].astype(np.float64))
+    # pre[t,e] = sum_d xs[t,d] * Wd[d,e], so dL/dxs[t,d] = sum_e dpre[t,e] * Wd[d,e]
+    dxs = np.einsum("bte,de->btd", dpre, p["Wd"].astype(np.float64))
     dh = np.zeros((B, T + 1, H))
     dh[:, pos + 1] += np.einsum("bkv,hv->bkh", dlgB, p["Wa"].astype(np.float64))   # Wa is (H,V)
     for t in range(T - 1, -1, -1):
