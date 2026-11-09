@@ -1,3 +1,9 @@
+## State core: input-blind, cause found
+
+Four different prompts produce the same state (pairwise cosine **+1.0000**), state norm **15.96**,
+tanh slope **0.00516**, and the recurrent matrix has **spectral radius 3.406** - the loop saturates
+and destroys the input. All four failed runs had one cause. Source: `docs/history/INPUT-BLIND-STATECORE.md`.
+
 ## State core, run 4
 
 8x throughput (792 vs 99 scored tokens/s) produced held-out loss **7.2164**, accuracy **2.34%** -
