@@ -1,3 +1,11 @@
+## Run 6 mid-run: state collapse returns, and my plateau call was wrong
+
+At step 3750 (`scan6_ep3750.npz`): KL across six prefix-free words **0.0091** nats (K1 needs 0.05, trending
+FAIL) and state cosine **0.9716** (K3 bar is 0.9, so FAIL). Two conclusions: longer training does not raise
+input sensitivity, so the readout limit is structural; and the drift I called a plateau at **0.8088** at
+step 1000 had reached **0.9716** by step 3750 - that inference from four points was wrong and is recorded
+as wrong. Source: `docs/history/SCAN6-MIDRUN-COLLAPSE-RETURNS.md`.
+
 ## Incident: run 6 overwrote run 5's checkpoints
 
 All 15 files matching `scan5_ep*.npz` carry mtimes after run 6 started, so **run 5's weights were
