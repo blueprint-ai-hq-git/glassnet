@@ -11,7 +11,7 @@ Updated: 2026-11-06. Every figure below comes from a run recorded in `docs/histo
 | Area | Done | Note |
 |---|---:|---|
 | Autograd engine | 100% | gradients verified to 7.5e-10 abs / 1.8e-07 rel (live check, 9/9 PASS) |
-| Our optimiser | 100% | built and measured. A 3-seed sweep at its own rung, scored best-masked-per-seed, puts it +0.78 points over SGD's best setting there (28.59% vs 27.81%, `docs/history/PUBLIC-NUMBER-AUDIT.md:73`) and level at matched epoch; it fails the stability bar (1.89 pp spread) - not the 4.3 points once published. That arm used a different rung and SGD at lr 1.0 with no decay, so it is not the ladder result: on the capped-window ladder with final VAL, our rule leads only at 500k and plain SGD is ahead from 2M up (`docs/history/RULE-COMPARISON.md`) |
+| Our optimiser | 100% | built and measured. A 3-seed sweep at its own rung, scored best-masked-per-seed, puts it +0.78 points over SGD's best setting there (28.59% vs 27.81%, `docs/history/PUBLIC-NUMBER-AUDIT.md:73`, `docs/history/PUBLIC-NUMBER-AUDIT.md:74`) and level at matched epoch; it fails the stability bar (1.89 pp spread) - not the 4.3 points once published. That arm used a different rung and SGD at lr 1.0 with no decay, so it is not the ladder result: on the capped-window ladder with final VAL, our rule leads only at 500k and plain SGD is ahead from 2M up (`docs/history/RULE-COMPARISON.md`) |
 | KV cache | 100% | 2.29x faster (0.483 -> 0.211 ms/token), identical output |
 | Exports (npz/safetensors/gguf) | 95% | safetensors export of the best checkpoint pending |
 | Local server | 95% | serves, not yet load-tested |
