@@ -1,3 +1,10 @@
+## Run 5 drift: decelerating, plateau below the bar
+
+Pairwise state cosine across six prefix-free words: **0.2068, 0.5029, 0.6878, 0.7680, 0.8088** at steps
+120 / 250 / 500 / 750 / 1000. Increments shrink (+0.30, +0.19, +0.08, +0.04), so it plateaus under the
+0.9 input-blindness bar instead of crossing it. My earlier prediction of a crossing near step 1000 was
+wrong and is recorded as such. Source: `docs/history/SCAN5-STATE-DRIFT.md`.
+
 ## Run 5: state similarity climbing
 
 Same six prefix-free words, three checkpoints: pairwise state cosine **0.2068 -> 0.5029 -> 0.6878** at
