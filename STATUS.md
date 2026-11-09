@@ -1,3 +1,11 @@
+## Incident: run 6 overwrote run 5's checkpoints
+
+All 15 files matching `scan5_ep*.npz` carry mtimes after run 6 started, so **run 5's weights were
+overwritten and are gone**; its log and published numbers survive. Root cause: the checkpoint prefix
+was hardcoded in the driver, so a run launched with a different log still wrote the same filenames.
+Fixed: the driver reads `CK_PREFIX` from the environment and each runner pins its own. The 15 files
+were renamed, not deleted, with a sha256 receipt. Source: `docs/history/CKPT-OVERWRITE-INCIDENT.md`.
+
 ## Direct path at 25 steps: D1 FAILS, ranking changed 6 of 6
 
 KL across six prefix-free words is **0.0150** nats against a pre-registered bar of 0.05, so D1 FAILS and
