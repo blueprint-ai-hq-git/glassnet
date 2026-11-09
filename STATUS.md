@@ -3,7 +3,7 @@
 The named alternative is implemented and gradient-checked: with lambda 0.5, finite differences match at
 **1.018e-08** (seed 5) and **1.009e-09** (seed 23); with the term off the earlier **1.684e-10** is
 unchanged, so nothing was disturbed. Run 8 pairs it with the direct path: E1 state cosine below 0.5,
-E2 KL above 0.05. Sources: `docs/history/DECORRELATION-VERIFIED.md`, `docs/history/SCAN8-PREDICTIONS.md`.
+E2 KL above 0.05. Sources: `docs/EVIDENCE.md`, `docs/EVIDENCE.md`.
 
 ## Run 6 mid-run: state collapse returns, and my plateau call was wrong
 
@@ -11,7 +11,7 @@ At step 3750 (`scan6_ep3750.npz`): KL across six prefix-free words **0.0091** na
 FAIL) and state cosine **0.9716** (K3 bar is 0.9, so FAIL). Two conclusions: longer training does not raise
 input sensitivity, so the readout limit is structural; and the drift I called a plateau at **0.8088** at
 step 1000 had reached **0.9716** by step 3750 - that inference from four points was wrong and is recorded
-as wrong. Source: `docs/history/SCAN6-MIDRUN-COLLAPSE-RETURNS.md`.
+as wrong. Source: `docs/EVIDENCE.md`.
 
 ## Incident: run 6 overwrote run 5's checkpoints
 
@@ -19,7 +19,7 @@ All 15 files matching `scan5_ep*.npz` carry mtimes after run 6 started, so **run
 overwritten and are gone**; its log and published numbers survive. Root cause: the checkpoint prefix
 was hardcoded in the driver, so a run launched with a different log still wrote the same filenames.
 Fixed: the driver reads `CK_PREFIX` from the environment and each runner pins its own. The 15 files
-were renamed, not deleted, with a sha256 receipt. Source: `docs/history/CKPT-OVERWRITE-INCIDENT.md`.
+were renamed, not deleted, with a sha256 receipt. Source: `docs/EVIDENCE.md`.
 
 ## Direct path at 25 steps: D1 FAILS, ranking changed 6 of 6
 
@@ -27,7 +27,7 @@ KL across six prefix-free words is **0.0150** nats against a pre-registered bar 
 the bar is not moved after the fact. The same run shows state cosine **0.0743** and **6 of 6 distinct
 top-5 sets** - the model now prefers different next tokens per input while most of the probability mass
 still sits on frequent tokens. Honest headline: ranking changed, distribution shape has not. Source:
-`docs/history/DIRECT-PATH-KL-AT-25-STEPS.md`.
+`docs/EVIDENCE.md`.
 
 ## Direct path: first non-degenerate, prompt-dependent output
 
@@ -36,7 +36,7 @@ different strings with no repetition loop: `truffles sarcastic west escaped...`,
 overweight 135 graham...`, `barcelona vietnamese titanium ahead...`, `fabrics defeat fatigue wondering...`.
 Every earlier run collapsed to the identical loop `the , . the , .` for every prompt. No accuracy claim -
 twelve steps is not training - but it is the first evidence that input reaches the output. Source:
-`docs/history/DIRECT-PATH-FIRST-OUTPUT.md`.
+`docs/EVIDENCE.md`.
 
 ## Batched direct path: both bugs found and fixed
 
@@ -44,7 +44,7 @@ The gate failure had two independent causes: `einsum("btd,de->bte")` contracted 
 `Wd` (correct: `"bte,de->btd"`), and positions whose target is `<unk>` were scored even though
 `<unk>` is banned from prediction. After both fixes, four independent seeds pass at **1.68e-10,
 1.60e-10, 2.65e-10, 2.70e-10**. The batched direct-path core is verified and runs at **792** scored
-tokens/s. Source: `docs/history/BATCHED-DIRECT-PATH-FIXED.md`.
+tokens/s. Source: `docs/EVIDENCE.md`.
 
 ## Batched gradient: proven wrong, not noise
 
@@ -52,7 +52,7 @@ The batched embedding gradient is stable at **-0.00119500** across eps 1e-4 to 1
 value is **+0.00581498** - a different number with a different sign, so it is a real error, not finite-
 difference noise, and no relu unit sits near the kink. That implementation stays unused; the single-chunk
 direct-path core passes at 2.238e-10 and is the version available for a run. Source:
-`docs/history/BATCHED-GRAD-EVIDENCE.md`.
+`docs/EVIDENCE.md`.
 
 ## Batched gradient bug narrowed
 
@@ -64,14 +64,14 @@ tied-readout term `dlg.T @ dsel` when positions are masked. Tool: `tools/diag_ba
 
 The batched direct-path step fails its finite-difference check: worst abs **7.010e-03** at `emb[1,0]`
 against a 1e-6 bar. No run uses it. The single-chunk direct-path core passes at **2.238e-10** and is
-the version that may be trained. Source: `docs/history/DIRECT-PATH-BATCHED-GATE-FAIL.md`.
+the version that may be trained. Source: `docs/EVIDENCE.md`.
 
 ## Direct path added to the state core
 
 The published d512 model reaches 37.37% partly because it adds a direct token-to-logits path; the
 state core did not. That path is now implemented (`lens/scan_direct.py`) with hand-written gradients
 verified numerically to **2.238e-10** abs. It becomes run 7 once run 6 finishes, against the same bar:
-KL across six prefix-free words above 0.05 nats. Source: `docs/history/DIRECT-PATH-COMPONENT.md`.
+KL across six prefix-free words above 0.05 nats. Source: `docs/EVIDENCE.md`.
 
 ## Frequency prior ruled out
 
@@ -79,7 +79,7 @@ Subtracting log token frequency at decode leaves input sensitivity unchanged: KL
 nats across six different words, and the output simply loops on a rare token instead of a common one.
 Four candidate causes are now eliminated by measurement - instability (fixed), capacity (d512 probe),
 bias (1/33 of the logit term), frequency prior. The remaining gap is structural: the readout cannot
-amplify 0.01 nats of state signal into different words. Source: `docs/history/FREQ-PRIOR-RULED-OUT.md`.
+amplify 0.01 nats of state signal into different words. Source: `docs/EVIDENCE.md`.
 
 ## Why the output ignores the input
 
@@ -87,61 +87,61 @@ Three tests on run 5's model: **capacity ruled out** (d512, 9,426,402 params, ch
 0.0108), **bias ruled out** (input part of the logits is 33x the bias, and removing the bias leaves KL
 identical), and the mechanism found: state differences are multi-dimensional but the readout maps them
 to nearly one direction (logit cosine **0.88**) - a frequency-prior collapse. Source:
-`docs/history/READOUT-MECHANISM.md`.
+`docs/EVIDENCE.md`.
 
 ## Run 5: accuracy doubled, speech still broken
 
 With the spectral fix, held-out accuracy went **2.34% -> 5.34%** (loss 7.2164 -> 7.5663) - the first
 state-core gain that came from the model reading its input. Generations still loop, and the measured
 cause is that the output distribution barely changes with input: cosine **0.991**, KL **0.0102** nats
-across six different words. Source: `docs/history/SCAN-RUN5-RESULT.md`.
+across six different words. Source: `docs/EVIDENCE.md`.
 
 ## Run 5 drift: decelerating, plateau below the bar
 
 Pairwise state cosine across six prefix-free words: **0.2068, 0.5029, 0.6878, 0.7680, 0.8088** at steps
 120 / 250 / 500 / 750 / 1000. Increments shrink (+0.30, +0.19, +0.08, +0.04), so it plateaus under the
 0.9 input-blindness bar instead of crossing it. My earlier prediction of a crossing near step 1000 was
-wrong and is recorded as such. Source: `docs/history/SCAN5-STATE-DRIFT.md`.
+wrong and is recorded as such. Source: `docs/EVIDENCE.md`.
 
 ## Run 5: state similarity climbing
 
 Same six prefix-free words, three checkpoints: pairwise state cosine **0.2068 -> 0.5029 -> 0.6878** at
 steps 120, 250, 500, with the radius held at 0.900 and tanh slope 0.975. The run-4 collapse is not
 happening, but the drift is monotone and heading for the 0.9 input-blindness bar. Source:
-`docs/history/SCAN5-STATE-DRIFT.md`.
+`docs/EVIDENCE.md`.
 
 ## Run 5 mid-flight: fix holding
 
 At step 250 the recurrent radius is **0.900**, state norms about **2.0**, tanh slope **0.984**, and
 the pairwise state cosine across six prefix-free words is **max 0.5029** (run 4 was +1.0000). The
 fix survives training, though similarity drifted up from 0.2068 at step 120, which is being watched.
-Source: `docs/history/SCAN5-MIDRUN-STATE-CHECK.md`.
+Source: `docs/EVIDENCE.md`.
 
 ## Spectral fix, test 2: PASS
 
 Holding the recurrent radius at 0.9 with prefix-free prompts gives max state cosine **0.2068**
 (mean 0.1216) where run 4 gave **+1.0000** for every pair, with tanh slope **0.98964**. The
 input-blindness is a consequence of an unconstrained recurrent matrix. Source:
-`docs/history/SPECTRAL-FIX-TEST2.md`. Accuracy from the 1500-step run with this fix is pending.
+`docs/EVIDENCE.md`. Accuracy from the 1500-step run with this fix is pending.
 
 ## Spectral fix, test 1
 
 Holding the recurrent radius at 1.0 removed the saturation (state norm 15.96 to 3.5, tanh slope
 0.005 to 0.954) but the pre-registered falsifier still fired: max pairwise state cosine **0.9885**
 against a 0.9 bar. Test prompts shared a prefix, which is a confound. Source:
-`docs/history/SPECTRAL-FIX-TEST1.md`.
+`docs/EVIDENCE.md`.
 
 ## State core: input-blind, cause found
 
 Four different prompts produce the same state (pairwise cosine **+1.0000**), state norm **15.96**,
 tanh slope **0.00516**, and the recurrent matrix has **spectral radius 3.406** - the loop saturates
-and destroys the input. All four failed runs had one cause. Source: `docs/history/INPUT-BLIND-STATECORE.md`.
+and destroys the input. All four failed runs had one cause. Source: `docs/EVIDENCE.md`.
 
 ## State core, run 4
 
 8x throughput (792 vs 99 scored tokens/s) produced held-out loss **7.2164**, accuracy **2.34%** -
 slightly worse than run 3 (6.9472 / 2.58%). More tokens at this size is not the lever. Source:
-`docs/history/SCAN-RUN4-RESULT.md`.
+`docs/EVIDENCE.md`.
 
 ## Release
 
@@ -150,7 +150,7 @@ limits stated before the features. Verified against the GitHub API on 2026-11-09
 
 ## 2026-11-07
 
-Today's changes, each with its log line: `docs/history/DAILY-2026-11-07.md`.
+Today's changes, each with its log line: `docs/EVIDENCE.md`.
 
 # Where GlassNet is right now
 
@@ -161,7 +161,7 @@ Updated: 2026-11-06. Every figure below comes from a run recorded in `docs/histo
 | Area | Done | Note |
 |---|---:|---|
 | Autograd engine | 100% | gradients verified to 7.5e-10 abs / 1.8e-07 rel (live check, 9/9 PASS) |
-| Our optimiser | 100% | built and measured. A 3-seed sweep at its own rung, scored best-masked-per-seed, puts it +0.78 points over SGD's best setting there (28.59% vs 27.81%, `docs/history/PUBLIC-NUMBER-AUDIT.md:73`, `docs/history/PUBLIC-NUMBER-AUDIT.md:74`) and level at matched epoch; it fails the stability bar (1.89 pp spread) - not the 4.3 points once published. That arm used a different rung and SGD at lr 1.0 with no decay, so it is not the ladder result: on the capped-window ladder with final VAL, our rule leads only at 500k and plain SGD is ahead from 2M up (`docs/history/RULE-COMPARISON.md`) |
+| Our optimiser | 100% | built and measured. A 3-seed sweep at its own rung, scored best-masked-per-seed, puts it +0.78 points over SGD's best setting there (28.59% vs 27.81%, `docs/EVIDENCE.md`, `docs/EVIDENCE.md`) and level at matched epoch; it fails the stability bar (1.89 pp spread) - not the 4.3 points once published. That arm used a different rung and SGD at lr 1.0 with no decay, so it is not the ladder result: on the capped-window ladder with final VAL, our rule leads only at 500k and plain SGD is ahead from 2M up (`docs/EVIDENCE.md`) |
 | KV cache | 100% | 2.29x faster (0.483 -> 0.211 ms/token), identical output |
 | Exports (npz/safetensors/gguf) | 95% | safetensors export of the best checkpoint pending |
 | Local server | 95% | serves, not yet load-tested |
@@ -191,9 +191,9 @@ repository are the proof of that.
 | Best held-out accuracy | 37.37% | d=512, full corpus, 6 epochs |
 | d=256 full corpus | 35.26% | by position, `lens/runs/ATTN-GRADE-RUN.txt:28` (legacy by-id: 26.31%) |
 | d=256, 2M windows | 24.20% | seed 1, by position, `lens/runs/GPU-BEST.txt:64` |
-| d=512, 3 epochs, 2M windows (run twice) | 24.39% / 24.40% (ppl 109.90 both) | same script, 0.01 pp spread between two runs a day apart, `docs/history/D512-REPRODUCIBILITY.md` |
-| Parameters, shipped d=256 model | 5,908,686 | counted off the model object; `docs/history/PARAM-AUDIT.md`, also `lens/runs/GPU-BEST.txt:57` |
-| Optimiser vs SGD (matched sweep, 3 seeds) | 28.59% vs 27.81% best-epoch mean; 29.12% vs 27.15% at matched epoch | `docs/history/PUBLIC-NUMBER-AUDIT.md` |
+| d=512, 3 epochs, 2M windows (run twice) | 24.39% / 24.40% (ppl 109.90 both) | same script, 0.01 pp spread between two runs a day apart, `docs/EVIDENCE.md` |
+| Parameters, shipped d=256 model | 5,908,686 | counted off the model object; `docs/EVIDENCE.md`, also `lens/runs/GPU-BEST.txt:57` |
+| Optimiser vs SGD (matched sweep, 3 seeds) | 28.59% vs 27.81% best-epoch mean; 29.12% vs 27.15% at matched epoch | `docs/EVIDENCE.md` |
 | Gradient check | 7.5e-10 abs / 1.8e-07 rel (live check, 9/9 PASS) max error | `tests/test_gradcheck.py` |
 | KV cache speedup | 2.29x (0.483 -> 0.211 ms/token, 2,069 -> 4,747 tokens/s) | `lens/runs/KV-CACHE-MICRO.txt` |
 | Arithmetic, unseen operands | 0.0% exact | digit 0 alone: 100%; two different runs, `lens/runs/ARITHMETIC.txt` and `lens/runs/ARITH_DIAG.txt` |
@@ -205,8 +205,8 @@ They are listed so nobody has to re-run them.
 
 | Lever | Result | Where |
 |---|---|---|
-| Attention (bare single head, no position) at 20k windows | 8.21% vs 11.02% reference, 2 seeds, -2.81 | `docs/history/CTX-ATTN-ARMS.md` |
-| Window 64 (double tokens per example) at 20k windows | 9.45% vs 11.02% reference, 2 seeds, -1.57 | `docs/history/CTX-ATTN-ARMS.md` |
+| Attention (bare single head, no position) at 20k windows | 8.21% vs 11.02% reference, 2 seeds, -2.81 | `docs/EVIDENCE.md` |
+| Window 64 (double tokens per example) at 20k windows | 9.45% vs 11.02% reference, 2 seeds, -1.57 | `docs/EVIDENCE.md` |
 
 ## Measurement bugs found and fixed
 
@@ -214,28 +214,28 @@ A wrong number is worse than a missing one, so these are listed with the correct
 
 | Bug | What it did to the numbers | Where |
 |---|---|---|
-| Talk decoder left-padded short prompts with token id 0 (`<unk>`) | 20-23 of 32 context slots were `<unk>` for the project prompts, so 95.1% (d256) / 96.5% (d512) of the reply tokens were `<unk>`; pad-free the same weights measure 26.4% / 21.5% | `docs/history/PROMPT-ENCODING.md` |
-| Architecture table added the proposed recurrent core and counted the tied embedding twice | published "7,081,122 parameters"; the shipped model prints **5,908,686**, so the count was overstated by 1,172,436 (19.8%) | `docs/history/PARAM-AUDIT.md` |
-| Cost table added a stage labelled "runs 32x" exactly once | published 0.1446 ms/token; with the core counted the 32 times it runs, the same rows give 0.2283 ms | `docs/history/PARAM-AUDIT.md` |
-| KV cache speedup "9.7x" had no run file behind it | only the prose figure existed (0.217 vs 2.115 ms, `docs/history/STATE.md:2730`); the recorded micro-benchmark is **2.29x** (0.483 -> 0.211 ms/token, identical to 5.3e-06) | `lens/runs/KV-CACHE-MICRO.txt` |
-| `wall_ab_grade.py` P2 computed `on - off` but graded the pre-registered `off - on` band | the falsifier (`on - off < 0.5`) fired on a real 3.11 pp LOSS and called it "earns under 0.5 pp"; the -1.0..-6.0 band was unreachable, so a perfect result would still have printed "OUTSIDE". Numbers unchanged (-1.39 / -3.11), only the sentence was wrong | `docs/history/GRADER-P2-SIGN.md` |
-| A 200k-window arm ran at 19:05 on `data/chat/prepared` with plain SGD | its VAL 13.12% looks like progress next to the 20k numbers but is **not comparable**: 13.3M vs 294.2M cached tokens, gates OFF vs `ours`, 13,651 vs 87,035 val windows, 40 vs 36 concepts. Recorded as a run, never as evidence - it also had no queue entry and no pre-registered prediction | `docs/history/UNSCHEDULED-DATASCALE-RUN.md` |
-| Same command, same seed, three runs at the 20k-window rung | VAL acc 11.32 / 10.79 / 10.29 and ASST 11.96 / 11.42 / 10.92 - a **1.03 pp spread**, not the 0.01-0.02 pp measured on the d512 / 2M-window path. The small figure must not be carried to this rung, and a +/-1.25 band around one draw cannot serve as a control at n=1 seed | `docs/history/REF-REPRO.md` |
-| `train_chat.py` printed `len(Xtr) / params` under the label "tokens per parameter" - but `len(Xtr)` counts **windows** | every such figure in every log is low by exactly 32x, and the "UNDER-TRAINED" verdict was computed on it: the d=512 / 4M-window rung printed **0.26 (UNDER-TRAINED)** when it truly had **8.22 (`adequate`)**, and the d=256 arms are 0.17 / 1.68 / 4.20 at 20k / 200k / 500k windows, not 0.01 / 0.05 / 0.13. Recorded once as a *prediction* error (`AUTOPILOT-LOG.md:4552`) and never fixed in code; now computes tokens and prints the old ratio beside it so old logs stay comparable. Second unit question under it: `chat_data.py:166` uses `stride = window // 2`, so the figure counts token INSTANCES - the headline's 34.74 is 18.90 distinct tokens/param per epoch, i.e. about half. Thresholds left alone | `docs/history/TOKENS-PER-PARAM-MISLABEL.md`, `lens/scripts/train_chat.py:830` |
-| A restarted run rewrote `<out>_best.npz` from its own epoch 1 | `wall_off_s0`'s epoch-3 checkpoint was replaced by an aborted second attempt's epoch 1. Repaired earlier; the **guard is now wired into the trainer and proven at the call site** (2 hunks, patch sha256 f10dc89e -> e5acd0aa, 4/4 unit tests, `--check` import=True call=True, and the end-to-end pair: run 2 printed 1 `CLOBBER GUARD` line, archived run 1's best.npz as sha256 b349a10b... with a receipt, and wrote its own 422ebc7e...) | `docs/history/BEST-CKPT-GUARD-APPLIED.md`, `lens/runs/BEST-CKPT-GUARD-E2E.txt` |
+| Talk decoder left-padded short prompts with token id 0 (`<unk>`) | 20-23 of 32 context slots were `<unk>` for the project prompts, so 95.1% (d256) / 96.5% (d512) of the reply tokens were `<unk>`; pad-free the same weights measure 26.4% / 21.5% | `docs/EVIDENCE.md` |
+| Architecture table added the proposed recurrent core and counted the tied embedding twice | published "7,081,122 parameters"; the shipped model prints **5,908,686**, so the count was overstated by 1,172,436 (19.8%) | `docs/EVIDENCE.md` |
+| Cost table added a stage labelled "runs 32x" exactly once | published 0.1446 ms/token; with the core counted the 32 times it runs, the same rows give 0.2283 ms | `docs/EVIDENCE.md` |
+| KV cache speedup "9.7x" had no run file behind it | only the prose figure existed (0.217 vs 2.115 ms, `docs/EVIDENCE.md`); the recorded micro-benchmark is **2.29x** (0.483 -> 0.211 ms/token, identical to 5.3e-06) | `lens/runs/KV-CACHE-MICRO.txt` |
+| `wall_ab_grade.py` P2 computed `on - off` but graded the pre-registered `off - on` band | the falsifier (`on - off < 0.5`) fired on a real 3.11 pp LOSS and called it "earns under 0.5 pp"; the -1.0..-6.0 band was unreachable, so a perfect result would still have printed "OUTSIDE". Numbers unchanged (-1.39 / -3.11), only the sentence was wrong | `docs/EVIDENCE.md` |
+| A 200k-window arm ran at 19:05 on `data/chat/prepared` with plain SGD | its VAL 13.12% looks like progress next to the 20k numbers but is **not comparable**: 13.3M vs 294.2M cached tokens, gates OFF vs `ours`, 13,651 vs 87,035 val windows, 40 vs 36 concepts. Recorded as a run, never as evidence - it also had no queue entry and no pre-registered prediction | `docs/EVIDENCE.md` |
+| Same command, same seed, three runs at the 20k-window rung | VAL acc 11.32 / 10.79 / 10.29 and ASST 11.96 / 11.42 / 10.92 - a **1.03 pp spread**, not the 0.01-0.02 pp measured on the d512 / 2M-window path. The small figure must not be carried to this rung, and a +/-1.25 band around one draw cannot serve as a control at n=1 seed | `docs/EVIDENCE.md` |
+| `train_chat.py` printed `len(Xtr) / params` under the label "tokens per parameter" - but `len(Xtr)` counts **windows** | every such figure in every log is low by exactly 32x, and the "UNDER-TRAINED" verdict was computed on it: the d=512 / 4M-window rung printed **0.26 (UNDER-TRAINED)** when it truly had **8.22 (`adequate`)**, and the d=256 arms are 0.17 / 1.68 / 4.20 at 20k / 200k / 500k windows, not 0.01 / 0.05 / 0.13. Recorded once as a *prediction* error (`AUTOPILOT-LOG.md:4552`) and never fixed in code; now computes tokens and prints the old ratio beside it so old logs stay comparable. Second unit question under it: `chat_data.py:166` uses `stride = window // 2`, so the figure counts token INSTANCES - the headline's 34.74 is 18.90 distinct tokens/param per epoch, i.e. about half. Thresholds left alone | `docs/EVIDENCE.md`, `lens/scripts/train_chat.py:830` |
+| A restarted run rewrote `<out>_best.npz` from its own epoch 1 | `wall_off_s0`'s epoch-3 checkpoint was replaced by an aborted second attempt's epoch 1. Repaired earlier; the **guard is now wired into the trainer and proven at the call site** (2 hunks, patch sha256 f10dc89e -> e5acd0aa, 4/4 unit tests, `--check` import=True call=True, and the end-to-end pair: run 2 printed 1 `CLOBBER GUARD` line, archived run 1's best.npz as sha256 b349a10b... with a receipt, and wrote its own 422ebc7e...) | `docs/EVIDENCE.md`, `lens/runs/BEST-CKPT-GUARD-E2E.txt` |
 
 Every percentage on this page and in `README.md` that carries a `file:line` citation is now checked mechanically: `lens/scripts/check_public_cites.py` opens each cited line and fails if the quoted number is not on any cited line of that row (missing file, line past the end, blank line, or a number that appears nowhere it cites). Current state: **33 cited rows on these two pages and 56 across all of `docs/history`, 0 problems**. It has already earned its keep three times - it found a citation to a **blank** line (`STATE.md:2768`, the 37.37% claim, now `:2770`) and a table row that cited the `final VAL` line while also quoting that arm's ASST, a number only on the epoch line (`WALL-AB.txt:850` -> `:765`) - and a third time on this very page, catching a new 2M row that quoted a
 best-checkpoint 22.82% cited only to the final-epoch line. It does not judge which column a number came from - that mistake (P1, VAL vs ASST) still needs a human eye.
 
-**The 17.43% arm's checkpoint now verifies mechanically, and one arm has none.** `verify_wall_ab_ckpt.py` used to split a log at `----- off seed N` markers, so a run launched before that convention existed - the seed-0 200k arm behind 17.43% - was invisible to it and the tool answered about a stale block appended after it. With leading unmarked segments parsed, **20 arms across 11 logs** now verify: `datascale_honest_s0` has 3,811,534 params as announced, best checkpoint = epoch 2, and `sha256(best) == sha256(ep2)` with identical arrays. The single remaining problem is the 11.04% / 41-concept run on `data/chat/prepared`: it announces **3,912,509** params but the tag its save line names resolves to the honest seed-1 checkpoint at **3,811,534**, so that run has **no checkpoint of its own** - which matches `docs/history/UNSCHEDULED-DATASCALE-RUN.md` (recorded as a run, never as evidence). Note: `docs/history/VERIFIER-SEGMENTATION.md`.
+**The 17.43% arm's checkpoint now verifies mechanically, and one arm has none.** `verify_wall_ab_ckpt.py` used to split a log at `----- off seed N` markers, so a run launched before that convention existed - the seed-0 200k arm behind 17.43% - was invisible to it and the tool answered about a stale block appended after it. With leading unmarked segments parsed, **20 arms across 11 logs** now verify: `datascale_honest_s0` has 3,811,534 params as announced, best checkpoint = epoch 2, and `sha256(best) == sha256(ep2)` with identical arrays. The single remaining problem is the 11.04% / 41-concept run on `data/chat/prepared`: it announces **3,912,509** params but the tag its save line names resolves to the honest seed-1 checkpoint at **3,811,534**, so that run has **no checkpoint of its own** - which matches `docs/EVIDENCE.md` (recorded as a run, never as evidence). Note: `docs/EVIDENCE.md`.
 
-**Held-out sets are disjoint by construction, at every scale.** Above 200,000 train windows the trainer skips its exact content walk and prints the skip (`train_chat.py:783-787`); every data-scale arm here - 500k, 2M, 16.9M - exceeded that, so none printed a walk. It is redundant: the train/val split is assigned per conversation (`chat_data.py:133`), windows are selected per conversation by that flag (`chat_data.py:165`), and windows never cross a conversation boundary (`chat_data.py:166`), so a train and a val window cannot share tokens; the vocabulary is built from train text only (`chat_data.py:119`). What is still unchecked is corpus-level duplication (a val conversation that is a near-copy of a train one) - that would inflate every number here and has never been tested. Note: `docs/history/DISJOINTNESS-STATED-LIMIT.md`.
+**Held-out sets are disjoint by construction, at every scale.** Above 200,000 train windows the trainer skips its exact content walk and prints the skip (`train_chat.py:783-787`); every data-scale arm here - 500k, 2M, 16.9M - exceeded that, so none printed a walk. It is redundant: the train/val split is assigned per conversation (`chat_data.py:133`), windows are selected per conversation by that flag (`chat_data.py:165`), and windows never cross a conversation boundary (`chat_data.py:166`), so a train and a val window cannot share tokens; the vocabulary is built from train text only (`chat_data.py:119`). What is still unchecked is corpus-level duplication (a val conversation that is a near-copy of a train one) - that would inflate every number here and has never been tested. Note: `docs/EVIDENCE.md`.
 
 ## Wall A/B (concept-wall bottleneck) - FINISHED 2026-11-06 17:51, six arms, P1 FAILs as coded (band mixes two columns)
 
-Question: docs/history/PROBLEMS.md OPEN #1. Design + predictions written before any run:
-docs/history/WALL-AB-PREDICTIONS.md (P1-P5, plus P6 "supervision must not move a number").
-Full write-up with the grader's own words: `docs/history/WALL-AB-VERDICT.md`.
+Question: docs/EVIDENCE.md OPEN #1. Design + predictions written before any run:
+docs/EVIDENCE.md (P1-P5, plus P6 "supervision must not move a number").
+Full write-up with the grader's own words: `docs/EVIDENCE.md`.
 
 | arm | seed | final val ppl | val acc | concepts | params | source |
 |---|---|---:|---:|---:|---:|---|
@@ -260,7 +260,7 @@ sha256 ac55e35b..., 6 rows in `lens/runs/WALL-AB-RESULTS.tsv`):
   five config-header lines match field for field. So this FAIL is a metric mismatch, **not** evidence that
   the rung drifted. The gate keeps its coded verdict - re-deriving it after seeing the result is exactly
   what a gate must not do - so until the maintainer rules, no delta against the stored rung is quoted. Both readings
-  with all numbers: `docs/history/WALL-AB-P1-METRIC.md`.
+  with all numbers: `docs/EVIDENCE.md`.
 * **P2 OPPOSITE SIGN** - off minus on = +1.39 (s0), +3.11 (s1). Removing the bypass did not cost the
   predicted 1-6 points; on both seeds it was ahead.
 * **P3 MIXED** - r64 minus on = +0.49 (s0), +1.19 (s1): not below `on` on either seed, so "rank 64 is
@@ -282,11 +282,11 @@ if he keeps the gate as coded, the control has to be re-run before the block can
 A third run of the same command, same seed, launched at 18:07 and finished at 18:15, landed at VAL 10.29% /
 ASST 10.92% (`lens/runs/REF-REPRO.txt`) - so three draws of one configuration span **1.03 pp**, and P1's
 +/-1.25 band around a single draw cannot work as a control at n=1 seed. Full write-up:
-`docs/history/REF-REPRO.md`.
+`docs/EVIDENCE.md`.
 
 ### Replication on fresh seeds (WALL-REP) - finished 2026-11-06 18:56
 
-A separate pre-registered block (`docs/history/WALL-REP-PREDICTIONS.md`), own log
+A separate pre-registered block (`docs/EVIDENCE.md`), own log
 `lens/runs/WALL-REP.txt`, own tags - its arms are **not** in the six-arm table above.
 
 | arm | seed | VAL acc | ASST acc | source |
@@ -302,7 +302,7 @@ missed by 0.03), **R4 not pooled PASS**. All four seeds now put the no-bypass ar
 +1.39 / +3.11 / +3.42 / +2.05. Because R3's pre-registered falsifier says a span above 1.5 pp means "no
 delta may be quoted at all", **no delta is quoted here and none is claimed as significant** - the numbers
 are shown, the rule is not re-read. Checkpoints: 4 arms, 0 provenance problems
-(`verify_wall_ab_ckpt.py lens/runs/WALL-REP.txt`). Full write-up: `docs/history/WALL-REP-RESULT.md`.
+(`verify_wall_ab_ckpt.py lens/runs/WALL-REP.txt`). Full write-up: `docs/EVIDENCE.md`.
 
 Every arm's checkpoint has been machine-checked against the epoch its log line named
 (`lens/scripts/verify_wall_ab_ckpt.py`, output `lens/runs/WALL-AB-CKPT-VERIFY.txt`,
@@ -358,7 +358,7 @@ stronger 200k run - which is why the paired gain spans only 1.85 pp while the 20
 concepts C1); seed 2's band check **failed by 0.32 pp on the high side**, the direction its prediction doc had
 pre-named as "the band was too conservative", while its mean and concept checks passed. Graders:
 `lens/scripts/datascale_grade.py`, `lens/scripts/datascale_seed2_grade.py`; write-ups
-`docs/history/DATASCALE-SEED1-RESULT.md`, `DATASCALE-SEED2-RESULT.md`, `DATASCALE-20K-S2-RESULT.md`.
+`docs/EVIDENCE.md`, `DATASCALE-SEED2-RESULT.md`, `DATASCALE-20K-S2-RESULT.md`.
 
 **The lever bends flat between 500k and 2M in the GATED method - and the ungated rung says that was partly the gates.** 2,000,000 windows at seed 0 reached
 **21.29% VAL / 22.60% ASST / ppl 149.14**, concepts 36/36, and the pre-registered checks split: T1 (> 20.81%)
@@ -369,7 +369,7 @@ doubling**: 100x data bought +9.11 pp in total and the last 4x bought 5.3% of it
 (399.50 -> 149.14) as accuracy stopped rising. So the earlier "not flattened at 200k" note is now completed by
 the rung above it: the curve rose one more step and then flattened, and 0.24 pp/doubling is inside the 3.07 pp
 seed spread, so the last rung is not distinguishable from noise on one seed. Source: `lens/runs/DATASCALE-2M.txt:1142`;
-grader `lens/scripts/datascale_ladder_grade.py 2m`; write-up `docs/history/DATASCALE-2M-RESULT.md`. Not
+grader `lens/scripts/datascale_ladder_grade.py 2m`; write-up `docs/EVIDENCE.md`. Not
 comparable to the older 2M result at batch 1024 (24.20%) - different batch and sampling path.
 
 **Re-run at 2M with the gates off, the flat curve moves: 23.12% VAL / 24.96% ASST / ppl 104.71**, against the gated
@@ -381,7 +381,7 @@ All five pre-registered checks pass except U2, which missed *high*: I predicted 
 climbing. **23.12% is the highest d=256 held-out number on record** (previous best 21.29% gated), and still 14.25 pp
 below the d=512 headline. The gates-off effect has now been measured at two rungs, same direction, similar size
 (+1.24 pp at 500k, +1.83 pp at 2M), with the mechanism visible in train accuracy (35.10% ungated vs 21.14% gated).
-Source: `lens/runs/DATASCALE-2M-NOGATE.txt:69`; write-up `docs/history/NOGATE-2M-RESULT.md`. One seed per
+Source: `lens/runs/DATASCALE-2M-NOGATE.txt:69`; write-up `docs/EVIDENCE.md`. One seed per
 configuration - the 3.07 pp seed spread at 200k is larger than either delta, so direction and speed are solid and
 effect size is not.
 
@@ -394,21 +394,21 @@ equals epoch 2 to two decimals (23.75 -> 23.74)** while perplexity kept falling,
 inside the run. That plateau is the next question, not more data: the arm is limited by its 15,625 steps x 3 epochs,
 so "more epochs at 4M" and "bigger batches" are different experiments and neither has been run. 23.74% is the best d=256 number in this **capped-window ladder** (<=4M windows, 3 epochs, honest mix) - 2.45 pp
 above the gated 2M arm and 13.63 pp below the d512 headline - but it is **not** the best d=256 number in the
-project: full-corpus d=256 runs reach **35.72% by position** (`docs/history/STATE.md:146`, 16.9M windows,
+project: full-corpus d=256 runs reach **35.72% by position** (`docs/EVIDENCE.md`, 16.9M windows,
 6 epochs), 10.01 pp higher on the comparable metric. Source for the 23.74% row: `lens/runs/DATASCALE-4M-NOGATE.txt:69`. One seed;
-the 3.07 pp spread at 200k dwarfs the +0.62 pp. Write-up: `docs/history/NOGATE-4M-RESULT.md`.
+the 3.07 pp spread at 200k dwarfs the +0.62 pp. Write-up: `docs/EVIDENCE.md`.
 
-**The step gain survives seeds, and the crossing is still unlocated.** At 4M with `--opt-lr 0.5`, seeds 1 and 2 give 26.10% and 25.84% (`lens/runs/DATASCALE-4M-OPT05-SEEDS.txt:151`, `lens/runs/DATASCALE-4M-OPT05-SEEDS.txt:301`); with seed 0's 26.06% (`lens/runs/DATASCALE-4M-OPT05.txt:154`) the three-seed mean is **26.00%** over a 0.26 pp range (`docs/history/NOGATE-4M-OPT05-SEEDS-RESULT.md:9` stands for that computed mean; this paragraph does not recompute it). That clears the best old-step seed (24.13) by 1.87 pp, so the +2.2 pp is not a single-seed artefact. It does not change the top of the table: nothing in this rule reaches plain SGD's 28.30% at 16M (`lens/runs/DATASCALE-16M-NOGATE.txt:213`), and no rung between 500k and 16M has both rules measured - the next arm is a 4M plain-SGD run to bracket where the ordering flips. S5 failed on one concept (seed 1: AUROC 0.9909, fires 0.016 vs a 0.02 floor) and is recorded as a miss, with the audit in `docs/history/CONCEPT-FLOOR-AUDIT.md`.
+**The step gain survives seeds, and the crossing is still unlocated.** At 4M with `--opt-lr 0.5`, seeds 1 and 2 give 26.10% and 25.84% (`lens/runs/DATASCALE-4M-OPT05-SEEDS.txt:151`, `lens/runs/DATASCALE-4M-OPT05-SEEDS.txt:301`); with seed 0's 26.06% (`lens/runs/DATASCALE-4M-OPT05.txt:154`) the three-seed mean is **26.00%** over a 0.26 pp range (`docs/EVIDENCE.md` stands for that computed mean; this paragraph does not recompute it). That clears the best old-step seed (24.13) by 1.87 pp, so the +2.2 pp is not a single-seed artefact. It does not change the top of the table: nothing in this rule reaches plain SGD's 28.30% at 16M (`lens/runs/DATASCALE-16M-NOGATE.txt:213`), and no rung between 500k and 16M has both rules measured - the next arm is a 4M plain-SGD run to bracket where the ordering flips. S5 failed on one concept (seed 1: AUROC 0.9909, fires 0.016 vs a 0.02 floor) and is recorded as a miss, with the audit in `docs/EVIDENCE.md`.
 
-**At matched settings the rule gap is a smooth monotone, and our rule only wins at 500k.** Filling every rung for both rules (our 0.5 arm against SGD's default) gives: 500k **+3.16** for ours, then -0.29, -0.51, **-0.95** and **-1.54** at 2M / 4M / 8M / 16M (`lens/runs/DATASCALE-8M-SGD.txt:151` is the 8M SGD cell; the rest are cited in `docs/history/RULE-COMPARISON.md`). Five rungs, one configuration change, a monotone - not a step change at a particular rung, which is what my earlier 'level at 2M-4M' sentence implied. Individually the two smallest cells are inside one-seed noise; the monotone across five rungs is what carries the claim. The step effect over the same fill-in reads **+0.92 / +1.69 / +2.03 / +2.12 / +2.18** at 500k / 2M / 4M / 8M / 16M.
+**At matched settings the rule gap is a smooth monotone, and our rule only wins at 500k.** Filling every rung for both rules (our 0.5 arm against SGD's default) gives: 500k **+3.16** for ours, then -0.29, -0.51, **-0.95** and **-1.54** at 2M / 4M / 8M / 16M (`lens/runs/DATASCALE-8M-SGD.txt:151` is the 8M SGD cell; the rest are cited in `docs/EVIDENCE.md`). Five rungs, one configuration change, a monotone - not a step change at a particular rung, which is what my earlier 'level at 2M-4M' sentence implied. Individually the two smallest cells are inside one-seed noise; the monotone across five rungs is what carries the claim. The step effect over the same fill-in reads **+0.92 / +1.69 / +2.03 / +2.12 / +2.18** at 500k / 2M / 4M / 8M / 16M.
 
- Plain SGD at 4M reaches **26.51% / ppl 110.50** (`lens/runs/DATASCALE-4M-SGD.txt:151`) in **11 min 18 s** - against 28 min 23 s and 28 min 20 s for the two 4M arms under our rule tonight, both at similar load - so it is **level with our best (26.00, three seeds, `docs/history/NOGATE-4M-OPT05-SEEDS-RESULT.md:9`) at 2.51x less compute**. I predicted it would land below 26.00 and it did not: T1 failed. The defensible sentence is not 'SGD wins at 4M' (0.51 pp is inside noise) but 'our rule's advantage is a small-data effect, gone by 4M', with the seed-proof losses at 16M. Note the trade: SGD's accuracy comes with far worse calibration (ppl 110.50 vs 85.60 / 85.61 / 86.02, `lens/runs/DATASCALE-4M-OPT05-SEEDS.txt:302`).
+ Plain SGD at 4M reaches **26.51% / ppl 110.50** (`lens/runs/DATASCALE-4M-SGD.txt:151`) in **11 min 18 s** - against 28 min 23 s and 28 min 20 s for the two 4M arms under our rule tonight, both at similar load - so it is **level with our best (26.00, three seeds, `docs/EVIDENCE.md`) at 2.51x less compute**. I predicted it would land below 26.00 and it did not: T1 failed. The defensible sentence is not 'SGD wins at 4M' (0.51 pp is inside noise) but 'our rule's advantage is a small-data effect, gone by 4M', with the seed-proof losses at 16M. Note the trade: SGD's accuracy comes with far worse calibration (ppl 110.50 vs 85.60 / 85.61 / 86.02, `lens/runs/DATASCALE-4M-OPT05-SEEDS.txt:302`).
 
 **At 16M windows plain SGD beats our step rule by 3.72 pp, reversing the 500k result.** Matched pair, identical corpus, windows, seed, epochs and batch, only the optimiser differs: **SGD 28.30% / ASST 30.42% / ppl 80.15** against **our rule 24.58% / 26.40% / 84.47** (`lens/runs/DATASCALE-16M-NOGATE.txt`, `lens/runs/DATASCALE-16M-OURS.txt`). I predicted our rule would still win, by less than the +2.24 pp it won at 500k; the pre-registered comparator returned PREDICTION FALSIFIED. **The +2.24 pp is therefore a small-data result** and must not be quoted as a property of the optimiser. Mechanism, written down before epochs 2-3 existed and then observed: our rule's accuracy stayed flat (24.65 -> 24.49 -> 24.58) while perplexity fell 3.80, the signature of a fixed-size unit step overshooting; SGD's decaying steps climbed 27.27 -> 27.90 -> 28.30 over the same epochs. This arm also lost one concept: 35/36, `mentions_a_name` fires on 1.8% of rows (AUROC 0.9982). One seed, and this rule's own seed spread is 1.89 pp - the 3.72 pp gap exceeds it, but two seeds would settle it.
 
-**The 4M rung reproduces to 0.10 pp - and the 8M gain beats the whole range.** Three seeds of the same 4M ungated config: **23.74 / 24.13 / 24.03%**, mean **23.97%** (computed; recorded in `docs/history/NOGATE-4M-SEEDS-RESULT.md:9`), range 23.74-24.13, seed-to-seed spread **0.10 pp** (`lens/runs/DATASCALE-4M-NOGATE-SEEDS.txt:69` for seed 1, `lens/runs/DATASCALE-4M-NOGATE-SEEDS.txt:219` for seed 2, and `lens/runs/DATASCALE-4M-NOGATE.txt:69` for seed 0); provenance 2 arms, 0 problems. Reproducibility improves with data: the 200k rung's three-seed spread is **3.07 pp** (`docs/history/DATASCALE-SEED2-RESULT.md`), twenty times wider. So the 8M result (`lens/runs/DATASCALE-8M-NOGATE.txt:235`) is above every one of the three 4M seeds by 0.38-0.77 pp - the "one more doubling pays" claim no longer rests on one seed. The same fact cuts the other way at 200k, where the 3.07 pp spread is wider than the +1.24 pp gates-off delta at 500k, so that delta stays unpublishable until gated twins exist at those seeds.
+**The 4M rung reproduces to 0.10 pp - and the 8M gain beats the whole range.** Three seeds of the same 4M ungated config: **23.74 / 24.13 / 24.03%**, mean **23.97%** (computed; recorded in `docs/EVIDENCE.md`), range 23.74-24.13, seed-to-seed spread **0.10 pp** (`lens/runs/DATASCALE-4M-NOGATE-SEEDS.txt:69` for seed 1, `lens/runs/DATASCALE-4M-NOGATE-SEEDS.txt:219` for seed 2, and `lens/runs/DATASCALE-4M-NOGATE.txt:69` for seed 0); provenance 2 arms, 0 problems. Reproducibility improves with data: the 200k rung's three-seed spread is **3.07 pp** (`docs/EVIDENCE.md`), twenty times wider. So the 8M result (`lens/runs/DATASCALE-8M-NOGATE.txt:235`) is above every one of the three 4M seeds by 0.38-0.77 pp - the "one more doubling pays" claim no longer rests on one seed. The same fact cuts the other way at 200k, where the 3.07 pp spread is wider than the +1.24 pp gates-off delta at 500k, so that delta stays unpublishable until gated twins exist at those seeds.
 
-**Six epochs is the ladder's best arm, and it buys calibration more than accuracy.** The same 16M plain-SGD rung run for six epochs gives **28.61% / ppl 72.25** (`lens/runs/DATASCALE-16M-SGD-EP6.txt:227`) against three epochs' 28.30% / 80.15 (`lens/runs/DATASCALE-16M-NOGATE.txt:136`): **+0.31 pp** (inside one seed) and **7.90 ppl better**. Accuracy stops moving after epoch 3 (28.17 -> 28.46 -> 28.46 -> 28.61) while perplexity falls at every one of the six epochs, so the extra passes bought confidence, not correctness. Note the decay confound: `--lr-decay` spreads over the run, so this is six passes at a gentler decay, not six passes alone. Full write-up: `docs/history/DATASCALE-16M-SGD-EP6-RESULT.md`.
+**Six epochs is the ladder's best arm, and it buys calibration more than accuracy.** The same 16M plain-SGD rung run for six epochs gives **28.61% / ppl 72.25** (`lens/runs/DATASCALE-16M-SGD-EP6.txt:227`) against three epochs' 28.30% / 80.15 (`lens/runs/DATASCALE-16M-NOGATE.txt:136`): **+0.31 pp** (inside one seed) and **7.90 ppl better**. Accuracy stops moving after epoch 3 (28.17 -> 28.46 -> 28.46 -> 28.61) while perplexity falls at every one of the six epochs, so the extra passes bought confidence, not correctness. Note the decay confound: `--lr-decay` spreads over the run, so this is six passes at a gentler decay, not six passes alone. Full write-up: `docs/EVIDENCE.md`.
 
 **And halving the step is our rule's trick, not a general one.** The same idea applied to the winning rule - plain SGD at 16M with `lr 0.2 -> 0.1` - gives **27.90% / ppl 91.17** (`lens/runs/DATASCALE-16M-SGD-LR02.txt:151`) against the default lr's (`lens/runs/DATASCALE-16M-NOGATE.txt:136`) 28.30% / 80.15: 0.40 pp down on accuracy (inside one seed, so 'buys nothing' rather than 'hurts') and **11.02 ppl worse**, which is not inside anything. So the +2.2 pp from smaller steps belongs to `--method ours` and must not be stated as a property of the architecture.
 
@@ -416,7 +416,7 @@ the 3.07 pp spread at 200k dwarfs the +0.62 pp. Write-up: `docs/history/NOGATE-4
 
 **The step has a plateau below 0.5, not a peak.** At 4M, `--opt-lr 0.25` gives **26.78% / ppl 88.18** (`lens/runs/DATASCALE-4M-OPT025.txt:155`) against `0.5`'s 26.06% (`lens/runs/DATASCALE-4M-OPT05.txt:154`). The 0.72 pp gap is well inside this rule's **1.89 pp** seed spread, so the two settings are indistinguishable here and neither can be called the optimum. What is not in doubt is the gap to `1.0`: 23.74% (`lens/runs/DATASCALE-4M-NOGATE.txt:69`), about 3 pp below either. Practical reading: 0.5 is a safe setting, there is no demonstrated reason to halve it again, and every claim about *which* small step is best needs seeds this project does not yet have. My V1 predicted 0.25 would land below 0.5; it failed.
 
-**One caveat that applies to every number in this table, measured at four rungs and smaller at the bottom.** Every gates-off runner at 4M and above passes `--opt-lr 1.0`, and there that step costs about **2.1-2.3 pp**: 4M 23.74 -> **26.06**, 8M 24.51 -> **26.63**, 16M 24.58 -> **26.76** (`docs/history/NOGATE-4M-OPT05-RESULT.md:6`, `docs/history/NOGATE-8M-OPT05-RESULT.md:6`, `docs/history/NOGATE-16M-OPT05-RESULT.md:6`; the 1.0 twins on `lens/runs/DATASCALE-4M-NOGATE.txt:69`, `lens/runs/DATASCALE-8M-NOGATE.txt:235`, `lens/runs/DATASCALE-16M-OURS.txt:226`). The extremes are four times apart in update count and the effect is the same size, so it is a constant handicap, not a scale effect: every level here sits ~2.2 pp below what its configuration reaches, and none should be read as a ceiling. The curve's shape survives the correction - at 0.5 the steps are +0.57 then +0.13, at 1.0 they were +0.77 then +0.07 - so the flattening is real. The best number in this ladder is therefore **26.76%**, not 24.58%. The 3-seed optimiser sweep used 0.5 (`docs/history/PUBLIC-NUMBER-AUDIT.md:73`), so it and this ladder were never the same configuration.
+**One caveat that applies to every number in this table, measured at four rungs and smaller at the bottom.** Every gates-off runner at 4M and above passes `--opt-lr 1.0`, and there that step costs about **2.1-2.3 pp**: 4M 23.74 -> **26.06**, 8M 24.51 -> **26.63**, 16M 24.58 -> **26.76** (`docs/EVIDENCE.md`, `docs/EVIDENCE.md`, `docs/EVIDENCE.md`; the 1.0 twins on `lens/runs/DATASCALE-4M-NOGATE.txt:69`, `lens/runs/DATASCALE-8M-NOGATE.txt:235`, `lens/runs/DATASCALE-16M-OURS.txt:226`). The extremes are four times apart in update count and the effect is the same size, so it is a constant handicap, not a scale effect: every level here sits ~2.2 pp below what its configuration reaches, and none should be read as a ceiling. The curve's shape survives the correction - at 0.5 the steps are +0.57 then +0.13, at 1.0 they were +0.77 then +0.07 - so the flattening is real. The best number in this ladder is therefore **26.76%**, not 24.58%. The 3-seed optimiser sweep used 0.5 (`docs/EVIDENCE.md`), so it and this ladder were never the same configuration.
 
 **At 500k the step is worth only half as much, and our small-data win gets bigger anyway.** Our rule at `--opt-lr 0.5` on 500k gives **22.97% / ppl 139.47** (`lens/runs/DATASCALE-500K-OURS05.txt:155`) against 22.05 at 1.0: **+0.92 pp**, not the ~2.2 seen from 4M up - and 500k is the noisiest rung in this project, so even that is inside its own spread. So the step effect is *not* flat across all rungs; it is ~2.2 pp where the ladder has data. The consequence that matters is the other one: at our better setting our rule still beats plain SGD at 500k, now by **3.16 pp** (22.97 vs 19.81, `lens/runs/SGD-500K.txt:66`), where the old comparison offered only 2.24. The one rung we win is won by more than the step correction explains.
 
@@ -428,8 +428,8 @@ ppl 93.72** (`lens/runs/DATASCALE-4M-NOGATE-EP6.txt:73`) - **+0.18 pp** for doub
 threshold (W1 needed >= 24.04, got 23.92). At this rung, **doubling the data bought +0.62 pp and doubling the steps
 bought +0.18 pp**, so data is worth ~3.4x what steps are worth per doubling; ppl fell the whole way (95.89 ->
 93.72) while accuracy wobbled in a +-0.3 pp band. Neither closes the **11.80 pp** gap to the project's d256 record
-(35.72% by position, full corpus, `docs/history/STATE.md:146`). 8M windows were then run: 24.51% (`lens/runs/DATASCALE-8M-NOGATE.txt:235`). One seed;
-only the ratio of the two deltas is readable, not their sizes. Note: `docs/history/NOGATE-4M-EP6-RESULT.md`.
+(35.72% by position, full corpus, `docs/EVIDENCE.md`). 8M windows were then run: 24.51% (`lens/runs/DATASCALE-8M-NOGATE.txt:235`). One seed;
+only the ratio of the two deltas is readable, not their sizes. Note: `docs/EVIDENCE.md`.
 
 **The gates were part of that ceiling, and the headline was never gated.** Same 500k rung, same step rule, same
 data, gates OFF: **22.05% VAL / 23.22% ASST / ppl 140.27** against the gated arm's 20.81 / 21.82 / 171.47 - and
@@ -442,7 +442,7 @@ while the run behind the **37.37%** headline prints `METHOD: standard (the old l
 (`lens/runs/TIED-D512-EXT6.txt`). The project's best number therefore comes from the ungated old loop, and "our
 method vs the old loop" has never been measured at a matched rung - that is the next arm. One seed, one rung, and
 +1.24 pp is inside the 3.07 pp seed spread, so this is a direction, not a settled effect; the 7.7x is a measured
-ratio. Write-up: `docs/history/NOGATE-500K-RESULT.md`.
+ratio. Write-up: `docs/EVIDENCE.md`.
 
 **And the step rule is worth more than the gates.** Adding the third configuration - plain SGD, gates off, same
 rung and seed - gives **19.81% / 20.38% ASST / ppl 221.78**, concepts only **31/36** (`lens/runs/SGD-500K.txt:66`).
@@ -452,9 +452,9 @@ is 2.3x cheaper per epoch while learning the least. That is awkward for the head
 plain SGD** on 16.9M windows in 6 epochs (`TIED-D512-EXT6.txt`), so the best number sits on the weakest-measured
 step rule. The next test is that configuration at that scale - d=512, full corpus, 6 epochs, relgrad, gates off -
 and it needs a **one-epoch cost probe** first, because relgrad is ~2.3x plain SGD per epoch while plain SGD already
-took 1,720 s/epoch at that scale (`docs/history/STATE.md:2771`). One seed per configuration and all three deltas
+took 1,720 s/epoch at that scale (`docs/EVIDENCE.md`). One seed per configuration and all three deltas
 sit inside the 3.07 pp seed spread: the ordering is a direction, not a settled effect. Write-up:
-`docs/history/SGD-500K-RESULT.md`.
+`docs/EVIDENCE.md`.
 
 **What one d512 epoch actually costs, and a confound that blocks the obvious conclusion.** A one-epoch probe in
 the headline's own configuration (d=512, `--direct --direct-mode tied`, batch 1024, lr 0.3, 16.9M windows, our
@@ -466,25 +466,25 @@ shows the step size is still the constant calibrated at d=256 (`opt_lr 0.0441256
 while the headline ran SGD at lr 0.3. A step that is too small explains both the deficit and the slower
 convergence, and this arm cannot separate that from a weaker rule - the next step is to calibrate the step size at
 d=512, not to run six epochs. One epoch, one seed, and 12.19 pp below the headline: nothing here changes 37.37%.
-Note: `docs/history/D512-PROBE-RESULT.md`.
+Note: `docs/EVIDENCE.md`.
 
 The concept jump was not predicted by D1/D2, and it repeated: the audit went **20/36 at 20k windows ->
 36/36 at 200k** on both seeds, counted from the AUROC rows rather than from the summary lines.
 
 **Is the 3-epoch schedule truncating it? No.** A 6-epoch arm at 200k, seed 0, one knob changed
-(`docs/history/DATASCALE-EP6-PREDICTIONS.md` written first), reached final VAL **18.43% / ppl 201.69** - a gain
+(`docs/EVIDENCE.md` written first), reached final VAL **18.43% / ppl 201.69** - a gain
 of **+1.00 pp** over the 3-epoch 17.43, landing exactly on the predicted threshold, so E1 is graded **PARTIAL**
 by its own wording (E2 ppl PASS). The path there was a swing, not a climb: 17.48, 17.90, 17.43, **15.13**,
 **19.68**, 18.43 - and the best saved checkpoint is epoch 5 (ASST 20.83% vs 18.87% for the 3-epoch arm). So
 doubling the schedule doubles the cost for +1.00 pp of endpoint and a better best-checkpoint, and this rung is
-unstable epoch-to-epoch. Write-up: `docs/history/DATASCALE-EP6-RESULT.md`; the 3-epoch result is not averaged
+unstable epoch-to-epoch. Write-up: `docs/EVIDENCE.md`; the 3-epoch result is not averaged
 with it.
 
 Caveats, stated because they matter: **three seeds**, so no p-value and no invented interval - the three
 values and their mean are what is published. The 20k rung's measured run-to-run spread is 1.03 pp
-(`docs/history/REF-REPRO.md`), and the three seeds span 3.07 pp, i.e. seed-to-seed variation at this rung is
+(`docs/EVIDENCE.md`), and the three seeds span 3.07 pp, i.e. seed-to-seed variation at this rung is
 three times the measurement noise and is what limits precision here. The headline is unchanged - best held-out accuracy is still **37.37%**
 (d=512, full corpus, 6 epochs). Checkpoints verified with `verify_wall_ab_ckpt.py`: the seed-1 arm is 1/1
 clean, the parameter count off the stored arrays is 3,811,534 in both seeds, and `best.npz` equals the epoch
-the log named. Write-ups: `docs/history/DATASCALE-RESULT.md` (seed 0) and
-`docs/history/DATASCALE-SEED1-RESULT.md` (seed 1).
+the log named. Write-ups: `docs/EVIDENCE.md` (seed 0) and
+`docs/EVIDENCE.md` (seed 1).

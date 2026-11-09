@@ -41,7 +41,7 @@ are looking for a capable assistant, this is not it yet - and this file will say
 | Built | What it does | Evidence |
 |---|---|---|
 | **Autograd engine** | every operation has a hand-written derivative; blame flows backwards through a graph | all 9 gradient checks PASS - worst absolute error **7.5e-10**, worst relative **1.8e-07** (measured live) |
-| **Own optimiser** | steps scaled by agreement between batch and held-out gradients | A 3-seed sweep at its own rung gives **28.59%** vs SGD **27.81%** on best-masked-per-seed (`docs/history/PUBLIC-NUMBER-AUDIT.md:73`, `docs/history/PUBLIC-NUMBER-AUDIT.md:74`) - but that arm used a different corpus size and an SGD `--lr` of 1.0 with no decay, so it is not the ladder comparison. **On the capped-window ladder, using final VAL at every rung, our rule leads only at 500k and plain SGD is ahead from 2M up** (`docs/history/RULE-COMPARISON.md`): 3.72 pp at our step of 1.0, 1.54 pp once the step is halved to 0.5 (`docs/history/NOGATE-16M-OPT05-RESULT.md`) - most of that gap was a mis-set step, not the rule |
+| **Own optimiser** | steps scaled by agreement between batch and held-out gradients | A 3-seed sweep at its own rung gives **28.59%** vs SGD **27.81%** on best-masked-per-seed (`docs/EVIDENCE.md`, `docs/EVIDENCE.md`) - but that arm used a different corpus size and an SGD `--lr` of 1.0 with no decay, so it is not the ladder comparison. **On the capped-window ladder, using final VAL at every rung, our rule leads only at 500k and plain SGD is ahead from 2M up** (`docs/EVIDENCE.md`): 3.72 pp at our step of 1.0, 1.54 pp once the step is halved to 0.5 (`docs/EVIDENCE.md`) - most of that gap was a mis-set step, not the rule |
 | **Own KV cache** | reuses attention state instead of recomputing | **2.29x faster** measured (0.483 → 0.211 ms/token, 2,069 → 4,747 tokens/s), identical output (5.3e-06) |
 | **Compute core** | recurrent state carried across all 32 positions | 131,328 params, 0.0027 ms/token - the **proposed** variant, which lost to the plain shape by 1.73 points and is not in the shipped model |
 | **Named concept layer** | 256 neurons with audited human names | unprovable names dropped, coverage printed |
@@ -227,7 +227,7 @@ tokens (32-token window)
 ![Architecture](docs/assets/architecture.png)
 
 Parameter count, read off the model object (`d=256`, window 32, vocab 12,002, K=36; source
-`docs/history/PARAM-AUDIT.md`, and every training log prints the same total, e.g. `lens/runs/GPU-BEST.txt:57`):
+`docs/EVIDENCE.md`, and every training log prints the same total, e.g. `lens/runs/GPU-BEST.txt:57`):
 
 | Part | Params |
 |---|---:|
@@ -240,7 +240,7 @@ Parameter count, read off the model object (`d=256`, window 32, vocab 12,002, K=
 Earlier versions of this page published **7,081,122** here. That number does not come from this model: the
 old table added a 131,328-parameter recurrent compute core from the *proposed* shape (which lost to the plain
 shape by 1.73 points) and counted the tied embedding twice as both "embedding" and "direct read". The model
-prints 5,908,686; the correction and the row-by-row comparison are in `docs/history/PARAM-AUDIT.md`.
+prints 5,908,686; the correction and the row-by-row comparison are in `docs/EVIDENCE.md`.
 
 Cost per token for the **proposed** shape (measured on an idle machine; the compute core runs once per
 position, so it is counted 32 times here - an earlier version of this table counted it once and published
@@ -329,7 +329,7 @@ two seeds:
 | `d=256`, 4,000,000 windows, seed 0, **gates OFF, opt-lr 0.5** | **26.06%** | `lens/runs/DATASCALE-4M-OPT05.txt:154` |
 | `d=256`, 8,000,000 windows, seed 0, **gates OFF, opt-lr 0.5** | **26.63%** | `lens/runs/DATASCALE-8M-OPT05.txt:154` |
 | `d=256`, 16,000,000 windows, seed 0, **gates OFF, opt-lr 0.5** | **26.76%** | `lens/runs/DATASCALE-16M-OURS05.txt:225` |
-| `d=256`, 4,000,000 windows, seeds 0-2, **gates OFF, opt-lr 0.5** | **26.00%** mean (26.06 / 26.10 / 25.84, range 0.26 pp) | `docs/history/NOGATE-4M-OPT05-SEEDS-RESULT.md:9` |
+| `d=256`, 4,000,000 windows, seeds 0-2, **gates OFF, opt-lr 0.5** | **26.00%** mean (26.06 / 26.10 / 25.84, range 0.26 pp) | `docs/EVIDENCE.md` |
 | `d=256`, 4,000,000 windows, seed 0, **gates OFF, plain SGD** | **26.51%** (ppl 110.50, 11 min 18 s) | `lens/runs/DATASCALE-4M-SGD.txt:143` |
 | `d=256`, 2,000,000 windows, seed 0, **gates OFF, plain SGD** | **25.10%** (ppl 133.41, 7 min 6 s) | `lens/runs/DATASCALE-2M-SGD.txt:143` |
 | `d=256`, 500,000 windows, seed 0, **gates OFF, opt-lr 0.5** | **22.97%** (ppl 139.47) | `lens/runs/DATASCALE-500K-OURS05.txt:147` |
@@ -358,14 +358,14 @@ so the plateau was not a step shortage, and data is the better buy per GPU-minut
 another +0.77 pp (24.51% VAL, ASST 26.46%, ppl 87.55, `lens/runs/DATASCALE-8M-NOGATE.txt:235`) - more than the
 +0.62 pp the previous doubling paid, so at d=256 the rate is not decaying at the last rung measured.** The prepared mix holds ~18.4M windows, so one more doubling is all the data there is. **The rung reproduces:**
 three seeds at 4M give 23.74 / 24.13 / 24.03% - a 0.10 pp spread, against 3.07 pp at the 200k rung - so 24.51%
-at 8M is above every one of the three 4M seeds (`docs/history/NOGATE-4M-SEEDS-RESULT.md:9`). **The best configuration measured here is NOT our step rule.** It is plain SGD with the gates off, whose 16M rung is
+at 8M is above every one of the three 4M seeds (`docs/EVIDENCE.md`). **The best configuration measured here is NOT our step rule.** It is plain SGD with the gates off, whose 16M rung is
 **28.61%** (`lens/runs/DATASCALE-16M-SGD-EP6.txt:144`) over six epochs (28.30% at three, `lens/runs/DATASCALE-16M-NOGATE.txt:136`), while our own rule's best at that rung is
-(`docs/history/NOGATE-16M-OPT05-RESULT.md:6`) **26.76%**- and the comparison flips with data rather than sitting at one value:
+(`docs/EVIDENCE.md`) **26.76%**- and the comparison flips with data rather than sitting at one value:
 our rule is ahead by 2.24 pp at 500k, level at 2M-4M, and behind by 1.54-3.72 pp at 16M, while costing about 2.5x the
-compute per epoch (`docs/history/DATASCALE-4M-SGD-RESULT.md:6`). The smaller-step gain is ours alone: the same idea applied to
-SGD at 16M buys nothing on accuracy and costs 11.02 ppl (`docs/history/DATASCALE-16M-SGD-LR02-RESULT.md:6`). Whatever the ladder's best number is, it is not the
+compute per epoch (`docs/EVIDENCE.md`). The smaller-step gain is ours alone: the same idea applied to
+SGD at 16M buys nothing on accuracy and costs 11.02 ppl (`docs/EVIDENCE.md`). Whatever the ladder's best number is, it is not the
 best d256 number in the project - full-corpus d256 runs reach 35.72% by position
-(`docs/history/STATE.md:146`), 7.42 pp higher than the 16M SGD figure on the comparable metric.
+(`docs/EVIDENCE.md`), 7.42 pp higher than the 16M SGD figure on the comparable metric.
 
 **And the gates cost more than data ever bought.** At the same 500k rung, same step rule, same data, switching
 the gap and agreement gates off gives **22.05%** instead of 20.81% (+1.24 pp) and runs **7.7x faster**
@@ -377,14 +377,14 @@ our own method has never been compared to it at a matched rung.
 
 **So that comparison was run, at 500k.** Three configurations, same rung, same seed, same data: our step rule
 with the gates off **22.05%**, our step rule with the gates on 20.81%, and plain SGD with the gates off
-**19.81%** (and only 31/36 concepts). Our step rule is worth **+2.24 pp** over the loop used before **at 500k** - at 16M windows plain SGD leads by 3.72 pp (`docs/history/NOGATE-16M-OURS-RESULT.md`) - and the
+**19.81%** (and only 31/36 concepts). Our step rule is worth **+2.24 pp** over the loop used before **at 500k** - at 16M windows plain SGD leads by 3.72 pp (`docs/EVIDENCE.md`) - and the
 gates cost 1.24 pp. Since the 37.37% headline was produced by plain SGD, the headline configuration has never
 been run with the step rule that now measures best - that is the next experiment, starting with a one-epoch
 cost probe at d=512.
 Doubling the schedule at this rung (6 epochs, seed 0) reached final VAL 18.43% - +1.00 pp over the
 3-epoch run, with the best checkpoint at epoch 5 - so more epochs are not what this rung is missing.
-Write-ups: `docs/history/DATASCALE-RESULT.md`, `docs/history/DATASCALE-SEED1-RESULT.md`,
-`docs/history/DATASCALE-EP6-RESULT.md`.
+Write-ups: `docs/EVIDENCE.md`, `docs/EVIDENCE.md`,
+`docs/EVIDENCE.md`.
 
 ## Install and run
 
@@ -439,12 +439,12 @@ produced it. Raw logs are written to `lens/runs/` in the working tree; they are 
 
 | Claim | Read it in | Raw log |
 |---|---|---|
-| best score 37.37% | `docs/history/STATE.md`, `docs/RESULTS.md` | `lens/runs/TIED-D512-EXT6.txt` (epoch-6 row), `lens/runs/chat/*_best.npz` |
+| best score 37.37% | `docs/EVIDENCE.md`, `docs/RESULTS.md` | `lens/runs/TIED-D512-EXT6.txt` (epoch-6 row), `lens/runs/chat/*_best.npz` |
 | our architecture lost 1.73 points | `docs/RESULTS.md` | `lens/runs/ARCH-OURS-VERDICT.txt` |
 | attention lost 5.41 points | `docs/RESULTS.md` | `lens/runs/GATE-B-VERDICT.txt` |
-| optimiser is level with SGD | `docs/RESULTS.md`, `docs/history/STATE.md` | `lens/runs/OPT-VS-SGD-TABLE.txt` (16 arms, 3 seeds) |
+| optimiser is level with SGD | `docs/RESULTS.md`, `docs/EVIDENCE.md` | `lens/runs/OPT-VS-SGD-TABLE.txt` (16 arms, 3 seeds) |
 | arithmetic 0.0% unseen | `docs/RESULTS.md` | `lens/runs/ARITHMETIC.txt`, `lens/runs/ARITH_DIAG.txt` |
-| what was audited, and what was not | `docs/history/PUBLIC-NUMBER-AUDIT.md` | - |
+| what was audited, and what was not | `docs/EVIDENCE.md` | - |
 
 ## Roadmap
 
