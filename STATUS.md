@@ -1,3 +1,12 @@
+## How much of what the model says is just visible in the window
+
+12 prompts x 24 greedy steps (`tools/copy_echo.py`): emitted tokens are already in the window **74-81%** of
+the time against **7-9%** by unigram expectation. The role splits by training length: the 3-epoch models
+echo the previous token **0.0% / 7.3%**, while the 6-epoch model that scored 37.37% echoes the previous
+token **61.5%** and the modal window token **58.3%**. So the echo grows with training, and the best-scoring
+checkpoint is the one that copies hardest. The masked arm finished at **19.19% / 22.53% / 23.31%** against
+**19.69% / 24.26% / 25.52%** unmasked, so the symbol mask costs **2.21 pp**. Details: `docs/COPY-ECHO.md`.
+
 ## The punctuation is cured; the loop is not
 
 12 fixed prompts, 24 greedy tokens each, same harness: the copy-path symbol mask takes symbol share from
