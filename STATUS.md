@@ -1,3 +1,19 @@
+## CORRECTION: the loop is not the copy path's fault
+
+The concept-only arm (no copy path at all) loops **worse**: symbol share **27.8%** against 8.7%,
+longest symbol run **23** against 3, distinct 4-grams **19.8%** against 54.0%, copy rate at steps 17-24
+**100.0%**. So the copy path carried the loop in one model; it is not its cause. The loop forms in a small
+next-token model under greedy decoding whichever route the answer takes. Details:
+`docs/READABLE-ARM-VERDICT.md`.
+
+## Readable-only arm: readability costs 5.22 pp, not 19 pp
+
+`--direct` dropped so the 36 concepts are the only route to an answer, same recipe and matched split:
+**15.41% / 18.70% / 20.30%** against **19.69% / 24.26% / 25.52%**, so readability costs **5.22 pp** - the
+earlier 18.50-19.17 pp was the price of retrofitting concepts onto a copy-trained model, not of a readable
+model. Blemish: only **28/36** concepts pass the label-honesty gate here against 35/36. Details:
+`docs/READABLE-ARM-VERDICT.md`.
+
 ## Capacity verdict: doubling width bought 0.50 pp, all of it unreadable-path
 
 d=512 -> d=768, 15.57M -> 29.42M params, matched split, one change: accuracy **19.69/24.26/25.52% ->
