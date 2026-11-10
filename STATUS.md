@@ -1,3 +1,13 @@
+## Matched validation split built; the original mismatch was +2.65 pp, not +16 pp
+
+`tools/make_matched_split.py` now draws a validation holdout by hashing conversation ids, and
+`train_chat.py --split-file` uses it with a length check against the corpus. On the real 294,225,090-token
+corpus, sampled through the trainer's own window builder (4,000 windows per side, symbol share of target
+tokens): shipped split **val 31.42% vs train 28.78%, +2.65 pp**; matched split **val 28.52% vs train
+28.90%, -0.38 pp**. The 13.29% vs 44.04% figures in `docs/DATA-SPLIT-SHIFT.md` are real but describe the
+extremes of the file, not the validation split - so the mismatch is real and small, and my earlier
+framing overstated it roughly six-fold. Correction and details: `docs/MATCHED-SPLIT.md`.
+
 ## Correction: the code tail is the model's easiest region, not a handicap
 
 I previously wrote that the code-versus-conversation split mismatch partly explains a low held-out
