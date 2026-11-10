@@ -1,3 +1,20 @@
+## A decode guard fixes the looping, not the meaning
+
+Measured on `gpu_d512_s0_best.npz`, 12 prompts, 24 tokens each (`tools/decode_guard.py`):
+
+```
+guard      symbol share   longest symbol run   distinct 4-grams
+greedy          67.7%            15.0               39.3%
+norepeat        57.6%             5.0              100.0%
+symrun          50.7%             2.3               69.0%
+both            46.5%             2.4              100.0%
+```
+
+The guards work - repetition is eliminated - but the text stays meaningless and the model still spends
+**46.5%** of its emitted tokens on symbols against **27.7%** in the corpus, about **1.7x** the rate it was
+shown. So the preference lives in the weights, not the decoder: decoding tricks are ruled out as a fix.
+Details: `docs/DECODE-GUARD.md`.
+
 ## Matched validation split built; the original mismatch was +2.65 pp, not +16 pp
 
 `tools/make_matched_split.py` now draws a validation holdout by hashing conversation ids, and
