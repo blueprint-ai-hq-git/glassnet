@@ -1,3 +1,12 @@
+## Run 8 final: decorrelation works, the readout does not, generation collapses
+
+Held-out loss **8.8631**, accuracy **5.60%** (run 5: 5.34%), train/held-out gap **+0.2994**. Criteria as
+written before the run: **E1 PASS** state cosine **0.4643** (predicted 0.47 twelve minutes before it landed),
+**E2 FAIL** KL **0.0151**, **E3 PASS** 5.60% at +0.26 pp, **E4 FAIL** generation collapses to
+`. . the , the the the the` for every prompt, and **F4 FAIL** trained readout 0.0151 against noise 0.0153,
+ratio **0.99x**. The state separation move worked; the answer layer is unchanged. Details:
+`docs/RUN8-VERDICT.md`.
+
 ## A trap in our own headline test, found before it fooled us
 
 Taking run 8's weights and merely setting the new readout gain to **1.0** - RMS normalisation with no
