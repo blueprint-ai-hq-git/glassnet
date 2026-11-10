@@ -1,3 +1,12 @@
+## 2026-11-10, the day in one page
+
+Ten arms trained or measured, seven lost. The loop survived four levers (symbol mask, decode guard, copy
+penalty, exposure bias - the last finished at **19.94% vs 25.52%**) and four explanations were falsified, the
+last being confidence sharpening. Capacity is not the answer (**26.02% vs 25.52%** for +89% params, and the
+readable path got *less* aligned, **8.2% -> 4.3%**). Readability costs **5.22 pp** of accuracy but also
+**0.18 mean AUROC** of honesty (**30/36 vs 36/36** concepts passing). Full writeup:
+`docs/NIGHT-2026-11-10.md`.
+
 ## The readability tax is bigger than accuracy: concepts stop tracking their own labels
 
 Same 800 matched windows, project gate (`lens.api.audit`, AUROC bar 0.55): readable-only **30/36** concepts pass
