@@ -1,3 +1,14 @@
+## Correction: the code tail is the model's easiest region, not a handicap
+
+I previously wrote that the code-versus-conversation split mismatch partly explains a low held-out
+accuracy. Measured by region, the opposite is true: the held-out code tail is where the readable model
+performs **best**, at **33.00%** accuracy and **perplexity 107.6**, against **17.33-25.00%** and
+**270-635** in the conversational regions it trained on. So the split mismatch **flatters** the headline
+rather than depressing it. What survives: the split really is compositionally different (13.29% symbols
+in the first 200k against 44.04% in the tail), the symbol attractor really is partly the code tail
+(47.7% of targets are symbols, 71.3% of predictions), and per-source reporting is needed because an
+average hides a 17-33% spread. Details: `docs/CORRECTION-TAIL-IS-EASIEST.md`.
+
 ## The held-out split is a different dataset, not a held-out sample
 
 The corpus is a concatenation of sources and the validation tail is the end of it. Symbol-token share:
