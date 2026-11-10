@@ -1,3 +1,12 @@
+## The trained readout separates words no better than random noise
+
+Instrument check on `scan8_ep750`: the KL metric responds monotonically to deliberate readout damage
+(`0.0056` at x0.25 scale through `0.5989` at x8) and reproduces its baseline exactly when unchanged, so
+the metric is sound. Then the decisive result: a readout of **random numbers** at the trained one's own
+scale gives KL **0.0152**, against the trained readout's **0.0151**. Training made the answer layer no
+more sensitive to the input than noise is. That is why the states differ (E1 passes) and the output does
+not (E2 fails).
+
 ## Decorrelation works, the readout is now the bottleneck
 
 Run 8 pairs the direct path with the state decorrelation penalty. Measured on its own checkpoints: state
