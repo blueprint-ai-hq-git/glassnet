@@ -1,3 +1,13 @@
+## The loop is autoregressive feedback, measured by generation step
+
+Share of emitted tokens already in the window, by step: conversational model **6.2% at steps 1-4, 96.9% at
+steps 9-12**; merged model **28.1% then 90.6%**. The model writes its own tokens into the window, and after
+about eight steps almost anything it can say is something it can already see. Three rival explanations were
+falsified today: corpus repetition rate, boilerplate density (math/code carries MORE boilerplate and loops
+less), and memorisation - every 16-gram of the training corpus was hashed and **0.0%** of generated 16-grams
+appear verbatim in it, so the loop is generated, not recalled. Details:
+`docs/FEEDBACK-LOOP-MECHANISM.md`.
+
 ## Prediction falsified: the conversational corpus loops worse
 
 Training on the conversational portion only, with the prediction recorded in advance: accuracy **17.35%**
