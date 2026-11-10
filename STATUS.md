@@ -1,3 +1,12 @@
+## Capacity verdict: doubling width bought 0.50 pp, all of it unreadable-path
+
+d=512 -> d=768, 15.57M -> 29.42M params, matched split, one change: accuracy **19.69/24.26/25.52% ->
+20.30/24.16/26.02%**, so **+0.50 pp** against a measured single-seed spread of 0.26-3.07 pp. The trainer flags
+the arm UNDER-TRAINED at **2.18 tokens per parameter**, so capacity and budget are confounded. Same
+decomposition both widths: concept-only accuracy **3.00% -> 4.67%**, copy-only **20.17% -> 21.50%**, and
+concept agreement with the model's actual answer **8.2% -> 4.3%** - so the extra capacity went to the copy
+path and the model became **less** readable. Details: `docs/CAPACITY-VERDICT.md`.
+
 ## Self-context final verdict: prediction falsified, and the day's synthesis
 
 Three epochs, matched split, one change: accuracy **19.94% against 25.52%** (-5.58 pp), copy rate over steps
