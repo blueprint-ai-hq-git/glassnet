@@ -1,3 +1,14 @@
+## The held-out split is a different dataset, not a held-out sample
+
+The corpus is a concatenation of sources and the validation tail is the end of it. Symbol-token share:
+train first 200k **13.29%**, train middle **28.08%**, held-out last 200k **44.04%**. Decoded, the training
+text is conversational (`<|im_start|> user how should i dress for a job interview ?`) while the held-out
+tail is **Python code** (`def withdraw ... if amount > 0 : ...`). So the model learns prose and is graded
+on code. That partly explains the near-baseline held-out accuracy, and it explains the symbol attractor
+(44% of held-out targets are symbols; the model predicts symbols 68.3% of the time). Every accuracy
+number measured on this tail is a cross-domain number. Fix: randomised holdout, then re-measure.
+Details: `docs/DATA-SPLIT-SHIFT.md`.
+
 ## What the architecture that learns actually says
 
 Sampled output from the readable model, which scores 31.50% next-token accuracy at 24 tokens of context:
