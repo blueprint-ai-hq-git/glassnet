@@ -1,3 +1,12 @@
+## Run 9: the state finally reacts, the readout still does not
+
+`tools/eval_run9.py` on `scan9_ep1500.npz`: **F1 KL 1.1702 PASS** (bar >0.05), **F2 state cosine 0.1736 PASS**
+(bar <0.5, against 0.9716 at run 6), guards clean (**gain 0.978-1.119**, entropy 94.1% of uniform), but
+**F4 FAIL**: the trained readout scores **1.1702** against **1.1660** for a random-noise readout, a ratio of
+**1.00x** where 2x is required. So the state now carries prompt-specific variation and the answer layer does
+not use it - the same shape of finding as the readable model, on a different architecture. Run 9's own sample
+answers are still symbol soup, so this is not a talking model. Details: `docs/RUN9-VERDICT.md`.
+
 ## The loop is autoregressive feedback, measured by generation step
 
 Share of emitted tokens already in the window, by step: conversational model **6.2% at steps 1-4, 96.9% at
