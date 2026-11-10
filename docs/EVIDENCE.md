@@ -76,3 +76,4 @@ ask for exactly the file they need instead of trusting a sentence.
 - `docs/history/DATASCALE-SEED1-RESULT.md` - referenced by STATUS.md
 - `docs/history/SCAN5-MIDRUN-STATE-CHECK.md` - referenced by STATUS.md
 - `docs/history/PROBLEMS.md` - referenced by STATUS.md
+- `SCAN8-E1-PASS-E2-FAIL` - run 8 state cosine 0.1717/0.2261 vs 0.9716, KL 0.0150/0.0151 (private working log)

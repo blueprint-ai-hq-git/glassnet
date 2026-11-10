@@ -1,3 +1,12 @@
+## Decorrelation works, the readout is now the bottleneck
+
+Run 8 pairs the direct path with the state decorrelation penalty. Measured on its own checkpoints: state
+cosine **0.1717** at step 500 and **0.2261** at step 750, against **0.9716** with no penalty, so E1 passes
+(bar < 0.5). KL across six prefix-free words stays at **0.0150** and **0.0151**, against a bar of 0.05, so
+E2 fails. Two different inputs now produce genuinely different internal states and still produce nearly
+identical next-token distributions: the bottleneck has moved from the state to the answer layer.
+Full notes are in the private working log; this line is the measured result.
+
 ## Decorrelation penalty verified
 
 The named alternative is implemented and gradient-checked: with lambda 0.5, finite differences match at
