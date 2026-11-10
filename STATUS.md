@@ -1,3 +1,12 @@
+## The price of readability: 19.17 pp
+
+Same harness, 600 matched validation windows (`tools/concept_only_eval.py`): **full 22.17%**, **copy path
+only 20.17%**, **concept path only 3.00%**, and the concept path agrees with the full model **8.2%** of the
+time. So giving the 36 named concepts the decision costs **19.17 pp**, and concept-only accuracy lands
+**below** the 4.23% frequency baseline - a person reading the readable numbers would score worse than always
+answering `,`. The model's current ability is, numerically, its copy path. Details:
+`docs/READABILITY-PRICE.md`.
+
 ## The readable half explains 7.3% of the model's decisions
 
 Splitting the logits the model already computes into its 36-number concept path and its copy path, on 233
