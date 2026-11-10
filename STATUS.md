@@ -1,3 +1,12 @@
+## A trap in our own headline test, found before it fooled us
+
+Taking run 8's weights and merely setting the new readout gain to **1.0** - RMS normalisation with no
+training at all - multiplies the headline KL by **63x**, from **0.0151** to **0.9590**, which would pass
+the bar that eight runs failed. The trained-vs-noise control exposes it: at gain 1.0 the trained readout
+scores **0.9590** and a readout of random numbers scores **0.9604**, ratio **1.00x**. All of the apparent
+improvement is scale, none of it is learning. So F1 alone is gameable by arithmetic, and run 9 is judged on
+F4 (trained must beat noise by 2x at the same scale) plus G1/G2. Details: `docs/METRIC-TRAP.md`.
+
 ## Where the input dies: measured, not guessed
 
 The logits split into a state term and a direct term. The obvious hypothesis was that the direct term
