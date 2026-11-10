@@ -1,3 +1,12 @@
+## The punctuation is cured; the loop is not
+
+12 fixed prompts, 24 greedy tokens each, same harness: the copy-path symbol mask takes symbol share from
+**8.7% to 0.0%** and the longest symbol run from **3 to 0** on every prompt, at a cost of **0.50 pp** of
+validation accuracy (19.19% against 19.69% at epoch 1). But the loop did not stop, it moved: `hello , how are
+you ?` now gives `the current of the function of the function of the function`, and distinct 4-grams fell from
+**54.0% to 47.6%**. So punctuation was a symptom; the disease is that the copy path is self-reinforcing for
+whatever is frequent in the window. Details: `docs/SYMBOL-MASK-VERDICT.md`.
+
 ## The price of readability: 19.17 pp
 
 Same harness, 600 matched validation windows (`tools/concept_only_eval.py`): **full 22.17%**, **copy path
