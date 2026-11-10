@@ -1,3 +1,13 @@
+## Copy-pressure penalty, first epoch: accuracy +2.06 pp, copying down
+
+Interim, one seed, epoch 1 of 3, matched split, one change (`--lam-copy-penalty 2.0`). Against the baseline's
+epoch 1: assistant accuracy **19.69% -> 21.75%**, previous-token echo **38.5% -> 24.3%**, modal-window echo
+**45.8% -> 38.5%**, copy path's mass on visible tokens **36.9% -> 29.7%** (frequency justifies about 10%).
+Source: `lens/runs/MATCHED-COPY-D512.txt` against `lens/runs/MATCHED-D512.txt`, measured by
+`tools/copy_echo.py`. This is the first lever today that reduced the copying while also raising accuracy,
+but it is one seed and one epoch - the final epoch and two more seeds decide it. Details:
+`docs/COPY-PENALTY-EP1.md`.
+
 ## How much of what the model says is just visible in the window
 
 12 prompts x 24 greedy steps (`tools/copy_echo.py`): emitted tokens are already in the window **74-81%** of
