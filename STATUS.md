@@ -1,3 +1,15 @@
+## What the architecture that learns actually says
+
+Sampled output from the readable model, which scores 31.50% next-token accuracy at 24 tokens of context:
+`the capital of france is` -> `8 * chapter 1 . * * * * * *`;  `i feel sad because` -> `it transaction by -
+levels nicotine concepts and saving back to handle t brand government addressing . however`.
+
+Local grammar is real (`we can set the following equation as follows`, `which chapter 2`, `however`) but
+global meaning is not, there is no factual recall, and a symbol attractor takes over within a few steps
+under both greedy and sampled decoding. So the model is **not** talk, and the symbol attractor is now the
+top open item: a model can be at 31.50% next-token accuracy and still be unusable if decoding walks into
+`*` and never leaves. Details: `docs/GENERATION-REPORT.md`.
+
 ## The readable architecture has real signal; the recurrent talk core does not
 
 Same corpus, same vocabulary, same held-out tail, same measured frequency baseline of **3.99%**. The
