@@ -1,3 +1,12 @@
+## Where the input dies: measured, not guessed
+
+The logits split into a state term and a direct term. The obvious hypothesis was that the direct term
+swamps the state. Measured on `scan8_ep1000`: the state term is **larger** (sd 0.111-0.124 against
+0.065-0.085) and carries most of the variation, contributing **0.0108** of the **0.0151** KL when the
+direct term is frozen. So the failure is one of **scale**, not attribution: logit differences of about 0.1
+across six very different prompts are washed out by a 12,002-way softmax. That is exactly what the new
+readout normalisation amplifies. Details: `docs/READOUT-DECOMPOSITION.md`.
+
 ## The trained readout separates words no better than random noise
 
 Instrument check on `scan8_ep750`: the KL metric responds monotonically to deliberate readout damage
