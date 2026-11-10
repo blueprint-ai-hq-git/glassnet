@@ -1,3 +1,12 @@
+## The readability tax is bigger than accuracy: concepts stop tracking their own labels
+
+Same 800 matched windows, project gate (`lens.api.audit`, AUROC bar 0.55): readable-only **30/36** concepts pass
+against **36/36** for the copy-path model, mean AUROC **0.6886 against 0.8695** (drop 0.1810), mean fire rate
+**47.4% against 28.3%**. Six concepts fail, all exclusively in the readable model - `mentions_body` 0.4275,
+`mentions_a_name` 0.4662, `mentions_sport` 0.4774, `mentions_a_quantity` 0.5435, `mentions_family` 0.5437,
+`is_a_list` 0.5471 - so the formulas are not wrong; they fail only when the concepts must carry the whole
+prediction. Details: `docs/CONCEPT-LABEL-AUDIT.md`.
+
 ## CORRECTION: the loop is not the copy path's fault
 
 The concept-only arm (no copy path at all) loops **worse**: symbol share **27.8%** against 8.7%,
