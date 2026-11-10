@@ -1,3 +1,13 @@
+## Prediction falsified: the conversational corpus loops worse
+
+Training on the conversational portion only, with the prediction recorded in advance: accuracy **17.35%**
+against 25.52% on the merged corpus, in-window copying 69.1% against 74.3%, **copy mass 46.2% against
+30.8%**, previous-token echo **39.6% against 0.0%**, symbol share in generation **58.3% against 8.7%** and
+the longest symbol run **23 against 3**. So the conversational data, which repeats itself less by direct
+measurement, produces a model that loops more - the repetition rate of the corpus is not what drives
+looping. The visible culprit is boilerplate: `human`, `assistant`, quotation marks and backticks are cheap
+and self-reinforcing under the copy path. Details: `docs/CONV-ARM-FALSIFIED.md`.
+
 ## Which part of the corpus teaches the repetition
 
 Per source (`tools/source_repetition.py`): the target is already visible in the window in **38.32%** of
