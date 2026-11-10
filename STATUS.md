@@ -1,3 +1,14 @@
+## Where the punctuation loop comes from, traced in the open model
+
+The architecture separates into a 36-number concept path and a copy path that echoes the window. On
+`the capital of france is`, tracing 14 generated tokens: the **concept path's** symbol probability stays
+at **0.007-0.008 for all 14 steps**, while the **copy path** goes from 0.021 to **0.965** and carries the
+entire loop. Each emitted backtick is appended to the window and echoed again, so the loop is
+self-reinforcing, which is why a decode guard could not fix it. Separately, all 36 concepts have a symbol
+weight of about **0%**, but their top-voted tokens are unrelated word scatters (`c0: might pound german
+bills flood luck`), so the concept layer is neither the cause of the loop nor yet a readable layer.
+Trace and prediction: `docs/SYMBOL-FORENSICS.md`.
+
 ## A decode guard fixes the looping, not the meaning
 
 Measured on `gpu_d512_s0_best.npz`, 12 prompts, 24 tokens each (`tools/decode_guard.py`):
