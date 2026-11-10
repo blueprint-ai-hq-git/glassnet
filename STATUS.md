@@ -1,3 +1,13 @@
+## Who decides the answer: the state does, and it says one of three things
+
+On 200 real held-out contexts (`scan8_ep1500`): the full argmax equals the **state-only** argmax **87.0%**
+of the time and the **direct-only** argmax only **8.5%**, so the recurrent core is where the decision is
+made. But the top choice takes **just 3 distinct values across 200 different contexts** - functional
+collapse in the answer, which is what the repetition loop looks like from inside. Mean top-1 probability
+**0.0334** against a uniform **0.000083**, top-1/top-2 gap **7.975e-03**, mean entropy **8.987** of 9.393.
+So the problem is not that the readout ignores the state, it is that the state-to-answer map is degenerate.
+Details: `docs/ARGMAX-DECIDED-BY-STATE.md`.
+
 ## Run 8 final: decorrelation works, the readout does not, generation collapses
 
 Held-out loss **8.8631**, accuracy **5.60%** (run 5: 5.34%), train/held-out gap **+0.2994**. Criteria as
