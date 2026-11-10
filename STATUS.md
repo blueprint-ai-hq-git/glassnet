@@ -1,3 +1,13 @@
+## The model is 0.70 points better than always guessing the most frequent token
+
+Over 20,000 held-out positions, scored against a frequency baseline on the same positions: always
+predicting `,` gives **3.99%**, the trained model gives **4.69%** - a **+0.70 pp** advantage, **+17.5%**
+relative. The model is also not just copying the unigram (log-correlation **+0.1588**, KL **1.8330**
+nats), so it neither learns context structure nor reproduces the base rates faithfully; it has collapsed
+onto a handful of answers. That is why every readout and state hunt failed: there is almost no learned
+signal to express. Every future arm reports the frequency-baseline gap beside its accuracy.
+Details: `docs/MARGINAL-BASELINE.md`.
+
 ## The map responds but at too low a resolution - it is not compression
 
 Over 4000 pairs of real held-out contexts: Spearman(state distance, logit distance) **rho +0.610**, and the
