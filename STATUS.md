@@ -1,3 +1,12 @@
+## The readable architecture has real signal; the recurrent talk core does not
+
+Same corpus, same vocabulary, same held-out tail, same measured frequency baseline of **3.99%**. The
+readable concept/answer model scores **11.00%** with just one token of context (**2.8x** baseline) and
+**31.50%** at 24 tokens (**7.9x**). The recurrent talk core scores **4.69%**, which is **1.18x** - within
+noise of answering `,` every time. Context is demonstrably used by the readable model (accuracy rises
+with length); the core's own measurements show no such rise. So talk should be built on the
+concept/answer family. Details: `docs/ARCH-COMPARISON.md`.
+
 ## The model is 0.70 points better than always guessing the most frequent token
 
 Over 20,000 held-out positions, scored against a frequency baseline on the same positions: always
