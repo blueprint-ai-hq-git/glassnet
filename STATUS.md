@@ -1,3 +1,13 @@
+## Which part of the corpus teaches the repetition
+
+Per source (`tools/source_repetition.py`): the target is already visible in the window in **38.32%** of
+conversational windows against **51.75%** of math/code/book windows, and that math/code/book source is
+**255.2M of the 294.2M training tokens, 87%**. Symbol share 17.28% against 30.25%. So the corpus is mostly
+math and code, not prose - **correcting my earlier claim** that the model learns prose and is graded on code.
+The looping follows from the data: the model spends most of its training on text where the answer is often
+already visible. An arm training on the conversational portion only (38.8M tokens, matched holdout, one
+change) is running. Details: `docs/SOURCE-REPETITION.md`.
+
 ## The copy penalty failed, and the reason reframes the problem
 
 Three epochs, matched split: accuracy 19.69/24.26/25.52% baseline against 21.75/24.24/25.60% penalised, so the
