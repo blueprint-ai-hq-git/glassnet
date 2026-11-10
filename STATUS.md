@@ -1,3 +1,13 @@
+## The map responds but at too low a resolution - it is not compression
+
+Over 4000 pairs of real held-out contexts: Spearman(state distance, logit distance) **rho +0.610**, and the
+top state-distance decile gives **27.92** logit distance against **17.54** in the bottom decile, a **59%**
+increase. The state-to-answer map is therefore NOT squashing different states into one answer. What is
+wrong is resolution: even at state cosine distance **0.7582**, predictions differ by only **0.138 nats**
+of KL, against a top-1/top-2 gap of about **0.008** with 12,002 candidates. Ruled out by measurement now:
+state collapse, direct-path swamping, readout ignorance, map compression. Details:
+`docs/RESOLUTION-NOT-COMPRESSION.md`.
+
 ## Who decides the answer: the state does, and it says one of three things
 
 On 200 real held-out contexts (`scan8_ep1500`): the full argmax equals the **state-only** argmax **87.0%**
