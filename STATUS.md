@@ -1,3 +1,12 @@
+## The readable half explains 7.3% of the model's decisions
+
+Splitting the logits the model already computes into its 36-number concept path and its copy path, on 233
+matched validation windows: logit variance **0.7 from the concepts** against **2.3 from the copy path**, and
+the concept path alone picks the same token as the full model only **7.3%** of the time. The concept rows
+are near-orthogonal (participation ratio **35.97** of 36), so the readable layer is not redundant, it is
+simply not the deciding path. So `explain()` can name which concepts fired and still not be the reason for
+the answer, and it must say so. Measurements: `docs/READABLE-PATH-EXPLAINS-7PCT.md`.
+
 ## Where the punctuation loop comes from, traced in the open model
 
 The architecture separates into a 36-number concept path and a copy path that echoes the window. On
