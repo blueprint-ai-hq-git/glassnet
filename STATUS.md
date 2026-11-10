@@ -1,3 +1,12 @@
+## Self-context, epoch 1: text much less repetitive, copy curve barely moved
+
+Against the baseline's epoch 1 (both equally trained): repeated 4-grams **63.9% -> 85.7%**, symbol share
+**52.4% -> 24.3%**, longest symbol run **16 -> 7**, at a cost of **4.95 pp** of accuracy (19.69% -> 14.74%)
+and 1.84x the training time. But the mean copy rate over steps 9-24 only moves **91.4% -> 87.5%**, and it
+rises at steps 5-8 and 21-24, so the curve is nudged rather than reshaped. The output trades a backtick loop
+for a comma loop and still answers nothing. Interim: one seed, epoch 1 of 3. Details:
+`docs/SELFCTX-EP1.md`.
+
 ## Run 9: the state finally reacts, the readout still does not
 
 `tools/eval_run9.py` on `scan9_ep1500.npz`: **F1 KL 1.1702 PASS** (bar >0.05), **F2 state cosine 0.1736 PASS**
