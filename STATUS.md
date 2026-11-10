@@ -1,3 +1,15 @@
+## Self-context final verdict: prediction falsified, and the day's synthesis
+
+Three epochs, matched split, one change: accuracy **19.94% against 25.52%** (-5.58 pp), copy rate over steps
+9-24 **89.9% against 81.3%** (I predicted a fall below 90%), previous-token echo **30.2% against 0.0%**,
+modal echo **41.7% against 25.0%**, symbols **16.7% against 8.7%**. Only distinct 4-grams improved (76.2%
+against 54.0%). The epoch-1 improvement reversed - the second lever today to do that, which makes
+single-epoch comparisons non-evidence in this setup. The confidence-sharpening explanation was also
+falsified (baseline entropy **rises** 4.19 -> 5.02 while its in-window rate **falls** 75.0% -> 70.8%).
+**Synthesis: the loop is a decoding artefact with a working fix (no-repeat 4-gram blocking, 39.3% -> 100%
+distinct 4-grams); the content is a model-and-data problem no decoding trick touches.** Details:
+`docs/SELFCTX-FINAL-VERDICT.md`.
+
 ## Self-context, epoch 1: text much less repetitive, copy curve barely moved
 
 Against the baseline's epoch 1 (both equally trained): repeated 4-grams **63.9% -> 85.7%**, symbol share
