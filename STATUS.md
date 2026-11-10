@@ -1,3 +1,14 @@
+## The copy penalty failed, and the reason reframes the problem
+
+Three epochs, matched split: accuracy 19.69/24.26/25.52% baseline against 21.75/24.24/25.60% penalised, so the
+epoch-1 gain washed out to **+0.08 pp** and the copy mass to **-1.7 pp**; generated text is slightly more
+repetitive. The copy path is not capacity-limited either: **62.9%** of its 512 units are alive and the top 10
+hold only **8.7%** of its energy, so the penalty fights the loss, not a bottleneck. Then the number that
+reframes it: the true next token is already visible in the window **40.33%** of the time, while trivial copy
+baselines score 6.62% and 2.75% and the model scores **25.60%**. So copying is often correct and the model is
+not a copy machine - the repetition in generation is mostly the corpus repeating itself. Details:
+`docs/COPY-PENALTY-VERDICT.md`.
+
 ## Copy-pressure penalty, first epoch: accuracy +2.06 pp, copying down
 
 Interim, one seed, epoch 1 of 3, matched split, one change (`--lam-copy-penalty 2.0`). Against the baseline's
