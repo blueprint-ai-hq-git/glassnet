@@ -1,3 +1,15 @@
+## The library works in five lines, and two-stage training fails in all three forms
+
+`import glassnet as gn` now exposes the real engine: `gn.load_chat()`, `gn.model()`, `gn.fit()`, `gn.why()`.
+Real run: auto-pilot chose 15,567,566 params, d512, lr 0.30, loss 7.86 -> 6.08 in 3.09 s, **held-out 4.70%**
+after three epochs, and `explain()` returned the concept decomposition with residual 11.72 and `exact: False`
+(the readable path does not explain the whole logit - the same 7.3% share already published). Three epochs is a
+working pipeline, not a good model, and it is labelled that way. `docs/LIBRARY.md`.
+
+Separately: language-first two-stage training was measured three ways and **failed every time** - held-out copy
+6.8% unfrozen, 3.2% frozen, 2.5% frozen with a separate frozen embedding, against predictions of 40-50%. Freezing
+also cost 8-10 points of language. `docs/TWO-STAGE-FAILS.md`.
+
 ## The copy peak, measured properly: 69.8% held-out copying at 1,000 steps
 
 On 3,000 evaluation items per checkpoint (up from 600): held-out copying **70.2 / 63.1 / 56.8 / 46.5%** for seed 0
