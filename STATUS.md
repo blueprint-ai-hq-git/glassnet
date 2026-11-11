@@ -1,3 +1,12 @@
+## Phase 2 rule layer: built and honest, and it fails against the right bar
+
+36 concepts -> 96 sparse rules (3 wires each, pruned to 2) -> answer now exists. On held-out windows it scores
+**5.42%**, and 'always output the most common token' also scores **5.42%**: it learned only the frequency prior.
+My prediction ('within 2 points of the ablation') passed, which is exactly how a bad gate hides a null result -
+the ablation scores 3.55%, below a constant. Cause: mean pooling destroys word order, so there is nothing to
+condition on. Readability numbers are real: 2 connections per rule, 96 rules, concept honesty 82.9% mean.
+Details: `docs/RULES-GATE.md`.
+
 ## Identity pointer: 83.3% held-out copying, a new best
 
 Deleting the pointer's learned readout matrix and tying it straight to the embedding table raises held-out copying
