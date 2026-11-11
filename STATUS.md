@@ -1,3 +1,11 @@
+## CORRECTION: concept honesty is 64.9%, not 79.2%
+
+The Phase 2 gate's 79.2% was plain accuracy on concepts that are true in a median of only **16.3%** of windows, so
+always answering 'no' scores **83.7%** - higher than the reported figure. Balanced accuracy, where a dead neuron
+scores 50, puts the concepts at **64.9%** with five of 36 effectively dead (worst 'as' 50.3%). Token accuracy is
+unchanged at 19.68% and the readability price unchanged at 0.75 points; only the honesty verdict was wrong.
+Details: `docs/CONCEPT-HONESTY.md`.
+
 ## PHASE 2 GATE, all five items measured
 
 Three-layer model (36 concepts -> 96 rules -> answer), 2,696,644 parameters: accuracy **19.68%** against a **5.42%**
