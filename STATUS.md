@@ -1,3 +1,12 @@
+## Six ways to mix a copy pathway into a language model, measured
+
+The pointer copies unseen words at **58.0%** alone. Every mixture measured today lands between **0.2% and
+16.5%**: 50/50 mixture 4.2%, 24k steps 8.5% (plateau), frozen pointer 0.2%, bounded gate 3.8%, **unbounded gate
+14.8%**, separate embedding table 3.3%. Two findings worth the space: a gate bounded in [0,1] can only attenuate
+an already-too-quiet voice, and freezing the pointer's own matrices protects nothing because it reads the shared
+embedding table that corpus batches keep moving. Best configuration: language **29.77%** with **96.0%** taught
+and **14.8%** held-out copying. Details: `docs/MIXING-VARIANTS.md`.
+
 ## A model that talks and copies at once: 29.82% language, 85.7% taught copy, 4.2% held-out
 
 First arm to train both abilities together (50% chat corpus, 50% synthetic copy, pointer instead of the old
