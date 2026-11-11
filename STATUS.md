@@ -1,3 +1,12 @@
+## Identity pointer: 83.3% held-out copying, a new best
+
+Deleting the pointer's learned readout matrix and tying it straight to the embedding table raises held-out copying
+from a previous best of **70.2%** to **83.3%** at step 1,000 (1,500 held-out items), taught copying 84.7%, with
+language 13.45% at that point. The reasoning is exact rather than empirical: `(alpha-weighted window embedding) @
+E^T` is the attention-weighted sum of one-hot token scores, so attending to a position outputs the token there,
+with no parameter in between for language training to overwrite. Prediction on record: copy PASSED (75% bar),
+language FAILED at that checkpoint (13.45% against 16%). Details: `docs/IDENTITY-POINTER.md`.
+
 ## The library works in five lines, and two-stage training fails in all three forms
 
 `import glassnet as gn` now exposes the real engine: `gn.load_chat()`, `gn.model()`, `gn.fit()`, `gn.why()`.
