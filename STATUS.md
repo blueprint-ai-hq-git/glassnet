@@ -1,3 +1,11 @@
+## First RL ladder: repetition 36.8% -> 0.6%, and accuracy 24.17% -> 6.25%
+
+Our own policy-gradient trainer, three arms from the same checkpoint, 2,000 steps each. Control (ordinary
+training) reached **24.17%** with **31.0%** window-echoing. Reward-only reached only **20.17%** while echo
+rose to **57.4%**. Adding a repetition charge crushed echo to **0.6%** and crushed accuracy to **6.25%**: at
+`lam_rep=1.0` the repetition term was three times the size of the correctness term, so the model did what it
+was paid to do. First lever in this project that ever moved repetition. Details: `docs/RL-LADDER-1.md`.
+
 ## 2026-11-10, the day in one page
 
 Ten arms trained or measured, seven lost. The loop survived four levers (symbol mask, decode guard, copy
