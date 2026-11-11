@@ -1,3 +1,12 @@
+## The pointer keeps its aim and loses the vote
+
+Measured on the trainer's own items: on held-out words the pointer's attention still sits on the correct window
+slot with **0.77 mass against 0.031 chance**, and it gets the word right **58.0% (63.0% after mixing)** alone -
+but the assembled model outputs it only **0.5-14.8%** of the time. So the copy operation is intact and the
+mixture outvotes it: the problem is voting, not erosion, and every arm that tried to fix it by training longer,
+freezing, isolating the embedding table or lowering the learning rate addressed the wrong half. Details:
+`docs/POINTER-AIM-VS-VOTE.md`.
+
 ## CORRECTION: separate embedding table 15.7% at the finish, and single checkpoints must not rank arms
 
 I published that the separate embedding table was worse (3.3%) by comparing its step-4,000 reading against a
