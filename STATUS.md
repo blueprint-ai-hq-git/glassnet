@@ -1,3 +1,11 @@
+## PHASE 2 GATE, all five items measured
+
+Three-layer model (36 concepts -> 96 rules -> answer), 2,696,644 parameters: accuracy **19.68%** against a **5.42%**
+trivial baseline (**+14.26 points**); **2 connections per rule** after pruning from 3; **96 rules** to read; concept
+honesty **79.2%** mean (weakest 57.6%, FAILS the 85% bar); ablation without the rule layer **20.43%**, so
+readability costs **0.75 points**. Input choice matters most: window mean 9.20%, last token 15.38%, both 19.68%.
+Details: `docs/PHASE2-GATE.md`.
+
 ## Phase 2: word order is worth +6.2 points, and readability costs 1.27
 
 The three-layer model (36 concepts -> 96 rules -> answer) scores **9.20%** when the concept layer sees the window
