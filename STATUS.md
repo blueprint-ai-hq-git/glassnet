@@ -1,3 +1,11 @@
+## RL dose response: penalty works, accuracy pays for it, confidence collapses
+
+Echo falls monotonically with the repetition charge **57.4 -> 42.4 -> 13.3 -> 0.6%** and accuracy falls with it
+**20.17 -> 20.08 -> 14.17 -> 6.25%**, against a **24.17%** supervised control. At charge 0.1 echo actually
+rose above the start point (36.8 -> 42.4%), because reward-only training pushes echo up by itself. Confidence
+error climbs **0.287 -> 0.534 -> 0.726 -> 0.920**: the model does not get honest, it gets loudly wrong. The
+lever is the reward SHAPE, not the dose. Details: `docs/RL-DOSE-RESPONSE.md`.
+
 ## First RL ladder: repetition 36.8% -> 0.6%, and accuracy 24.17% -> 6.25%
 
 Our own policy-gradient trainer, three arms from the same checkpoint, 2,000 steps each. Control (ordinary
