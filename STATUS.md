@@ -1,3 +1,11 @@
+## Vocabulary decision: keep word tokens (measured, 2.1049 bits/char, best on both counts)
+
+Three tokenisations, identical model shape and compute, bits per character: words **2.1049** with
+**0.2561 tokens/char**, hybrid **2.1648** / 0.2670 (+2.8% bits, 0% unknown), pieces **2.2729** / 0.2751
+(+8.0% bits, 0% unknown). So removing the `<unk>` cap costs 2.8-8.0% in-domain. The cap is real (13.73% of
+positions want an unsayable word; 23.01% of out-of-domain tokens destroyed) but the insurance is only worth
+its premium when we have an out-of-domain benchmark. Details: `docs/VOCAB-DECISION.md`.
+
 ## Words versus pieces: the word list wins in-domain by 10.9% in bits per character
 
 Same text, same shape, output tied to embeddings, same compute. Words **2.1003 bits/char** at 12,002 entries with
