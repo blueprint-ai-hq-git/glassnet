@@ -1,3 +1,12 @@
+## Anchored RL: collapse cured, calibration still worse than supervised
+
+Adding a supervised anchor inside the RL loss kept the distribution alive (**entropy 3.529** against the
+reward-only collapse to **1.191**) and put **more probability on the right answer than any other arm**
+(**0.189** against 0.150). Accuracy tied the control (**24.50% vs 24.17%**), but echo was worse
+(**36.8% vs 31.0%**) and confidence error worse (**0.340 vs 0.287**). Plain conclusion: at this size our RL
+method does not beat supervised training on accuracy, its unique ability is trading accuracy for repetition
+control. Details: `docs/RL-ANCHORED.md`.
+
 ## RL dose response: penalty works, accuracy pays for it, confidence collapses
 
 Echo falls monotonically with the repetition charge **57.4 -> 42.4 -> 13.3 -> 0.6%** and accuracy falls with it
