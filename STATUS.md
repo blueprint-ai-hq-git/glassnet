@@ -1,3 +1,12 @@
+## A model that talks and copies at once: 29.82% language, 85.7% taught copy, 4.2% held-out
+
+First arm to train both abilities together (50% chat corpus, 50% synthetic copy, pointer instead of the old
+echo path, 8,000 steps): language **29.82%** on matched windows against **24.27%** for the same model before
+the arm (**+5.55 pp**, same ruler - note this is NOT the project's 25.52% assistant-by-position scale),
+copying taught words **85.7%**, held-out words **4.2%** against 58.0% for a copy-only model. Held-out copying
+was still rising at every checkpoint, so the next arm runs three times longer. Details:
+`docs/MIXED-COPY-FIRST.md`.
+
 ## The pointer copies unseen words at 58.0%; the old copy path was outvoting it
 
 Three checkpoints on the same 600 mixed items: **pointer-only 83.8% taught / 58.0% held-out** (prediction was
