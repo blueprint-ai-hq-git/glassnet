@@ -1,3 +1,11 @@
+## The copy peak, measured properly: 69.8% held-out copying at 1,000 steps
+
+On 3,000 evaluation items per checkpoint (up from 600): held-out copying **70.2 / 63.1 / 56.8 / 46.5%** for seed 0
+and **69.3 / 65.5 / 55.1 / 47.2%** for seed 2 at steps 1,000/2,000/3,000/4,000, while language climbs 14.6 ->
+20.4%. The prediction (50%+ at step 2,000 on both seeds) **passed**. Copying decays monotonically as language
+improves: a measured trade-off, not a tuning problem. Checkpoints are now written at every evaluation, so the
+70.2% model is a file (`early_s0_best.npz`), not a line in a log. Details: `docs/COPY-PEAK.md`.
+
 ## Copy generalisation peaks early: 63.7% at 2,000 steps across three seeds
 
 Routing, three seeds. Held-out copying at step 2,000 is **64.3 / 66.7 / 60.2%** (**mean 63.7, spread 6.5**) while
