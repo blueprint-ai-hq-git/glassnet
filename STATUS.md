@@ -1,3 +1,12 @@
+## First benchmark: 0.0% on all six tasks, and that is the baseline
+
+`tools/bench_v0.py` scores arithmetic, subtraction, sequence continuation, in-window copy, yes/no and world
+knowledge, 200 generated items each, chat template, `<unk>` allowed and banned, with a frequency baseline.
+Result: **0.0% everywhere, 1,155 scorable items**, and the model answers `the` (or `<unk>`) to everything. So
+the 25.52% next-token figure was never comparable to anything and concealed that the model cannot do a single
+checkable task. Two harness bugs were fixed first: a fake 22.5% from scoring missing answers as `<unk>`, and
+`<unk>` never having been banned in earlier generation tests. Details: `docs/BENCH-V0.md`.
+
 ## Vocabulary decision: keep word tokens (measured, 2.1049 bits/char, best on both counts)
 
 Three tokenisations, identical model shape and compute, bits per character: words **2.1049** with
