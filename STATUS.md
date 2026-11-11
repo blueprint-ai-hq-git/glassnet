@@ -1,3 +1,12 @@
+## Phase 2: word order is worth +6.2 points, and readability costs 1.27
+
+The three-layer model (36 concepts -> 96 rules -> answer) scores **9.20%** when the concept layer sees the window
+mean and **15.38%** when it sees the last token, against a **5.42%** trivial baseline - so order is worth
+**+6.18 points**, the biggest effect measured on this layer. Concept honesty moves the other way: **86.5%** with
+the window mean, **70.7%** with the last token, because the concepts are named for window contents. The ablation
+with no rule layer scores **16.65%**, so readability costs **1.27 points**, measured. Details:
+`docs/RULES-ORDERED.md`.
+
 ## Phase 2 rule layer: built and honest, and it fails against the right bar
 
 36 concepts -> 96 sparse rules (3 wires each, pruned to 2) -> answer now exists. On held-out windows it scores
