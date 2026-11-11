@@ -1,3 +1,12 @@
+## The pointer copies unseen words at 58.0%; the old copy path was outvoting it
+
+Three checkpoints on the same 600 mixed items: **pointer-only 83.8% taught / 58.0% held-out** (prediction was
+50% or better: passed), pointer+Q/K **94.2% / 0.5%**, pointer+Q/K+gate **96.0% / 0.7%**. So the copy operation
+generalises - a word the model never trained on is copied correctly most of the time - and the `dmix` echo
+path is what destroys it. The 0.7% reading was also masked by a bug of ours: `pointer_only` was applied before
+the `dmix` path was added, so it was never actually pointer-only. Details:
+`docs/POINTER-GENERALISES.md`.
+
 ## The pointer works, it is being drowned out by the other pathways
 
 The 6,000-step arm scored **94.2% taught / 0.5% held-out**, which looked like memorisation. An oracle test on
