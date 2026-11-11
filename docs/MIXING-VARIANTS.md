@@ -12,7 +12,7 @@ pointer + 50/50, 24,000 steps                          28.9%      100.0%        
 pointer + corpus, pointer matrices FREEZEN              29.2%       84.5%          0.2%
 pointer + corpus + bounded confidence gate             29.3%       95.3%          3.8%
 pointer + corpus + UNBOUNDED gate (1 + K*sigmoid)      29.8%       96.0%         14.8%   (peak 16.5%)
-pointer + corpus + unbounded gate + SEPARATE emb table  29.3%       93.3%          3.3%   (at 4k steps)
+pointer + corpus + unbounded gate + SEPARATE emb table  30.2%       86.7%         15.7%   (CORRECTED - see SEP-EMB-CORRECTION.md)
 ```
 
 ## What is established

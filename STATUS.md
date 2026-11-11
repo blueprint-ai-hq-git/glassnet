@@ -1,3 +1,12 @@
+## CORRECTION: separate embedding table 15.7% at the finish, and single checkpoints must not rank arms
+
+I published that the separate embedding table was worse (3.3%) by comparing its step-4,000 reading against a
+finished 12,000-step arm. Its finished figure is **15.7% held-out copying, the highest today**, with **30.15%**
+language. But held-out copy swings 7.0 / 9.3 / 7.5 / 15.7 across checkpoints on identical settings, so single
+readings rank coin flips: mean of the last three is **14.8%** for the gate arm and **10.8%** for the separate
+table, i.e. **the two are indistinguishable**. What is established is the direction 0.2% -> 3.8% -> 14.8-15.7%.
+Details: `docs/SEP-EMB-CORRECTION.md`.
+
 ## Six ways to mix a copy pathway into a language model, measured
 
 The pointer copies unseen words at **58.0%** alone. Every mixture measured today lands between **0.2% and
