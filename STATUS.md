@@ -1,3 +1,13 @@
+## The pointer works, it is being drowned out by the other pathways
+
+The 6,000-step arm scored **94.2% taught / 0.5% held-out**, which looked like memorisation. An oracle test on
+the same checkpoint says otherwise: the pointer pathway ALONE copies **84.0%** of taught words and **66.3%**
+of held-out words, and lands on the answer position **83.5% / 85.7%** of the time. So the copy operation
+generalises; the full model's other pathways simply outvote it and answer `the`. A correct mechanism that
+cannot be heard is indistinguishable from a broken one until you isolate it. Next: a learned gate so the
+pointer can be heard - prediction, held-out copying at 50% or better. Details:
+`docs/POINTER-WORKS-DROWNED-OUT.md`.
+
 ## Copying from the window: 17.5% taught, 0.0% held-out, so it cannot copy at all
 
 First benchmark task forced to a score, 3,000 steps from the 25.52% checkpoint: loss fell **6.86 -> 1.73**,
