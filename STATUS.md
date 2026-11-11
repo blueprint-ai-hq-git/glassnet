@@ -1,3 +1,11 @@
+## Concept honesty vs accuracy: one dial, three settings
+
+Same recipe, only the concept-loss weight changed: **1x -> 19.68% accuracy / 64.9% balanced honesty**, **5x ->
+17.82% / 84.0%**. So the concepts were under-weighted, not dead, and label-honest concepts cost **1.86 points** of
+prediction. The readability price also rises with honesty: the rule layer costs 0.75 points against its ablation at
+1x and 2.13 points at 5x. Caveat in the doc: one seed per point, and 84.0% still misses the 85% bar with 'as' dead
+at 52.8%. Details: `docs/CONCEPT-TRADE.md`.
+
 ## CORRECTION: concept honesty is 64.9%, not 79.2%
 
 The Phase 2 gate's 79.2% was plain accuracy on concepts that are true in a median of only **16.3%** of windows, so
