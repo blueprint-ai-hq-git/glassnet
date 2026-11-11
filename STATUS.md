@@ -1,3 +1,12 @@
+## Copying from the window: 17.5% taught, 0.0% held-out, so it cannot copy at all
+
+First benchmark task forced to a score, 3,000 steps from the 25.52% checkpoint: loss fell **6.86 -> 1.73**,
+taught words reached **17.5%**, held-out words **0.0% at every checkpoint**. Learning the act of copying would
+copy unseen words too; fitting the answer list would not. So it is memorising, and the cause is structural:
+the architecture flattens the 32-token window through a gated mix with **no attention, no per-position
+addressing, no pointer**, so it cannot reach back and take one token. This explains every 0.0% in the
+benchmark table. Next arm adds an explicit readable pointer. Details: `docs/COPY-TASK-STRUCTURAL.md`.
+
 ## First benchmark: 0.0% on all six tasks, and that is the baseline
 
 `tools/bench_v0.py` scores arithmetic, subtraction, sequence continuation, in-window copy, yes/no and world
