@@ -1,3 +1,11 @@
+## Copy generalisation peaks early: 63.7% at 2,000 steps across three seeds
+
+Routing, three seeds. Held-out copying at step 2,000 is **64.3 / 66.7 / 60.2%** (**mean 63.7, spread 6.5**) while
+language is still ~16%. By step 12,000 language reaches **25.4%** (mean of three seeds, spread 0.6) and held-out
+copy drifts and swings (1.7-56.2%). Mean of last three: copy **26.9%**, language **25.4%**. So the two abilities
+trade against each other along one run, and the copy operation is strongest at the START of a mixed run. Next
+arm trains language first and adds a short copy stage at the end. Details: `docs/ROUTE-SEEDS.md`.
+
 ## The data judge exists and fails its own gate
 
 Fifteen readable features, five corruption kinds, held-out conversations. Without order features: AUC **0.922**
