@@ -1,3 +1,11 @@
+## Words versus pieces: the word list wins in-domain by 10.9% in bits per character
+
+Same text, same shape, output tied to embeddings, same compute. Words **2.1003 bits/char** at 12,002 entries with
+2.11% unknown; pieces **2.3581 bits/char** at 16,000 entries with 0.00% unknown and 32% more parameters. So
+switching to byte-level pieces costs efficiency on in-domain text even though the vocabulary cap is real. The
+measured answer is a HYBRID: keep word tokens, add byte fallback only for unknown words. Details:
+`docs/TOKENS-VS-PIECES.md`.
+
 ## Anchored RL: collapse cured, calibration still worse than supervised
 
 Adding a supervised anchor inside the RL loss kept the distribution alive (**entropy 3.529** against the
