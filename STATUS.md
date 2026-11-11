@@ -1,3 +1,12 @@
+## Routing beats adding: the first model that talks AND copies
+
+Switching between the pointer's readout and the other pathway's readout, instead of adding them, gives held-out
+copying of **39.5 / 3.2 / 56.2%** over the last three checkpoints (**mean 33.0%**) with language at **25.8%**
+(mean). Every earlier mixture sat between 0.2% and 16.5% held-out. The reason is documented in
+`docs/POINTER-AIM-VS-VOTE.md`: the pointer never loses its aim, it loses the SUM. A switch does not have to
+out-sum anything. Caveat stated in the doc: this metric swings hard between checkpoints, so 33.0% needs three
+seeds before it is a stable number. Details: `docs/ROUTE-BEATS-ADD.md`.
+
 ## The pointer keeps its aim and loses the vote
 
 Measured on the trainer's own items: on held-out words the pointer's attention still sits on the correct window
