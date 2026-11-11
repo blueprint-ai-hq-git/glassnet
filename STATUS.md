@@ -1,3 +1,12 @@
+## The data judge exists and fails its own gate
+
+Fifteen readable features, five corruption kinds, held-out conversations. Without order features: AUC **0.922**
+but shuffled word order detected only **1.0%**. With them: AUC **0.98**, but **29.4%** of clean held-out windows
+flagged. With a calibrated threshold: AUC **0.9597** PASS, false alarm **0.0730** FAIL (bar 5%), one-token-loop
+detection **69.5%** FAIL (bar 80%). Not wired into training: a filter that throws away 7% of good data costs more
+than the damage it removes. Next design recorded: score a window against its own neighbours instead of a global
+threshold. Details: `docs/DATA-JUDGE.md`.
+
 ## Routing beats adding: the first model that talks AND copies
 
 Switching between the pointer's readout and the other pathway's readout, instead of adding them, gives held-out
