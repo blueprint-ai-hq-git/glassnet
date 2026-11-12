@@ -1,3 +1,25 @@
+## Retraction: rules sharing a concept triple are thresholds, not duplicates
+
+Last wake I published that the 29 kept rules contain only 20 distinct wirings, so "a human must read 20, not 29". **That was
+wrong.** Grouped by wiring, the rules have different biases (`+0.2925 / -0.0201 / -1.1766 / -0.6214` on one group) - they
+are a **piecewise response** in the same three concepts, not one rule written four times.
+
+Tested the way it should have been tested the first time - collapse each group to its strongest member and re-measure:
+
+```
+seed 0: 76.60% -> 29.84%   (-46.76 points)   9 of 29 removed
+seed 1: 73.48% -> 47.18%   (-26.30 points)   5 of 23 removed
+seed 2: 78.21% -> 41.26%   (-36.95 points)   6 of 23 removed
+```
+
+One two-rule group on the same concepts (biases +0.90 / -0.89) alone carries **12.22 points**; a four-rule group on another
+seed carries **29.99**. My prediction was "under 1.0 point" - wrong by 26 to 47 points.
+
+**The corrected claim: 29 rules is the honest reading count.** Nothing is overstated. The real product fix is in `explain()`:
+present a rule group as one shape ("when these three concepts are high / medium / low") instead of four separate reasons.
+`docs/EXPLAIN-IMAGE.md` is corrected in place with the retraction left visible; full measurement in
+`docs/RULE-CONSOLIDATION.md`.
+
 ## explain() on the readable image model: real output, and two defects it exposes
 
 `tools/explain_image.py` prints, for a real image: the class, the rules that fired for it, the 3 concepts each rule is wired
