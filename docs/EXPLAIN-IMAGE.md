@@ -45,10 +45,12 @@ wiring sets used by MORE than one rule           5  (involving 14 rules)
   rules 8, 26         read the same 3 concepts, answer-row cosine -0.83
 ```
 
-**A human must read 20 rules, not 29.** Four of the "29 rules" are two rules and their duplicates, and rules 5 and 6 are
-near-exact opposites of each other (cosine -0.96), which is one rule and its negation. The reported rule count has been
-overstating the reading work by ~31% on this arm. Any future rule count should be reported as *distinct wirings*, and a
-duplicate-consolidation pass is the obvious next structural change.
+**CORRECTED 2026-11-12 (this paragraph was wrong when published).** These rules share a wiring but NOT a threshold: grouped
+by wiring their biases differ (`+0.2925 / -0.0201 / -1.1766 / -0.6214` on concepts (0,2,10)), so they are a piecewise response
+in those concepts, not duplicates. Measured cost of collapsing each group to its strongest member: **-46.76 / -26.30 / -36.95
+points** across the three seeds of this arm, with one two-rule group alone worth 12.22 points. So **29 rules is the correct
+reading count** and nothing is overstated; what changes is how `explain()` should present a group. Full measurement:
+`docs/RULE-CONSOLIDATION.md`.
 
 ## Defect 2: the two most honest concepts are causally dead
 Switching a concept off and re-reading the predicted class, over all 10,000 test images:
