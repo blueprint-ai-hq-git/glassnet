@@ -1,3 +1,33 @@
+## Output-variance floor: a better ship (81.73% +/- 0.54) and dead concepts still survive
+
+Seventh lever, aimed at the quantity the mechanism named - a rule that emits a constant makes no decisions.
+
+**A hypothesis killed before it cost a run:** the obvious version (`--rfloor`, floor on each rule's answer row) died on a
+pre-check - in the shipped arm the per-rule answer-row magnitude has **min 1.747, median 5.648, and 0 of 32 rules below 0.5**,
+yet some rules are worth exactly 0.000. Weight is not the quantity, one level up either. Not trained.
+
+`--varfloor F` penalises rule output variance below F. **Gradient check exact (0.00e+00)** away from the relu kink.
+
+```
+setting                    pruned accuracy (3 seeds)   worst min influence   mean influence   concepts <1%
+ship config, no floor      81.19 +/- 0.98                  0.00%               23.56%          3 of 12
+varfloor 0.02              80.64 +/- 1.63                  0.00%               25.27%          1-2 of 12
+varfloor 0.10              81.73 +/- 0.54                  0.00%               24.49%          0-2 of 12
+```
+
+**New ship configuration: `alpha 3 / 32 rules / linear / varfloor 0.10 / pruned` = 81.73% +/- 0.54**, per seed
+82.35 / 81.33 / 81.51, 21-27 rules to read. That is +0.54 points and, more importantly, **half the seed spread** - half the
+spread is what makes a claim reproducible.
+
+**But the minimum concept influence is still 0.00% in two of three seeds.** Seventh lever, seventh failure on that specific
+point. The pattern across all seven: the two levers that changed the right thing (linear rules, variance floor) also improved
+accuracy; every lever aimed at *weights* did nothing. On this architecture weight magnitude is not a proxy for function at
+either level.
+
+So the defect stays **open**, and the honest description of the ship is: 12 named concepts, 22-27 load-bearing rules, and one
+concept that means what its name says and decides nothing - a caveat that belongs beside the accuracy, not in a footnote.
+Details: `docs/VARIANCE-FLOOR.md`.
+
 ## Coverage-aware pruning tested: the last sub-cause, and why it cannot work
 
 The mechanism named three sub-causes for dead concepts; linear rules killed saturation, and this tests the last one - never
