@@ -36,6 +36,24 @@ are looking for a capable assistant, this is not it yet - and this file will say
 
 ---
 
+## Readable architecture: what it scores today (2026-11-12)
+
+On Fashion-MNIST the phase-2 readable stack - 12 named concept neurons -> 32 sparse rules with 3 connections each -> answer -
+scores **81.73% +/- 0.54** over three seeds, after pruning rules whose removal does not cost accuracy. The phase-1 plain baseline
+is **86.69% +/- 0.59**, so the readable version is **4.96 points worse**. Readability has not paid for itself yet, and this file
+says so instead of implying otherwise.
+
+What moved it: **linear rules instead of sigmoid rules (+5.09 points)** and **deleting rules that were hurting borderline
+predictions (+4.48)**. Honest concept names cost **1.18 points** at this size, down from 3.68 for the sigmoid stack.
+
+What is broken: the minimum causal influence of a concept is **0.00%** in two of three seeds. A concept can match its name
+completely (`top_heavy`: 0.968 rank agreement) and still change **0.01%** of predictions. Seven levers were tried against that;
+six changed nothing, and the pattern is written down. Everything from today, including the failures and one claim I retracted
+against myself, is in **[docs/TODAY-2026-11-12.md](docs/TODAY-2026-11-12.md)** and
+**[docs/PHASE2-IMAGE-GATE.md](docs/PHASE2-IMAGE-GATE.md)**.
+
+---
+
 ## What was built, and how
 
 | Built | What it does | Evidence |

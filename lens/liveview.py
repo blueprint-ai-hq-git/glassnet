@@ -15,11 +15,13 @@ def sh(c):
     except Exception as e: return f"ERR {e}"
 
 def gpu():
-    o = sh("nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,power.draw,temperature.gpu --format=csv,noheader,nounits").strip()
+    """Report only whether a GPU backend is available: the public tree must not advertise the host machine's GPU vendor, memory,
+    power or temperature figures, so no hardware query is ever run here."""
     try:
-        u, m, mt, w, t = [x.strip() for x in o.split(",")[:5]]
-        return {"util": float(u), "vram": float(m), "vram_total": float(mt), "power": float(w), "temp": float(t)}
-    except Exception: return {"error": o}
+        import cupy  # noqa: F401
+        return {"backend": "gpu"}
+    except Exception:
+        return {"backend": "cpu"}
 
 def run_rows():
     """Every epoch row of the newest run log, parsed. Real numbers, straight from the log."""
