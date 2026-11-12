@@ -1,3 +1,29 @@
+## explain() on the readable image model: real output, and two defects it exposes
+
+`tools/explain_image.py` prints, for a real image: the class, the rules that fired for it, the 3 concepts each rule is wired
+to, and what switching the strongest concept off does. Verbatim:
+
+```
+image 1: predicted Pullover (score +3.201)   truth: Pullover   CORRECT
+  I said Pullover partly because of RULE #18: fires 0.85 -> pushes Pullover +1.410
+     when: ink_amount=0.82  AND  left_heavy=0.60  AND  symmetry_ud=0.55
+  I said Pullover partly because of RULE #21: fires 0.72 -> pushes Pullover +1.363
+     when: ink_amount=0.82  AND  left_heavy=0.60  AND  symmetry_ud=0.55
+  if 'ink_amount' were switched off: Pullover -> Sandal
+```
+
+**Defect 1 - duplicate rules.** 29 kept rules contain only **20 distinct 3-concept wirings**; 5 wirings are shared by 14
+rules (two pairs with answer-row cosine 0.91 and 0.95, two with -0.96 and -0.83, i.e. a rule and its negation). A human
+must read **20 rules, not 29** - the reported rule count overstates the reading work by 31 percent.
+
+**Defect 2 - honesty is not influence.** Honesty passes the gate (mean rank agreement **0.735**, all 12 concepts >= 0.556,
+none below 0.50) yet the two most label-honest concepts are causally dead: `top_heavy` **0.968 honest / 0.01 percent
+influence**, `ring_ink` **0.910 / 0.00 percent**. The highest influence belongs to `grad_ratio` (0.556 honest, **47.87
+percent**) and `ink_amount` (0.605, **46.79 percent**). Correlation between honesty and influence: **-0.483**.
+Mean influence 20.90 percent.
+
+A neuron can mean exactly what its label says and still decide nothing. Details: `docs/EXPLAIN-IMAGE.md`.
+
 ## The pruned ladder: pruning a third of a wide rule layer is worth +4.09 points
 
 Class-prior census per arm (constant-output rules that still push a class): **12% of rules at 8-16 rules, ~31-34% at
