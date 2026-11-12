@@ -1,3 +1,19 @@
+## Rule-count sweep: 24 rules is the knee
+
+Four arms, only the rule count changed, each ablated rule by rule:
+
+| rules | accuracy | median per-rule loss | plausibility-vs-necessity |
+|---|---|---|---|
+| 12 | 13.90% | 1.613 pts | +0.236 |
+| 24 | 15.30% | 0.350 pts | +0.166 |
+| 48 | 15.47% | 0.000 pts | +0.102 |
+| 96 | 16.45% | 0.000 pts | -0.012 |
+
+**The layer stops being fully load-bearing between 24 and 48 rules.** At 24 rules the model gives up only **1.15
+points** against 96 rules while every rule participates and plausibility still predicts necessity. Two anomalies are
+recorded rather than hidden: one 24-rule rule actively hurts (-0.650 when removed), and half the load-bearing rules
+are still implausible at every count. Details: `docs/RULE-COUNT-SWEEP.md`.
+
 ## Sparse rule layer: 12 rules where EVERY rule matters
 
 Cutting the layer to 12 rules (cross-facet wiring kept) gives **13.90%** accuracy, and the ablation changes completely:
