@@ -1,3 +1,12 @@
+## Answer-row sparsity: best middle layer so far (15.78%)
+
+The existing L1 only shrank concept->rule wires, never the rule->answer rows, so a rule could keep full answer weights
+while contributing nothing. Adding answer-row pressure (`AR_L1=0.02`) to the 24-rule arm improved four of five metrics
+at once: accuracy **15.30% -> 15.78%**, readability price **2.13 -> 1.65 points**, median per-rule ablation loss
+**0.350 -> 0.500 points**, plausibility-vs-necessity **+0.166 -> +0.263** (spearman +0.402), and implausible rules among
+the heaviest fell 5 of 10 to 4 of 10. One defect survives: a single rule is still net-harmful (-0.550 points when
+removed). Details: `docs/ANSWER-ROW-SPARSITY.md`.
+
 ## Rule-count sweep: 24 rules is the knee
 
 Four arms, only the rule count changed, each ablated rule by rule:
