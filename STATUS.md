@@ -1,3 +1,18 @@
+## Rule-count sweep on the original Phase 2 task: 16 rules is the balance
+
+Twelve models (4 rule counts x 3 seeds) on the original Fashion-MNIST architecture. The sweep **reproduces the recorded
+Phase 2 result exactly at R=30** (79.04% +/- 2.38 vs the gate's 79.04 +/- 1.97), which validates it:
+
+- **accuracy rises with rules**: 76.75% (8) -> 77.93% (16) -> 78.93% (24) -> 79.04% (30)
+- **necessity collapses**: median per-rule ablation loss **+3.01** points at 8 rules, **+0.01** at 30
+- **dead rules**: 0.3 -> 0.7 -> 3.7 -> **6.7 of 30**
+- **concept interaction**: 16.4% -> 8.7% -> 3.9% -> 4.9%
+- **concept honesty is independent of rule count**: mean |Spearman| 0.55-0.62 at every size, with 4.7-6.3 of 14 concepts
+  better explained by another name everywhere
+
+**Recommendation: 16 rules** - 1.11 points off the ceiling, 0.7 dead rules instead of 6.7, median rule worth +0.19 instead
+of +0.01. The original 30-rule setting is the least faithful of the four. Details: `docs/PHASE2-RULE-SWEEP.md`.
+
 ## Re-audit of the original Phase 2 model with today's instruments
 
 `tools/phase2_reaudit.py` reproduces the recorded **80.75%** accuracy exactly (validating the reconstruction), then
