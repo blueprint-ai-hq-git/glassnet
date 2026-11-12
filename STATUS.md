@@ -1,3 +1,22 @@
+## The concept-honesty dial on Fashion-MNIST: honest names are expensive here
+
+Three concept-loss weights, three seeds each, 16 rules:
+
+| alpha | accuracy | mean \|rho\| | misnamed | median per-rule | dead | interaction |
+|---|---|---|---|---|---|---|
+| 1.0 | 77.93 +/- 1.40 | 0.587 | 4.7 of 14 | +0.19 | 0.7 | 8.7% |
+| 3.0 | 73.65 +/- 3.06 | 0.759 | 2.3 of 14 | +1.38 | 2.0 | 16.0% |
+| 10.0 | 63.32 +/- 1.54 | 0.885 | 1.7 of 14 | +1.84 | 3.3 | 10.8% |
+
+Honesty climbs exactly as it did on the chat corpus (**mean rank agreement 0.587 -> 0.885**, misnamed **4.7 -> 1.7 of
+14**) but the price is far steeper: accuracy **77.93% -> 63.32%**. Halving the misnaming costs **4.3 points**; nearly
+eliminating it costs **14.6**. On the chat model the same dial cost 1.86 points.
+
+Recommended operating point: **alpha = 3, 16 rules** - 73.65% +/- 3.04, honesty 0.759, 2.3 of 14 misnamed. Also
+falsified my own collinearity hypothesis: only 1 of the 4 misnamed pairs is collinear, and the worst offender
+(`quad_LR_ink`, own rho -0.084) pairs with its apparent target at just 0.160 - the neuron learned something unrelated.
+Details: `docs/CONCEPT-WEIGHT-DIAL.md`.
+
 ## Rule-count sweep on the original Phase 2 task: 16 rules is the balance
 
 Twelve models (4 rule counts x 3 seeds) on the original Fashion-MNIST architecture. The sweep **reproduces the recorded
