@@ -1,3 +1,29 @@
+## Linear rules are the best readable configuration measured on this task: 81.19% +/- 0.98 with 20 rules
+
+The dead-concept mechanism pointed at sigmoid saturation, and the model had supported linear rules since it was written - but
+the **trainer never exposed the flag**, so that branch had never been trained once. Now `--rule_linear`.
+
+```
+arm                                accuracy (3 seeds)   rules to read
+sigmoid rules, a3 R32              72.01 +/- 4.35            32
+sigmoid rules, a3 R32, pruned      76.10 +/- 2.40            29
+alpha-1 R16, pruned                79.78 +/- 0.48            15.7
+LINEAR rules, a3 R32               76.71 +/- 2.39            32
+LINEAR rules, a3 R32, PRUNED       81.19 +/- 0.98            20 (19-22)
+original Phase 2 gate (sigmoid)    79.04 +/- 2.38            30
+```
+
+Per seed with pruning: **82.26 / 80.95 / 80.35**; pruning itself worth **+4.48 +/- 1.52** (10-13 of 32 rules removed). That is
+**+5.09 over the best sigmoid honest arm**, **+1.41 over the accuracy champion** and **+2.15 over the original Phase 2 gate**,
+with **20 rules to read instead of 30** and the tightest spread measured on this task (+/- 0.98).
+
+The audit detects the mode itself: `rule mode: linear reproduces 79.47% (sigmoid 20.03%) -> MATCH` - a sigmoid read of a
+linear-rule model collapses to 20.03%, so the forward pass must match the training pass or every later number is fiction.
+
+Concept honesty on this arm: mean |rho| **0.660**, 1 of 12 below 0.50, 2 of 12 tracking another name. Dead concepts halve -
+**2 / 0 / 0 of 12** under 1% influence - but one seed still has two, exactly as the mechanism predicts: saturation was only one
+of the three sub-causes. Details: `docs/LINEAR-RULES.md`.
+
 ## Concept dropout tested - and the real mechanism of dead concepts found
 
 **First run of the dropout test was invalid, by my own mistake:** I used non-inverted dropout, leaving training and evaluation
