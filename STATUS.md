@@ -1,3 +1,30 @@
+## Deleting the causally dead concepts makes the model worse
+
+`explain()` says three of twelve concepts carry no decision (top_heavy 0.01%, ring_ink 0.00%, edge_balance 0.00%). Dropping
+them and retraining on nine concepts was the obvious cleanup. Prediction: accuracy within 1.0 point of 76.10% +/- 2.40, mean
+influence up from 20.90%. **Half failed.**
+
+```
+arm                       accuracy (3 seeds)      mean causal influence per concept
+12 concepts, pruned       76.10 +/- 2.40              20.90%   (3 concepts below 1.5%)
+ 9 concepts (3 dropped)   67.48 +/- 10.01             31.24%   (lowest single concept 0.92-13.83%)
+change                    -8.62 points                +10.34 points
+```
+
+Seeds of the nine-concept arm: **55.59 / 74.30 / 72.55** - seed 0 collapsed and its own connection pruning cost 10.74 points.
+
+- The **influence half held**: with the three gone, every remaining concept changes 1-80% of predictions.
+- The **accuracy half failed by 8.62 points** against a 1.0-point tolerance, and the spread grew from +/- 2.40 to +/- 10.01.
+- **The decorative concepts were not decorative in combination.** The concept layer is the only path from pixels to answers,
+  so a concept that never wins alone is still a channel the rules combine with others. Nine channels are much worse than
+  twelve - not "cleaner at the same accuracy".
+- The uncomfortable trade: you can have a layer where a third of the concepts never matter (**76.10%**) or one where every
+  concept matters (**67.48%**), and the first is 8.62 points better.
+
+The right lever is not deletion but **coverage** - require every concept to be used by at least one load-bearing rule. That
+keeps all twelve channels and makes "every named concept matters" true by construction. Details:
+`docs/DEAD-CONCEPT-REMOVAL.md`.
+
 ## Retraction: rules sharing a concept triple are thresholds, not duplicates
 
 Last wake I published that the 29 kept rules contain only 20 distinct wirings, so "a human must read 20, not 29". **That was
