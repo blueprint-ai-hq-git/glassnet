@@ -1,3 +1,38 @@
+## Concept dropout tested - and the real mechanism of dead concepts found
+
+**First run of the dropout test was invalid, by my own mistake:** I used non-inverted dropout, leaving training and evaluation
+with different activation magnitudes. It scored 54.80% +/- 5.04. Corrected to inverted dropout (1/(1-p) rescaling):
+
+```
+setting                        accuracy (3 seeds)   min influence   mean influence
+no dropout, pruned (reference) 76.10 +/- 2.40         0.00%            20.90%
+non-inverted dropout 0.3       54.80 +/- 5.04         0.00%            18.80%
+INVERTED dropout 0.3           65.58 +/- 1.83         0.00%            17.72%
+dropout 0.6                    16.67 +/- 5.70         0.00%            11.10%
+```
+
+The correction recovered **10.8 points** - my implementation flaw was worth more than the lever. Even corrected, dropout costs
+**10.52 points**, minimum influence stays **0.00%** and mean influence falls. Prediction failed on both halves. Dropout assumes
+redundancy; a concept layer has none, so dropping a concept destroys information rather than forcing robustness.
+
+**The mechanism, measured** (per concept: causal influence vs the rules that read it):
+
+```
+concept        causal inf   best rule reading it    sub-cause
+ring_ink           0.00%     0.00, 0 readers        every connection pruned away
+top_heavy          0.01%     0.00, 2 readers        wired only into inert rules
+edge_balance       0.00%     0.00, 3 readers        wired only into inert rules
+corner_ink         1.49%    10.04, 2 readers        rule saturated
+grad_x_mean        3.14%    15.60, 3 readers        rule saturated
+row_ink_std       38.15%    15.60, 9 readers        healthy
+```
+
+Three sub-causes: **(1)** the edge does not exist any more, **(2)** the rule it feeds is worth nothing, **(3)** the rule's
+output is saturated so the concept cannot move it. All four failed levers attacked *concept usage*; influence is a property of
+the **concept-to-rule edge**. Next levers follow from that: coverage-aware pruning that never cuts a concept's last edge,
+linear rules (cannot saturate), and training-time rule necessity. Details:
+`docs/CONCEPT-DROPOUT-AND-MECHANISM.md`.
+
 ## Selecting concepts by dispersion does not remove dead concepts either
 
 Third attempt at the same defect, and the measured reason influence tracks variance (dead concepts std 0.101 vs 0.160 live)
