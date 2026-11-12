@@ -1,3 +1,19 @@
+## Widening the tied channel: complete explanations at NO accuracy cost
+
+Tying the answer layer to the concepts cost -2.83 points with 11 concepts - and the reason was structural: under a tie
+the answer matrix has rank at most **C**, so 11 concepts give only 11 independent directions for 12,002 outputs. Widening
+the concept set to 23 recovers all of it:
+
+| config | accuracy (3 seeds) | honesty | layer price | explanation proven |
+|---|---|---|---|---|
+| untied, 11 concepts | 15.08% +/- 0.46 | 78.0% | 1.57 pp | no |
+| tied, 11 concepts | 12.25% +/- 0.99 | 79.2% | 4.97 pp | yes (rank 11) |
+| **tied, 23 concepts** | **15.44% +/- 0.22** | 73.6% | 3.48 pp | **yes (rank 22 of 23)** |
+
+TIED-23 is **+0.36 points** from untied-11, i.e. inside noise: the complete, rank-verified explanation is free in
+accuracy. It still costs more in the layer itself (3.48 vs 1.57 points) and in concept honesty (73.6% vs 78.0%, because
+the added concepts are weaker). Details: `docs/TIED-WIDE.md`.
+
 ## Tied answers: a complete, provable explanation for 2.83 accuracy points
 
 The explanation had a hole: a rule's firing was checkable (two named concepts) but its *effect* was a free 12,002-dim
