@@ -1,3 +1,32 @@
+## Linear-rule ladder: the price of honest concept names falls to 1.18 points
+
+Every earlier calibration here was done with sigmoid rules, and linear rules changed the landscape, so the grid was retrained:
+R in {16,32,48} x alpha in {1,3} x 3 seeds, each pruned, honesty and influence measured in one pass.
+
+```
+alpha  rules  pruned accuracy   mean |rho|   misnamed   rules to read   min influence
+1.0     16    81.20 +/- 1.26       0.451      6.7 of 12       13.7            0.00%
+1.0     32    82.37 +/- 0.76       0.422      7.3 of 12       20.3            0.00%
+1.0     48    81.62 +/- 2.31       0.463      6.0 of 12       27.3            0.00%
+3.0     16    72.10 +/- 6.85       0.603      2.3 of 12       14.0            0.17%
+3.0     32    81.19 +/- 0.98       0.640      2.3 of 12       20.0            0.00%
+3.0     48    78.79 +/- 5.32       0.632      1.7 of 12       25.3            0.00%
+```
+
+**Prediction:** alpha 3 stays within 2 points of alpha 1 at the same rule count. **Held at R=32 (cost 1.18), failed at R=16
+(9.10) and R=48 (2.83)** - so the saturation explanation is right about the mechanism and wrong about universality: honest
+names are cheap only where the rule layer has capacity to absorb the constraint.
+
+**Price of honest names, three measurements on this task:** sigmoid concept-weight dial **-9.88 points**, sigmoid best-honest
+vs best **-3.68**, LINEAR at R=32 **-1.18** for the same halving of misnaming.
+
+**Ship candidate: `alpha 3 / 32 rules / linear / pruned` = 81.19% +/- 0.98, 2.3 of 12 concepts misnamed, 20 rules to read** -
+1.18 points off the grid's best and **+2.15 over the original Phase 2 gate with ten fewer rules**. R=32 is also the only
+*stable* honest setting (R=16 gives +/- 6.85, R=48 gives +/- 5.32).
+
+Still broken: minimum concept influence is 0.00% in four of six configurations. Coverage-aware pruning - the one sub-cause of
+the three not yet tested - is next. Details: `docs/LINEAR-LADDER.md`.
+
 ## Linear rules are the best readable configuration measured on this task: 81.19% +/- 0.98 with 20 rules
 
 The dead-concept mechanism pointed at sigmoid saturation, and the model had supported linear rules since it was written - but
