@@ -1,3 +1,27 @@
+## Phase 2 gate, current state on the image task: 4 of 5 items measured
+
+Shipped configuration: 12 named concepts -> 32 linear rules (3 connections each) -> answer, alpha 3, per-rule variance floor
+0.10, three seeds.
+
+```
+item                                   result
+1. accuracy vs baseline                81.73% +/- 0.54 after rule pruning (76.26 +/- 4.62 before)
+                                       PHASE 1 BASELINE 86.69% +/- 0.59 -> readable is 4.96 points BELOW it
+2. connections per rule                3.00 exactly (min 3, max 3) on every kept rule, all seeds
+3. rules a human must read             27 / 26 / 21 kept of 32 (mean 24.7), each one a 3-concept sentence
+4. concept honesty                     0.625 +/- 0.034 mean |rho|; 1-4 of 12 below 0.50
+   sanity test (another name fits)     2 / 2 / 3 of 12 (mean 2.3) better explained by a DIFFERENT name
+5. layer ablation                      NOT YET MEASURED on this config (needs training runs; a game was running)
+```
+
+Two honest notes belong beside those numbers. **The readable model does not beat the Phase 1 baseline** - it is 4.96 points
+below it - though within the readable family linear rules plus pruning moved it from 76.10 to 81.73 (+5.63). And item 4 can
+pass at 0.968 honesty for a concept that changes **0.00%** of predictions (minimum influence is 0.00% in two of three seeds),
+so concept honesty is necessary for readability and demonstrably not sufficient.
+
+Item 5 is the one open gate item; the runner support exists and it was deliberately not launched while the machine was busy.
+Details: `docs/PHASE2-IMAGE-GATE.md`.
+
 ## Output-variance floor: a better ship (81.73% +/- 0.54) and dead concepts still survive
 
 Seventh lever, aimed at the quantity the mechanism named - a rule that emits a constant makes no decisions.
