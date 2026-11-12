@@ -11,7 +11,7 @@ UNTIED, 11 concepts          15.22 / 15.45 / 14.57              78.0 +/- 1.7    
                              mean 15.08 +/- 0.46
 TIED,  11 concepts           13.38 / 11.57 / 11.80              79.2 +/- 1.1    4.97 +/- 1.11 pp
                              mean 12.25 +/- 0.99
-TIED,  23 concepts           15.40 / 15.25 / 15.68              73.6 +/- 0.7    3.48 +/- 0.32 pp
+TIED,  23 concepts           15.40 / 15.25 / 15.68              75.2 +/- 2.9    3.46 +/- 0.23 pp
                              mean 15.44 +/- 0.22
 
 widening the tied channel 11 -> 23 concepts:  +3.19 points
@@ -30,7 +30,7 @@ a channel-width artefact, and the rank argument predicted it before the run.
 ## What it still costs
 - **The rule layer is more expensive**: 3.48 +/- 0.32 points against its own ablation, versus 1.57 +/- 0.51 untied. With the
   tie, every rule's effect must flow through shared concept rows, so the layer is doing harder work.
-- **Concept honesty falls to 73.6% +/- 0.7** from 78.0, because the 12 added concepts are weaker (that is what the earlier
+- **Concept honesty falls to 75.2% +/- 2.9** from 78.0, because the 12 added concepts are weaker (that is what the earlier
   probe showed: "earlier: token at -3 is punct" 63.6%, "chat tag in last 8" 66.0%).
 - **More concepts to read**: 23 names instead of 11, so a reader has roughly twice as much vocabulary to hold in mind before
   the rules make sense.
@@ -41,7 +41,7 @@ a channel-width artefact, and the rank argument predicted it before the run.
 96 rules untied, 11 concepts          16.49%     77.8%      0.29 pp            no                    no
 24 rules untied, 11 concepts          15.08%     78.0%      1.57 pp            no                    no
 24 rules TIED,   11 concepts          12.25%     79.2%      4.97 pp            yes                   yes (rank 11)
-24 rules TIED,   23 concepts          15.44%     73.6%      3.48 pp            yes                   yes (rank 22)
+24 rules TIED,   23 concepts          15.44%     75.2%      3.46 pp            yes                   yes (rank 22)
 ```
 
 The last row is the configuration this project can defend on its own terms: **15.44% accuracy against a 5.42% trivial
