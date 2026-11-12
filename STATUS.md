@@ -1,3 +1,27 @@
+## Rules that read nothing are class priors - and deleting them RAISES accuracy
+
+**15 of 48** rules in the honest arm never read a concept (input strength ~1e-4, output constant across all 10,000 test
+images) yet still push a class through their answer row (0.34-0.79). They are hidden class priors wearing a rule's name -
+unreadable by construction, and invisible to per-rule ablation, which ablates inputs these rules do not have.
+
+Structural fixes measured: rule bias removed -> max logit shift from a constant rule **0.364 -> 0.297**; centred rule
+outputs -> **0.038**; both -> **0.0013** (channel closed). Either alone is insufficient, because `sigmoid(bias) != 0.5`.
+
+Pruning rules that cost <=0.05 train points to delete, complete removal of weights and answer row, three seeds:
+
+```
+seed  before   after    change   removed    rules to read
+ 0   76.56%   77.36%   +0.80     4 of 48        44
+ 1   74.51%   77.00%   +2.49     7 of 48        41
+ 2   73.12%   74.23%   +1.11     4 of 48        44
+MEAN 74.73%   76.20%   +1.47 +/- 0.90          43
+```
+
+**Pruning raises accuracy on all three seeds** - the removed rules were net-harmful constants on borderline images. The
+gap to the 79.88% accuracy champion narrows from 5.15 to **3.68 points**, and the honest arm now carries 43 rules with 1.0
+of 12 concepts misnamed. Also fixed a bug in my own pruning tool: it sorted candidates the wrong way and printed "removed 0
+of 48" for models where 29 of 48 were removable. Details: `docs/CLASS-PRIOR-RULES.md`.
+
 ## The honesty tax is not fixed: rules recover half of it at the honest setting
 
 Prediction written first - "at alpha 3, R=32 reaches >= 72% keeping misnamed <= 1.5 of 12". **PASSED** (72.01%, 1.3 of 12,
