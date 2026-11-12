@@ -1,3 +1,13 @@
+## Facet concepts: best concept set so far (16.38%), but the model still prefers impossible rules
+
+12 concepts split into four near-independent facets - shape of the last token, content anywhere, position of the
+chat tag, punctuation earlier - score **16.38%** against 15.28% for single tokens and 15.40% for positional pairs,
+with the cheapest readability price of the three (**1.92 points**). Cross-facet rules now appear among the
+heaviest, e.g. `position: chat tag in last 4 AND earlier: token at -3 is punct`. But the second-heaviest rule is
+still `shape: last token is punctuation AND shape: last token is 6+ chars`, lift **0.00** (impossible), influence
+74.3: a random wiring still offers contradictions and the objective still likes them. Cross-facet wiring is
+running. Details: `docs/FACET-CONCEPTS.md`.
+
 ## Token-pair concepts: rules are nonsense because the concepts are mutually exclusive
 
 Replacing single-token concepts with positional/pair concepts ("previous token is punctuation", "last two tokens
