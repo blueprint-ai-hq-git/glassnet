@@ -1,3 +1,18 @@
+## The rule-count trade, measured with 3 seeds on both sides
+
+Identical recipe, only the rule count differs:
+
+| rules | accuracy (3 seeds) | honesty | readability price |
+|---|---|---|---|
+| 24 | **15.08% +/- 0.46** | 78.0% +/- 1.7 | 1.57 +/- 0.51 pp |
+| 96 | **16.49% +/- 0.17** | 77.8% +/- 1.4 | 0.29 +/- 0.31 pp |
+
+The gap is **+1.41 points, 2.9x the combined seed spread - real**. And it inverts the usual framing: at 96 rules the
+readable layer is nearly free (0.29 points) *because 86 of its 96 rules are inert*, while at 24 rules the layer costs
+1.57 points **and every rule is load-bearing** (median per-rule ablation loss 0.35-0.50). Concept honesty is identical
+either way (78.0 vs 77.8), so rule count trades accuracy against faithfulness, not honesty.
+Details: `docs/RULE-COUNT-SEEDS.md`.
+
 ## Seed robustness: half of today's accuracy claims were noise
 
 Every result earlier today was **one seed** (the RNGs were hardcoded). With `SEED` added, the best configuration run
