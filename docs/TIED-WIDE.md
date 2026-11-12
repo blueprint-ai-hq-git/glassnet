@@ -20,7 +20,7 @@ TIED-23 vs UNTIED-11:                          +0.36 points  (inside noise)
 
 Predictions: "recover at least 1.2 of the 2.83 points lost to tying (>= 13.5%)" **passed at 15.44%**; "rank equals the kept
 concept count" **passed at 22 of 23** (one concept is wired to no rule, so its row never contributes); "honesty at or above
-78%" **failed at 73.6%**.
+78%" **failed at 75.2%**.
 
 ## The headline result
 **The complete, rank-verified explanation now costs nothing measurable in accuracy.** Tied-23 (15.44 +/- 0.22) and untied-11
@@ -28,7 +28,7 @@ concept count" **passed at 22 of 23** (one concept is wired to no rule, so its r
 a channel-width artefact, and the rank argument predicted it before the run.
 
 ## What it still costs
-- **The rule layer is more expensive**: 3.48 +/- 0.32 points against its own ablation, versus 1.57 +/- 0.51 untied. With the
+- **The rule layer is more expensive**: 3.46 +/- 0.23 points against its own ablation, versus 1.57 +/- 0.51 untied. With the
   tie, every rule's effect must flow through shared concept rows, so the layer is doing harder work.
 - **Concept honesty falls to 75.2% +/- 2.9** from 78.0, because the 12 added concepts are weaker (that is what the earlier
   probe showed: "earlier: token at -3 is punct" 63.6%, "chat tag in last 8" 66.0%).

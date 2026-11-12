@@ -11,7 +11,7 @@ the concept set to 23 recovers all of it:
 | **tied, 23 concepts** | **15.44% +/- 0.22** | 75.2% +/- 2.9 | 3.46 +/- 0.23 pp | **yes (rank 22 of 23)** |
 
 TIED-23 is **+0.36 points** from untied-11, i.e. inside noise: the complete, rank-verified explanation is free in
-accuracy. It still costs more in the layer itself (3.48 vs 1.57 points) and in concept honesty (75.2% vs 78.0%, because
+accuracy. It still costs more in the layer itself (3.46 vs 1.57 points) and in concept honesty (75.2% vs 78.0%, because
 the added concepts are weaker). Details: `docs/TIED-WIDE.md`.
 
 ## Tied answers: a complete, provable explanation for 2.83 accuracy points
