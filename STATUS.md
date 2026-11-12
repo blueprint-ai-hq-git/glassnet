@@ -1,3 +1,17 @@
+## Re-audit of the original Phase 2 model with today's instruments
+
+`tools/phase2_reaudit.py` reproduces the recorded **80.75%** accuracy exactly (validating the reconstruction), then
+disagrees with three of the original gate's claims:
+
+- **Concept honesty:** mean Spearman **0.591**, but **4 of 14 neurons track a different named feature better than their
+  own** - `quad_LR_ink` correlates **-0.084** with its own label. AUROC >= 0.55 did not test this.
+- **"0 dead rules of 30" is not true by necessity:** median per-rule ablation loss is **+0.01** points and **6 of 30**
+  rules are worth nothing (one is negative at -0.19).
+- **Rule plausibility:** median pair lift **1.21**, with **10 of 30** rules joining features that do not co-occur.
+- **Concept interaction 5.3%**, so per-concept explanations account for ~95% of the effect (chat model: 0.4-3.7%).
+
+The layer is legible but loosely attached. Details: `docs/PHASE2-REAUDIT.md`.
+
 ## explain() in the library, by measurement
 
 `gn.load_rules(path)` + `gn.explain_rules(m, tokens)` now exist and are exported from the package root. Real output on a
