@@ -1,3 +1,12 @@
+## The full 36-concept table: rarity does NOT explain honesty, and 15 neurons are dishonest
+
+The whole table exists now (`tools/concept_table.py`, no retraining): mean **67.1%** balanced, min 48.0%, max 99.5%
+('last token is .'). Prevalence vs honesty across 36 concepts: **pearson -0.021, spearman +0.114**, so the earlier
+'rare concepts starve' explanation is falsified. The cross-firing test finds **15 of 36 neurons predicting another
+concept's label better than their own** - e.g. `contains 'a'` at 67.2% own but 84.7% for "last token is '?'".
+The concept set is now selected honestly by a train-split probe (`tools/select_concepts.py`, 12 of 36 kept).
+Details: `docs/CONCEPT-TABLE.md`.
+
 ## Concept honesty vs accuracy: one dial, three settings
 
 Same recipe, only the concept-loss weight changed: **1x -> 19.68% accuracy / 64.9% balanced honesty**, **2.5x -> 19.20% /
