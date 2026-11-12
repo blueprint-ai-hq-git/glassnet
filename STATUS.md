@@ -1,3 +1,13 @@
+## Rule semantics: the biggest rules join concepts that avoid each other
+
+`tools/rule_semantics.py` measures every rule against the data. In the unconstrained model **23 of 96 rules join
+statistically independent concepts**, median pair lift **0.98** (the wiring was, on average, exactly independence),
+and three rules join **logically impossible** pairs (lift 0.00) - `last token is punctuation AND last token is a
+digit` - while still carrying influence 50.7. Constraining the mask to pairs with lift >= 1.5 raised median lift to
+**1.38** and PMI to **1.279 bits** and removed the impossible pairs at no accuracy cost (**15.30%** vs 15.28%), but
+the influence-vs-lift correlation stayed **negative** (-0.127): the model changed which rules exist, not which ones
+it trusts. Concept honesty fell 84.0% -> 79.0%. Details: `docs/RULE-SEMANTICS.md`.
+
 ## Causal test: concepts drive the answer, but the rules read as nonsense
 
 `tools/intervention.py` forces one concept neuron on or off and recomputes the answer. Forcing a concept changes the
