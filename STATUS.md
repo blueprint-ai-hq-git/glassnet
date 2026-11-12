@@ -1,3 +1,30 @@
+## Re-timing the concept layer instead of weighting it: tested, rejected
+
+Hypothesis: the concept head is under-*trained*, not under-*weighted*, so give it its own learning rate (`--lmul`).
+Prediction written first - "concept lr x3 reaches honesty >= 0.65 within 1 point of 79.88% accuracy". **Failed.**
+
+| concept lr x | accuracy (3 seeds) | mean \|rho\| | misnamed | median per-rule | dead | interaction |
+|---|---|---|---|---|---|---|
+| 1 | 79.88 +/- 0.31 | 0.478 | 7.0 of 12 | +0.35 | 1.0 | 9.5% |
+| 3 | 68.85 +/- 7.79 | 0.499 | 6.0 of 12 | +0.74 | 1.7 | 4.9% |
+| 10 | 65.47 +/- 6.53 | 0.591 | 3.7 of 12 | +0.95 | 0.7 | 1.2% |
+
+Honesty barely moves (0.478 -> 0.591 at x10) while accuracy collapses (79.88% -> 65.47%) and the x3 seed spread blows out
+to +/- 7.85. Measured lever efficiency on the same concept set:
+
+```
+lever                  accuracy cost   rho gain   rho per accuracy point lost
+alpha 1 -> 3               -9.88       0.478 -> 0.698          0.0220
+concept lr x10            -14.41       0.478 -> 0.591          0.0078
+concept lr x3             -11.03       0.478 -> 0.499          0.0019
+```
+
+**Concept-loss weighting is ~3x more efficient than re-timing.** Closed as a lever. One lead kept: the lr lever drives
+concept interaction to **1.2%** with every rule load-bearing - useful only where additive explanations matter more than
+accuracy. Two bugs in my own audit tool were also caught and fixed: a hard-coded metadata filename that made nine valid
+models report parse-fail, and a rule-mode choice that picked the flattering forward pass instead of the one matching the
+recorded accuracy. Details: `docs/CONCEPT-LR-LEVER.md`.
+
 ## Concept-set size is not the lever; concept pressure is
 
 Tested the obvious fix for the honest configuration (12 concepts at alpha 3 = 70.00% +/- 3.54, 0.7 of 12 misnamed): give it
