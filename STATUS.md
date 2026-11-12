@@ -1,3 +1,25 @@
+## The honesty tax is not fixed: rules recover half of it at the honest setting
+
+Prediction written first - "at alpha 3, R=32 reaches >= 72% keeping misnamed <= 1.5 of 12". **PASSED** (72.01%, 1.3 of 12,
+0.736), and R=48 went further.
+
+| rules | accuracy (3 seeds) | mean \|rho\| | misnamed | median per-rule | dead rules | interaction |
+|---|---|---|---|---|---|---|
+| 8 | 69.48 +/- 5.35 | 0.740 | 1.3 of 12 | +6.65 | 0.7 of 8 | 9.9% |
+| 16 | 70.00 +/- 3.41 | 0.698 | 0.7 of 12 | +1.11 | 1.7 of 16 | 7.8% |
+| 32 | 72.01 +/- 4.36 | 0.736 | 1.3 of 12 | +0.31 | 6.3 of 32 | 5.4% |
+| 48 | 74.73 +/- 1.73 | 0.743 | 1.0 of 12 | +0.07 | 13.0 of 48 | 6.1% |
+
+- **The tax shrinks from 9.88 points to 5.15**: accuracy at alpha 3 rises 69.48 -> 70.00 -> 72.01 -> **74.73%** as rules go
+  8 -> 16 -> 32 -> 48, against the 79.88% alpha-1 ceiling. The 48-rule arm is also the most stable (**+/- 1.73**).
+- **Honesty is now insensitive to rule count**: mean \|rho\| 0.698-0.743 and misnamed 0.7-1.3 of 12 across 8-48 rules. Once
+  the concept loss is weighted, extra rules extract accuracy from honest concepts instead of diluting them.
+- **The price moves to the rules**: dead rules 0.7 -> 1.7 -> 6.3 -> **13.0 of 48**, median per-rule +6.65 -> **+0.07**. At
+  48 rules a quarter are inert - the same defect the original 30-rule gate had.
+
+So the trade is no longer accuracy against honest names; it is accuracy against how many rules a human must read.
+Details: `docs/HONESTY-TAX-SHRINKS.md`.
+
 ## Re-timing the concept layer instead of weighting it: tested, rejected
 
 Hypothesis: the concept head is under-*trained*, not under-*weighted*, so give it its own learning rate (`--lmul`).
