@@ -1,3 +1,15 @@
+## explain() in the library, by measurement
+
+`gn.load_rules(path)` + `gn.explain_rules(m, tokens)` now exist and are exported from the package root. Real output on a
+held-out window - *"at the heart of efforts to increase" -> said 'to' because `shape: last token is 6+ chars` is worth
++1.92 (switching it off favours 'department' by +6.63)* - and per-window additivity is **exact** (interaction 0.0%),
+because when no rule crosses its ReLU boundary the model is exactly linear in its concepts.
+
+**Caught a fabricated explanation in my own library:** the first version padded short windows with the vocabulary's id 0,
+which is `<unk>`, making `window contains <unk>` spuriously true - so the explainer answered `<unk>` because of a
+concept the explainer had created. Training never pads, so the library now raises on short input instead of inventing
+context. Details: `docs/EXPLAIN-LIBRARY.md`.
+
 ## Additivity replicated on 9 models: per-concept explanation is complete to within 3.7%
 
 Three seeds for each of three configurations, comparing the sum of individual concept effects against switching every
