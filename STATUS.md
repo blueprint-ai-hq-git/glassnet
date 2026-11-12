@@ -1,3 +1,19 @@
+## RETRACTION: 'plausibility predicts necessity' does not survive seeds
+
+Three seeds per arm, produced by ablating six saved checkpoints:
+
+| arm | median per-rule ablation loss | pearson(lift vs necessity) |
+|---|---|---|
+| 24 rules | **0.358 +/- 0.154** (positive on every seed) | +0.062 +/- 0.107 |
+| 96 rules | **0.000 +/- 0.000** (zero on every seed) | +0.076 +/- 0.036 |
+
+**HOLDS:** at 24 rules every rule is load-bearing; at 96 rules the median rule is exactly inert on all three seeds.
+**RETRACTED:** the plausibility-vs-necessity correlation reported earlier as +0.263 and +0.184. Its other seeds are
+-0.013 and +0.015, so that figure was a lucky seed; the 96-rule arm is the more consistent of the two at +0.076.
+Neither arm shows a real effect: whether a rule makes sense still does not predict whether the model needs it.
+Six levers were tried today on the concept vocabulary and the wiring rule and none moved this - so the cause is in the
+objective, not the vocabulary. Details: `docs/FAITHFULNESS-SEEDS.md`.
+
 ## The rule-count trade, measured with 3 seeds on both sides
 
 Identical recipe, only the rule count differs:
