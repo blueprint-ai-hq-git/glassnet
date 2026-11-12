@@ -1,3 +1,14 @@
+## Additivity replicated on 9 models: per-concept explanation is complete to within 3.7%
+
+Three seeds for each of three configurations, comparing the sum of individual concept effects against switching every
+concept off: **UNTIED-11 2.7% +/- 0.6**, **TIED-23 2.1% +/- 1.6**, **TIED-23 distinct pairs 1.3% +/- 1.1** interaction.
+Worst single measurement **3.7%**, so a per-concept explanation accounts for **at least 96.3%** of a decision's effect.
+
+My prediction said 'under 3% on every seed' - it passed on all three means and failed on one seed (3.7%), so the claim
+that survives is the worst case, not the mean. This does not depend on top-level design choices: tied models add a
+rank guarantee, untied models add rule necessity, and **both give an additive measured concept explanation**.
+Details: `docs/ADDITIVITY-REPLICATED.md`.
+
 ## Correction: concept-level explanation is additive in EVERY configuration
 
 Last wake concluded the architecture 'trades one kind of faithfulness for another'. Measuring concept interaction across
