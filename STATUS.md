@@ -1,3 +1,12 @@
+## explain() output on the best model, with causal checks
+
+On the 15.78% model (24 rules, 12 facet concepts) `explain()` now prints cross-facet reasons a person can evaluate, e.g.
+`rule #17 fires 0.375 -> pushes 'you' +1.85 (reads: earlier: token at -2 is punct AND shape: last token is a digit)`.
+Forcing a concept ON changes the answer on **36.2%** of held-out windows, so the readable path is load-bearing. Two
+defects recorded: one concept is **dead** (`shape: last token is capitalised`, flip 0.0%, honesty exactly 50.0%), and
+concept honesty does **not** predict causal influence on this model (**-0.018**), while rule-level plausibility does
+(+0.263). Details: `docs/EXPLAIN-OUTPUT.md`.
+
 ## Answer-row sparsity: best middle layer so far (15.78%)
 
 The existing L1 only shrank concept->rule wires, never the rule->answer rows, so a rule could keep full answer weights
