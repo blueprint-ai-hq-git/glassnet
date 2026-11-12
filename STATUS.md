@@ -1,3 +1,27 @@
+## The pruned ladder: pruning a third of a wide rule layer is worth +4.09 points
+
+Class-prior census per arm (constant-output rules that still push a class): **12% of rules at 8-16 rules, ~31-34% at
+32-48** - the degeneracy appears once the layer is wide enough to afford it. That is exactly where pruning pays.
+
+| arm | rules | unpruned | pruned | change | removed | left to read | class-prior share |
+|---|---|---|---|---|---|---|---|
+| a1 R16 | 16 | 79.88 +/- 0.31 | 79.78 +/- 0.48 | -0.10 | 0.3 | 16 | 12% |
+| a3 R16 | 16 | 70.00 +/- 3.41 | 70.39 +/- 3.40 | +0.39 | 1.0 | 15 | 12% |
+| a3 R32 | 32 | 72.01 +/- 4.36 | 76.10 +/- 2.40 | +4.09 | 3.3 | 29 | 34% |
+| a3 R48 | 48 | 74.73 +/- 1.73 | 76.20 +/- 1.71 | +1.47 | 5.0 | 43 | 31% |
+| a3 R8 | 8 | 69.48 +/- 5.35 | 69.48 +/- 5.35 | +0.00 | 0.0 | 8 | 12% |
+
+- **Best honest arm is now `a3 / 32 rules / pruned`: 76.10% +/- 2.40 with 28.7 rules to read**, 1.3 of 12 concepts
+  misnamed. Pruning is worth **+4.09** there, the largest single gain measured on this layer.
+- It **matches the 48-rule arm (76.20% +/- 1.71) with 14 fewer rules to read** - same accuracy, 29 sentences not 43.
+- **Pruning is not universally positive**: on the 16-rule alpha-1 arm it cost 0.30 points on seed 0 and removed nothing on
+  the other two; on the 8-rule arm nothing was removable. The gain tracks the class-prior share.
+- The accuracy champion is unchanged at `a1 / 16 / pruned` = 79.78% +/- 0.48 with 7 of 12 names wrong. Pruning cannot fix
+  concept honesty; that is a separate defect with its own measured price.
+
+Gap between accuracy champion and best readable honest arm: **3.68 points**, with 5.4x fewer misnamed concepts.
+Details: `docs/PRUNED-LADDER.md`.
+
 ## Rules that read nothing are class priors - and deleting them RAISES accuracy
 
 **15 of 48** rules in the honest arm never read a concept (input strength ~1e-4, output constant across all 10,000 test
