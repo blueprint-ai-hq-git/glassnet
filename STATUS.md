@@ -1,3 +1,21 @@
+## Tying gives complete EXPLANATIONS but not faithful CAUSES
+
+Two ablations on the tied configuration, three seeds each:
+
+| config | median per-rule ablation loss | rule necessity | explanation structure |
+|---|---|---|---|
+| 24 rules UNTIED | **0.358 +/- 0.154** | every rule needed | arbitrary push direction |
+| 24 rules TIED-23 | **0.000 +/- 0.000** | every rule dispensable | push = sum of concept rows (rank 22 of 23) |
+
+Under the tie, deleting any single rule changes nothing on **all three seeds** - every rule's row is built from the same
+shared concept rows, so rules become alternative routes to one output. Concept-level influence survives (forcing a
+concept flips the answer on **29.7%** of windows) but honesty still does not predict influence (**pearson -0.142**), and
+`content: window has <unk>` has **zero** influence at 63.6% honesty.
+
+So each defensible configuration holds exactly one property: UNTIED-24 makes every rule necessary but leaves the push
+direction arbitrary; TIED-23 cannot be wrong about *why* but its named rule is not necessary. Neither is fully faithful,
+and that is the honest state. Details: `docs/TIED-FAITHFULNESS.md`.
+
 ## Widening the tied channel: complete explanations at NO accuracy cost
 
 Tying the answer layer to the concepts cost -2.83 points with 11 concepts - and the reason was structural: under a tie
