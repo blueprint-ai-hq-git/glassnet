@@ -1,3 +1,23 @@
+## Concept-set size is not the lever; concept pressure is
+
+Tested the obvious fix for the honest configuration (12 concepts at alpha 3 = 70.00% +/- 3.54, 0.7 of 12 misnamed): give it
+**18 concepts**. Prediction written first - "+3 accuracy points, <=2 of 18 misnamed". **Failed on both counts.**
+
+| concepts | alpha | accuracy | mean \|rho\| | misnamed | median per-rule | dead |
+|---|---|---|---|---|---|---|
+| 12 | 1.0 | 79.88 +/- 0.31 | 0.478 | 7.0 of 12 (58%) | +0.35 | 1.0 |
+| 12 | 3.0 | 70.00 +/- 3.41 | 0.698 | 0.7 of 12 (6%) | +1.11 | 1.7 |
+| 18 | 1.0 | 79.68 +/- 0.59 | 0.485 | 11.0 of 18 (61%) | +0.65 | 1.0 |
+| 18 | 3.0 | 72.17 +/- 6.69 | 0.684 | 5.7 of 18 (31%) | +0.81 | 2.0 |
+
+- Accuracy at alpha 1 is flat (79.68 +/- 0.58 vs 79.88 +/- 0.32); at alpha 3 it reaches 72.17% but the seed spread
+  explodes to **+/- 6.59** (75.35 / 76.67 / 64.48), so a stable 70.00 was traded for a volatile 72.17.
+- Misnaming rose to **5.7 of 18**, not <=2.
+- **The rate is the finding**: at low concept pressure **58% of concepts are misnamed at K=12 and 61% at K=18** - the same
+  fraction at either size. The concept set decides *what could* be named; the training objective decides *whether it is*.
+- The **12-concept set holds both records** (79.88% +/- 0.32 accuracy at alpha 1; 0.7 of 12 misnamed at alpha 3) and is
+  the one to ship. Details: `docs/CONCEPT-SET-SIZE.md`.
+
 ## A de-duplicated concept set: best readable accuracy so far, honesty still needs pressure
 
 Built a 26-feature candidate pool, then selected concepts that are both learnable (ridge probe on pixels) and mutually
