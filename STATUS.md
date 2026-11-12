@@ -1,3 +1,12 @@
+## Causal test: concepts drive the answer, but the rules read as nonsense
+
+`tools/intervention.py` forces one concept neuron on or off and recomputes the answer. Forcing a concept changes the
+answer on **43.2%** of held-out windows on average (up to **84.8%** for "last token is '?'"), so the readable path
+is genuinely used. But honesty and usefulness are only weakly linked (pearson **+0.253**): `contains '}'` is 93.1%
+honest and flips only **20.3%**. And the printed reasons expose the real defect - high-weight rules are arbitrary
+conjunctions like "window contains <unk> AND window contains '}'", mechanically true and humanly meaningless.
+Accuracy cannot detect that. Rule semantics is the next gate. Details: `docs/CAUSAL-EXPLAIN.md`.
+
 ## Honesty is a tax, not a state: the concept warmup interpolates the trade-off
 
 Holding the concept loss at 5x for 800 steps then releasing it to 1x gives **15.28% accuracy / 84.0% honesty**,
