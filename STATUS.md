@@ -1,3 +1,13 @@
+## Cross-facet wiring: no impossible rules, best accuracy, cheapest readability price
+
+Restricting every rule to join concepts from DIFFERENT facets: accuracy **16.45%** (highest of any concept set),
+ablation 18.00%, so the readability price is the lowest measured at **1.55 points**. **Zero** rules join
+contradictory pairs, and the heaviest rules are now plausible - `shape: last token is a digit AND content: window
+has '{'` (lift 2.06), `shape: last token is 6+ chars AND position: chat tag in last 8` (lift 1.79). The
+influence-vs-lift correlation turned POSITIVE for the first time (**+0.030**, against -0.104/-0.100/-0.119 on the
+earlier concept sets). Still open: median pair lift 0.89, and 15 of 96 rules join independent concepts.
+Details: `docs/CROSS-FACET-RULES.md`.
+
 ## Facet concepts: best concept set so far (16.38%), but the model still prefers impossible rules
 
 12 concepts split into four near-independent facets - shape of the last token, content anywhere, position of the
