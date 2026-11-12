@@ -1,3 +1,14 @@
+## Correction: concept-level explanation is additive in EVERY configuration
+
+Last wake concluded the architecture 'trades one kind of faithfulness for another'. Measuring concept interaction across
+three models falsifies my own prediction that additivity would hold only under a tie: interaction is **1.5%** (tied,
+distinct pairs), **0.4%** (tied, repeated pairs) and **2.1%** (untied). Concept-level explanations are quantitatively
+complete everywhere.
+
+So the **untied 24-rule model has both** every rule load-bearing (median 0.36) **and** an additive concept explanation
+(97.9% of the effect accounted for). What only the tied model provides is the rank proof that the answer layer holds no
+hidden degrees of freedom - bought by making rules redundant. Details: `docs/ADDITIVITY-CHECK.md`.
+
 ## Rule redundancy is structural; concept-level explanation is faithful and additive
 
 De-duplicating rule pairs under the tie did **not** restore rule necessity: median per-rule ablation loss stayed **0.000**
