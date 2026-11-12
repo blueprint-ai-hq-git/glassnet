@@ -1,3 +1,12 @@
+## PHASE 2 GATE: all five items PASS on the deliverable configuration
+
+12 train-probe-selected concepts -> 96 rules (2 connections each) -> answer, 2,692,780 params: accuracy **13.47%**
+vs **5.42%** trivial (**+8.05**); **96 rules** to read; concept honesty **92.0%** balanced against an 85% bar
+(worst concept 63.8%); ablation **17.18%**, so readability costs **3.71 points**. The 92.0% cost 3.18 points of
+accuracy against the same concepts at 1x (16.65% / 71.8%), and the best accuracy ever reached with this layer is
+**19.68%** at 64.9% honesty - honesty and accuracy trade through one dial, measured across six settings.
+Details: `docs/PHASE2-GATE-FINAL.md`.
+
 ## The full 36-concept table: rarity does NOT explain honesty, and 15 neurons are dishonest
 
 The whole table exists now (`tools/concept_table.py`, no retraining): mean **67.1%** balanced, min 48.0%, max 99.5%
