@@ -1,3 +1,16 @@
+## Seed robustness: half of today's accuracy claims were noise
+
+Every result earlier today was **one seed** (the RNGs were hardcoded). With `SEED` added, the best configuration run
+three times gives **15.08% +/- 0.46 accuracy** (range 0.88 points), **78.0% +/- 1.7** concept honesty, and a readability
+price of **1.57 +/- 0.51** points.
+
+Re-graded against that 0.88-point noise: **word order +6.18, both inputs +4.30, 96->12 rules -2.55** are real;
+12->24 rules +1.40 is likely real; pair->facet +0.98 is borderline; and **AR_L1 +0.48, dropping the dead concept
+-0.56, 24->48 rules +0.17, cross-facet wiring +0.07, semantic wiring +0.02 are not distinguishable from noise.**
+
+The honest headline is therefore **15.08% +/- 0.46 against a 5.42% baseline**, not the 15.78% single run.
+Details: `docs/SEED-ROBUSTNESS.md`.
+
 ## Concept selection by data: the 'dead neuron' was an empty label
 
 `shape: last token is capitalised` occurred in **0 of 20,000** training windows (lowercased corpus), so its neuron could
