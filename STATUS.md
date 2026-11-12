@@ -1,3 +1,12 @@
+## Rule ablation: the load-bearing rules are NOT the plausible ones
+
+Deleting rules from the answer layer and measuring what accuracy is lost: **correlation between a rule's concept-pair
+lift and its usefulness is pearson -0.012, spearman -0.044** - zero. **7 of the 10 most load-bearing rules have
+lift below 1** (their concepts do not co-occur), and the one plausible rule in that list costs only 0.100 points
+while an implausible one costs 1.475. Deleting the 44 plausible rules costs 7.15 points; deleting 44 random rules
+costs 8.10 - indistinguishable. **Median per-rule loss is 0.000 points**: roughly ten rules carry the model and 86
+are individually inert. Readable is achieved; faithful is not. Details: `docs/RULE-ABLATION.md`.
+
 ## Cross-facet wiring: no impossible rules, best accuracy, cheapest readability price
 
 Restricting every rule to join concepts from DIFFERENT facets: accuracy **16.45%** (highest of any concept set),
