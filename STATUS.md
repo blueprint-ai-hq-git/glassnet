@@ -1,3 +1,23 @@
+## A de-duplicated concept set: best readable accuracy so far, honesty still needs pressure
+
+Built a 26-feature candidate pool, then selected concepts that are both learnable (ridge probe on pixels) and mutually
+distinguishable (|Spearman| < 0.75). The diversity ceiling binds hard: only **6 / 11 / 12 / 15 / 18** of the 26 survive at
+limits 0.60 / 0.70 / 0.75 / 0.80 / 0.85, and `bright_core` failed learnability outright (probe **-0.004**).
+
+| alpha | accuracy (3 seeds) | mean \|rho\| | misnamed | median per-rule | dead | interaction |
+|---|---|---|---|---|---|---|
+| 1.0 | 79.88 +/- 0.31 | 0.478 | 7.0 of 12 | +0.35 | 1.0 | 9.5% |
+| 3.0 | 70.00 +/- 3.41 | 0.698 | 0.7 of 12 | +1.11 | 1.7 | 7.8% |
+
+- **79.88% +/- 0.32** with 12 de-duplicated concepts and **16 rules** - the best three-seed readable accuracy measured on
+  this task, beating the original 30-rule 79.04% +/- 2.38 by 0.84 points with **half the rules** and a **7x tighter spread**.
+- **At alpha 3 the de-duplicated set reaches 0.7 of 12 misnamed** - lowest of any configuration here - but accuracy falls
+  to 70.00% +/- 3.54.
+- **My prediction failed**: at alpha 1 de-duplication made misnaming *worse* (7.0 of 12 vs 4.7 of 14) and honesty fell
+  0.587 -> 0.478, confirming again that misnaming is not label confusion.
+
+Six checkpoints under `runs/phase2_sweep/SEL12_A*_s*/`. Details: `docs/CONCEPT-SET-DEDUP.md`.
+
 ## The concept-honesty dial on Fashion-MNIST: honest names are expensive here
 
 Three concept-loss weights, three seeds each, 16 rules:
