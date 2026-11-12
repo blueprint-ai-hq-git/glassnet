@@ -1,3 +1,30 @@
+## Coverage penalty built and gradient-checked - and it does not work
+
+Built the coverage lever (`--cov`): a training penalty requiring every concept to attract at least 0.30 of rule weight, from
+the engine's own ops. **Gradient check PASSES exactly** (max abs diff **0.00e+00**), after two of my own harness errors: an
+identical 4.633e-02 "failure" across six unrelated ops (float32 perturbation - a harness tell), and a 1.36e-03 "failure" that
+was just the kink of `|x|` at x=0 under central differences.
+
+Result, three seeds per setting:
+
+```
+setting       accuracy (3 seeds)   min concept influence   mean influence
+no coverage   72.01 +/- 4.35          0.00%                  20.90%
+cov 0.5       72.41 +/- 4.99          0.00%                  19.03%
+cov 2.0       72.44 +/- 4.58          0.00%                  19.09%
+```
+
+No accuracy cost, no accuracy gain, and **the minimum influence stays 0.00% while mean influence falls slightly**. The penalty
+did exactly what it was built to do - per-concept weight usage rose as designed - and the model still ignored those concepts.
+
+**Why, measured:** influence tracks how much a concept's activation VARIES across images, not how much weight points at it.
+Concepts with influence < 1.5% have mean activation std **0.101**; those above 10% have **0.160**. A concept that barely moves
+cannot change an answer no matter how much rule weight it attracts.
+
+So the next levers are selection by dispersion (`top_heavy` std 0.093 and `edge_balance` 0.075 would have been excluded before
+training) and, if a training term is wanted at all, penalising variance shortfall rather than weight. Details:
+`docs/CONCEPT-COVERAGE.md`.
+
 ## Deleting the causally dead concepts makes the model worse
 
 `explain()` says three of twelve concepts carry no decision (top_heavy 0.01%, ring_ink 0.00%, edge_balance 0.00%). Dropping
