@@ -1,3 +1,27 @@
+## Selecting concepts by dispersion does not remove dead concepts either
+
+Third attempt at the same defect, and the measured reason influence tracks variance (dead concepts std 0.101 vs 0.160 live)
+predicted this one should work. `tools/select_concepts.py` now rejects candidates whose activation std is below a bar before
+training. **Prediction: accuracy within 1.5 points of 76.10% +/- 2.40 and minimum influence above 2%. Both failed.**
+
+```
+arm                             accuracy (3 seeds)   min influence   mean influence   concepts <1%
+12 concepts, unpruned a3 R32    72.01 +/- 4.35         0.00%            20.90%          3 of 12
+10 dispersion-selected a3 R32   66.04 +/- 2.38         0.00%            31.90%          1-2 of 10
+change                          -5.97 points           unchanged        +11.00          -
+```
+
+**Honest confound:** this arm changed the concept set AND the count (12 -> 10) at once, and the earlier K=9 arm gave 67.48%, so
+most of the drop is probably the count, not the filter. It should have been run at matched K.
+
+The finding that survives: **even when every selected concept varies by construction (std >= 0.12), training still produces
+concepts at 0.00% influence.** Deadness is created by training, not inherited from the feature set. Three levers now agree -
+deletion costs accuracy, the weight-coverage penalty changes nothing, dispersion filtering changes nothing - while mean
+influence rises every time the layer narrows (20.9 -> 31.9) and the minimum stays at zero.
+
+Next lever, and it is a different kind: **concept dropout** - randomly zero a concept during training so the model cannot lean
+on the others, making each concept necessary rather than merely readable. Details: `docs/CONCEPT-DISPERSION.md`.
+
 ## Coverage penalty built and gradient-checked - and it does not work
 
 Built the coverage lever (`--cov`): a training penalty requiring every concept to attract at least 0.30 of rule weight, from
