@@ -1,3 +1,20 @@
+## Tied answers: a complete, provable explanation for 2.83 accuracy points
+
+The explanation had a hole: a rule's firing was checkable (two named concepts) but its *effect* was a free 12,002-dim
+vector unrelated to those concepts. Tying the answer layer to the concepts - each rule's answer row becomes the **sum of
+its concepts' rows** - closes it, and the closure is provable: the saved answer matrix has **rank 11 against 11
+concepts**, where the untied model is full rank 24.
+
+| config | accuracy (3 seeds) | honesty | layer price |
+|---|---|---|---|
+| 24 rules untied | **15.08% +/- 0.46** | 78.0% +/- 1.7 | 1.57 +/- 0.51 pp |
+| 24 rules TIED | **12.25% +/- 0.99** | 79.2% +/- 1.1 | 4.97 +/- 1.11 pp |
+
+The tie costs **-2.83 points (5.2x the spread)** and makes the readable layer three times as expensive: a concept's output
+row must serve every rule that wires to it, so rules lose the ability to say rule-specific things. Concept honesty is
+unaffected. This is the first configuration where 'nothing is hidden' is literally true.
+Details: `docs/TIED-ANSWERS.md`.
+
 ## RETRACTION: 'plausibility predicts necessity' does not survive seeds
 
 Three seeds per arm, produced by ablating six saved checkpoints:
