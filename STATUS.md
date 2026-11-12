@@ -1,3 +1,34 @@
+## Coverage-aware pruning tested: the last sub-cause, and why it cannot work
+
+The mechanism named three sub-causes for dead concepts; linear rules killed saturation, and this tests the last one - never
+remove a rule that is the only reader of some concept (`--keep_coverage`).
+
+**Prediction:** minimum concept influence rises above 1%, accuracy cost under 1.5 points. **Both failed.** The guard fired on
+1 of 3 seeds (`protecting rule #23: last reader of ring_ink`), cost **0.79 points** (82.26% -> 81.47%), and:
+
+```
+rule #23 (the protected last reader): removing it changes accuracy by +0.000 points
+switching off ring_ink, ordinary mask:  changes accuracy by +0.000 points
+switching off ring_ink, coverage mask:  changes accuracy by +0.000 points
+minimum concept influence: 0.00% in both masks
+```
+
+**The protected rule is itself worth exactly 0.000 points** - the guard keeps a rule that decides nothing so that it can read a
+concept that then still decides nothing.
+
+So the three sub-causes collapse into one: a concept matters only if a rule reading it is load-bearing, and that is a property
+of the **rule layer's value distribution**, not of concepts or edges. The one lever that helped confirms it - the median rule is
+worth **+6.65 points at 8 rules and +0.07 at 48**, so dead concepts are a symptom of rule-layer redundancy.
+
+**Six levers, full ledger:** delete dead concepts **-8.62**; weight-coverage penalty **none**; dispersion selection **-5.97**
+(count-confounded); concept dropout **-10.52**; **linear rules +5.09 and halved dead concepts**; coverage-aware pruning
+**-0.27, no effect**.
+
+Two of my own tool bugs were caught and fixed here: the coverage guard aborted the whole prune and restored every removed rule
+(seed 0 reported 4 removals and an accuracy identical to the unpruned model), and both prune modes wrote the same filename, so
+the coverage run replaced seed 0's ordinary mask - the mode is now in the filename and both masks were regenerated. Details:
+`docs/COVERAGE-PRUNING.md`.
+
 ## Linear-rule ladder: the price of honest concept names falls to 1.18 points
 
 Every earlier calibration here was done with sigmoid rules, and linear rules changed the landscape, so the grid was retrained:
