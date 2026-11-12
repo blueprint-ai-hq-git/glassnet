@@ -1,3 +1,16 @@
+## Rule redundancy is structural; concept-level explanation is faithful and additive
+
+De-duplicating rule pairs under the tie did **not** restore rule necessity: median per-rule ablation loss stayed **0.000**
+with distinct pairs (16.05% / 14.30% accuracy over two seeds). Redundancy is intrinsic to the tie - every rule is a
+linear combination of the same concept rows, so any rule's contribution can be absorbed by the others.
+
+So `tools/explain_measured.py` explains a decision **causally at concept level**: switch each true concept off and report
+how much the predicted word's score moves. Example: *"I said 'the' partly because the window contains 'the' (+1.55) and
+partly because it contains a comma (+1.23)."* And the decomposition is **additive**: over 2,000 held-out windows the
+individual concept effects sum to **-4.661** against **-4.592** for switching all concepts off, i.e. concept interaction
+accounts for **1.5%** of the effect. A reader who follows the concept list has the whole causal story.
+Details: `docs/CONCEPT-LEVEL-EXPLANATION.md`.
+
 ## Tying gives complete EXPLANATIONS but not faithful CAUSES
 
 Two ablations on the tied configuration, three seeds each:
