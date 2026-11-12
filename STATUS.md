@@ -1,3 +1,13 @@
+## Token-pair concepts: rules are nonsense because the concepts are mutually exclusive
+
+Replacing single-token concepts with positional/pair concepts ("previous token is punctuation", "last two tokens
+both digits") held accuracy (**15.40%** vs 15.28%) but median rule pair lift FELL to **0.72** while median |PMI|
+rose to **2.18 bits** - the concepts are strongly related, negatively. The model's heaviest rule is
+`previous token is punctuation AND last two tokens both digits`, lift **0.00**: not rare, **impossible**, because a
+token cannot be both punctuation and a digit. Conjunctions of positional concepts are therefore either
+contradictions or tautologies, which is the structural reason 2-3-concept rules read as nonsense - a design error
+in the concept set, not in training. Concept honesty also fell to **74.8%**. Details: `docs/PAIR-CONCEPTS.md`.
+
 ## Rule semantics: the biggest rules join concepts that avoid each other
 
 `tools/rule_semantics.py` measures every rule against the data. In the unconstrained model **23 of 96 rules join
