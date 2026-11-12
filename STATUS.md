@@ -1,3 +1,12 @@
+## Sparse rule layer: 12 rules where EVERY rule matters
+
+Cutting the layer to 12 rules (cross-facet wiring kept) gives **13.90%** accuracy, and the ablation changes completely:
+median per-rule loss **0.000 -> 1.613 points**, i.e. every rule now changes the answer, and the correlation
+between rule plausibility and rule necessity turns **positive for the first time (+0.236**, was -0.012). Cost:
+**-2.55 points of accuracy** (16.45% with 96 rules) and the readability price rises to **3.65 points**.
+So the honest framing is a trade between two true claims: 96 rules is legible but 86 of them are inert; 12 rules is
+legible AND faithful - every rule matters - at a measured price. Details: `docs/SPARSE-RULES.md`.
+
 ## Rule ablation: the load-bearing rules are NOT the plausible ones
 
 Deleting rules from the answer layer and measuring what accuracy is lost: **correlation between a rule's concept-pair
