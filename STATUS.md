@@ -1,3 +1,18 @@
+## Concept selection by data: the 'dead neuron' was an empty label
+
+`shape: last token is capitalised` occurred in **0 of 20,000** training windows (lowercased corpus), so its neuron could
+only ever sit at exactly **50.0%** honesty - a concept-set error, not a broken neuron, and nothing in the loss curve
+showed it. `FACET_SEL` now drops any label with no positive examples before training, and dropped exactly one:
+
+| config | accuracy | honesty mean/min | median per-rule | worst rule | lift-corr |
+|---|---|---|---|---|---|
+| 12 concepts (prev best) | 15.78% | 74.8 / 50.0% | 0.500 | -0.550 | +0.263 |
+| 11 concepts, dead label dropped | 15.22% | 79.5 / 61.8% | 0.487 | -0.125 | +0.184 (s+0.433) |
+
+Removing one impossible label raised mean honesty **+4.7 points**, healed the net-harmful rule (-0.550 -> -0.125),
+left no dead concept, and cost 0.56 points of accuracy (inside single-seed noise, recorded as a move).
+Details: `docs/CONCEPT-SELECTION.md`.
+
 ## explain() output on the best model, with causal checks
 
 On the 15.78% model (24 rules, 12 facet concepts) `explain()` now prints cross-facet reasons a person can evaluate, e.g.
