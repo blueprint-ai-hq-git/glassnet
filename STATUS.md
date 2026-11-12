@@ -1,3 +1,11 @@
+## Honesty is a tax, not a state: the concept warmup interpolates the trade-off
+
+Holding the concept loss at 5x for 800 steps then releasing it to 1x gives **15.28% accuracy / 84.0% honesty**,
+which sits on the line between 1x (**16.65% / 71.8%**) and 5x (**13.47% / 92.0%**) instead of above it. That is
+about **1.2-1.4 points of accuracy per 6 points of honesty** at every setting, so honesty costs accuracy in each
+step it applies rather than being a state the model keeps. Readability price at the balanced point: **2.47 points**.
+Details: `docs/HONESTY-IS-A-TAX.md`.
+
 ## PHASE 2 GATE: all five items PASS on the deliverable configuration
 
 12 train-probe-selected concepts -> 96 rules (2 connections each) -> answer, 2,692,780 params: accuracy **13.47%**
