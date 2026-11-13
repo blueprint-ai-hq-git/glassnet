@@ -1,3 +1,27 @@
+## FINAL VERDICT: width is worth +1.30 to +2.85 at matched 9-epoch training - every endpoint rule agrees
+
+Both arms 9 epochs, matched schedules, same seed, printed by `tools/compare_arms.py`:
+
+```
+              best-of-N   final    last-3   all-epoch mean
+d1024 @9ep      29.81      29.17    29.18       28.49
+d512  @9ep      28.51      27.67    27.47       25.64
+width           +1.30      +1.50    +1.71       +2.85
+```
+
+**The first comparison here where every endpoint rule agrees in sign.** At matched training, width is worth **+1.30 to +2.85 points** and
+no endpoint choice changes the direction (the earlier cross-epoch comparison flipped to -0.17 under one rule).
+
+**Predictions:** B1 **FAILED** - d1024 reached 29.81 and plateaued, 0.57 short of the 30.38 floor, so extra epochs do not keep helping
+the wide model. B2 **PASSED** - the gap shrank from +3.86 to +1.30. Arm A's falsifier was not triggered (d512 best 28.51, below 29.38).
+
+**The number for width now:** +3.86 at equal-3-epoch training remains a correct answer to that question, but the better-controlled
+matched-9-epoch comparison gives **+1.30 to +1.71**. The honest summary is that **most of the +3.86 was training length, not
+parameters** - width is real and consistently positive, worth roughly one to two points on this task, not four. Both curves peak at
+**epoch 6**, so the useful training length here is about six epochs and everything after is noise around a plateau.
+
+Next: seeds 1-2 at 9 epochs on both sides (the matched line is one seed each), then 6-epoch arms since that is where both peak.
+`docs/D1024-BEATS-D512.md`.
 ## New tool: `tools/compare_arms.py` prints every endpoint rule, so no single number can be cherry-picked
 
 Takes any number of `*_history.jsonl` files and prints each arm's full curve, **best-of-N**, **final epoch**, **last-3-mean** and
