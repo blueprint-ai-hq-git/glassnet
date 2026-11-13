@@ -1,3 +1,20 @@
+## Three-seed paired number: +3.95 (was +3.88 on two pairs), computed by a published tool
+
+Both arms now have three seeds, so `tools/compare_arms.py --paired` recomputes the equal-3-epoch result from the history files:
+
+```
+paired by seed (3 pairs):
+  seed 0: best +3.86   seed 1: best +3.92   seed 2: best +4.08
+across seeds:
+  best   mean +3.95  sd 0.11  positive 3/3
+  last3  mean +4.45  sd 0.51  positive 3/3
+```
+
+**+3.95 replaces +3.88** - three paired seeds instead of two, all positive, spread only 0.11 points, and the arithmetic comes from a
+published tool rather than from a number I typed. It does not change the matched 9-epoch result (**+1.30 to +1.71**): +3.95 answers
+"width at equal 3-epoch training", not "width in general". No t-statistic is quoted - three pairs is not that kind of evidence.
+
+`docs/D1024-BEATS-D512.md`.
 ## FINAL VERDICT: width is worth +1.30 to +2.85 at matched 9-epoch training - every endpoint rule agrees
 
 Both arms 9 epochs, matched schedules, same seed, printed by `tools/compare_arms.py`:

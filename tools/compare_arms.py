@@ -27,6 +27,17 @@ def summarise(pairs):
             "inflation": max(v) - st.mean(v)}
 
 def main(argv):
+    if "--paired" in argv:
+        i = argv.index("--paired")
+        rest = argv[i + 1:]
+        groups = [[], []]
+        cur = 0
+        for tok in rest:
+            if tok == "--paired":
+                cur = 1
+                continue
+            groups[cur].append(tok)
+        return paired_mode(groups)
     key = "val_asst_acc"
     if "--key" in argv:
         i = argv.index("--key"); key = argv[i + 1]; argv = argv[:i] + argv[i + 2:]
@@ -50,6 +61,52 @@ def main(argv):
               % (a["n"], b["n"]) if a["n"] != b["n"] else
               "   epochs match (%d): best-of-N is comparable between arms." % a["n"])
     print("\nno single number is printed as the answer - that is the point of this tool")
+
+
+
+# --- paired-by-seed mode (added 2026-11-14) -------------------------------------------------------
+# The project rule is that seed-matched arms are compared PAIRED ON SEED, never by arm means: the copy
+# line got this wrong twice. This mode finds the seed number in each filename, pairs arms by that seed,
+# and reports the per-seed difference under every endpoint rule, plus how many seeds agree in sign.
+#
+#   python3 tools/compare_arms.py --paired A_s0.jsonl A_s1.jsonl --paired B_s0.jsonl B_s1.jsonl
+import re as _re
+
+def _seed_of(path):
+    m = _re.search(r"_s(\d+)(?:_|\.|$)", path.split("/")[-1])
+    return int(m.group(1)) if m else None
+
+def paired_mode(groups):
+    """groups: [[armA files], [armB files]] -> paired comparison by seed."""
+    a, b = groups[0], groups[1]
+    sa = {_seed_of(p): p for p in a if _seed_of(p) is not None}
+    sb = {_seed_of(p): p for p in b if _seed_of(p) is not None}
+    common = sorted(set(sa) & set(sb))
+    if not common:
+        raise SystemExit("paired mode needs the same seed number in both arms' filenames")
+    rules = ("best", "final", "last3", "mean")
+    per_seed = []
+    print("paired by seed (%d pair%s):" % (len(common), "" if len(common) == 1 else "s"))
+    for s in common:
+        A, B = summarise(load(sa[s])), summarise(load(sb[s]))
+        row = {r: A[r] - B[r] for r in rules}
+        per_seed.append(row)
+        print("  seed %d: " % s + "  ".join("%s %+.2f" % (r, row[r]) for r in rules))
+    print("\nacross seeds:")
+    for r in rules:
+        v = [x[r] for x in per_seed]
+        if len(v) > 1:
+            sd = st.stdev(v)
+            se = sd / (len(v) ** 0.5)
+            print("  %-8s mean %+.2f  sd %.2f  se %.2f  positive %d/%d%s"
+                  % (r, st.mean(v), sd, se, sum(1 for x in v if x > 0), len(v),
+                     "   t=%.1f" % (st.mean(v) / se) if se > 0 else ""))
+        else:
+            print("  %-8s %+.2f  (ONE seed - no spread, no t, quote it as a single run)" % (r, v[0]))
+    print("\npaired on seed is the only number quoted for seed-matched arms (project rule).")
+    if len(common) < 3:
+        print("NOTE: %d pair(s) - with fewer than three seeds no t-statistic is worth reporting." % len(common))
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
