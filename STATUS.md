@@ -1,3 +1,30 @@
+## The 7-epoch arm failed its prediction, and its data had to be rescued from a log I destroyed
+
+```
+epoch   by-position %   val ppl    lr
+1          24.41        131.03    0.400
+2          28.13        100.80    0.367
+3          28.86         95.48    0.333
+4          29.18         89.02    0.300
+5          28.78        101.60    0.267
+6          30.06         96.90    0.233
+7          29.74        111.45    0.200
+```
+
+**Prediction FAILED and the falsifier triggered.** I predicted >= 30.88% at epoch 7; the best epoch is **30.06** (epoch 6) and it ends
+at 29.74, only **+0.68** over the 3-epoch 29.38, below the 1.0-point threshold I set for "more data helps". The curve bounces by about
+the seed spread (sd 0.52), which is a plateau, not learning.
+
+Confounds, written before the number arrived: `--epochs 7` stretches the lr decay over 7 epochs instead of 3, so epochs are not
+comparable across the two runs; and the token diagnostic is one-pass, so this is "more epochs at a slower-decayed rate", not "more data".
+
+**The log was destroyed by my own edit** - I modified the running shell script, bash re-read it at a shifted offset, ran a mangled command
+(`in_chat.py: command not found`, rc=127) and its redirect truncated the log. The numbers survived only because the trainer writes
+`history.jsonl` and per-epoch checkpoints; the entire table above is re-derived from that file. The 84-byte truncated log is archived,
+not deleted. **The 3-seed result is untouched** (29.11 mean, paired +3.88, equal data, shared schedule); what this shows is that d1024
+plateaus near 29-30 at this data, and whether d512 catches it is the exposure arm now running.
+
+`docs/D1024-BEATS-D512.md`.
 ## CORRECTION: a caveat I published cited a number that is in no log
 
 I wrote that d1024's 1.35 tokens per parameter was measured against **8.91** for the d512 reference. **8.91 is in no log in this
