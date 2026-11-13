@@ -1,3 +1,28 @@
+## RL: more samples per prompt did not help either - the comparison is what is wrong
+
+Third cheap lever on the RL line, after the implementation and reward density were both tested and rejected:
+group-relative advantage used only 8 samples per prompt, so its baseline is noisy. 32 samples per prompt, same seeds, equal
+compute, same reward:
+
+```
+seed        group 8    group 32
+0            21.03      21.50
+1            20.00      18.54
+2            18.81      18.81
+mean    19.95 +/- 1.11   19.62 +/- 1.64     diff -0.33
+supervised, equal compute   28.06 +/- 2.21
+```
+
+**Prediction (+2 points) failed and the written falsifier triggered**: -0.33 points, every seed-matched difference inside 1
+point. Quadrupling the samples bought nothing.
+
+So the method is not being starved of signal in any of the three ways the project guessed (implementation, reward density,
+sample count) - **the comparison itself is the problem.** Every arm asks RL to beat supervised on a task where supervised has
+every token labelled, which is the one setting RL is least likely to win; it has never been tested where RL is actually for, an
+objective that is checkable but not demonstrable. That test is now written with its prediction: consistency between `a+b` and
+`b+a`, where the reward never sees a label, plus a falsifier for the real risk that the model learns to be consistently wrong.
+Details: `docs/RL-GROUP-SIZE.md`.
+
 ## Reward density is not what was holding our RL back either
 
 `docs/RL-V1-METHOD.md` says our RL loses to supervised because a supervised step labels every answer token while the RL reward
