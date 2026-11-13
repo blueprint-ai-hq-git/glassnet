@@ -1,3 +1,22 @@
+## Correction: the epoch-2 claim in the d1024 result was a single-seed margin
+
+I published that "d1024's epoch 2 already beats the reference's final epoch". With three seeds that is still true in direction and
+**overstated in size**, so it is corrected:
+
+```
+d1024, three seeds    epoch 1   epoch 2   epoch 3
+mean                    24.49     27.22     29.11
+sd                       0.11      1.04      0.52
+worst seed              24.36     26.09     28.51
+```
+
+All three seeds do exceed the reference's 25.52% at epoch 2, but the worst seed's margin is **+0.57**, not the **+2.62** the
+single-seed sentence implied. Epoch 1 is very stable (24.49 +/- 0.11) while epoch 2 varies by two points across seeds, so mid-run
+epochs are not interchangeable measurements on this recipe. The epoch-3 result stands unchanged: mean **29.11**, gap **+3.59**.
+
+Also recorded: the d512 reference's epoch 1 is now a triple - 19.69 / 19.88 / 19.88, **sd 0.11** - so the reference's own wobble is
+small against the effect under discussion. `docs/D1024-BEATS-D512.md`.
+
 ## d1024 three-seed result: 29.11% mean (sd 0.52), gap +3.59 over the single-seed reference
 
 The wider side now has three seeds, each re-derived from its own log:
