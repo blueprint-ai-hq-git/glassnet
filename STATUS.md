@@ -1,3 +1,21 @@
+## Exposure test, arm A: the reference gains +2.99 points from more training and closes to within 0.87 of the wide model
+
+d512 at **9 epochs** (same windows, stretched lr schedule):
+
+```
+epoch   1      2      3      4      5      6      7      8      9
+acc %  19.58  24.18  25.13  25.01  25.99  28.51  27.07  27.65  27.67
+```
+
+**Best 28.51% (epoch 6), final 27.67%.** Its 3-epoch value was 25.52, so extra training is worth **+2.99 points** to the reference.
+
+A1 PASSED (improves, stays below 29.38) and the falsifier did **not** trigger - but the reference came within **0.87 points** of d1024's
+3-epoch 29.38, not the 3.86 the 3-epoch comparison implied. **Most of the +3.86 gap can be closed on the reference side by training it
+longer.** The 3-epoch number is still valid as an equal-training result, but the take-away is now "+3.86 at equal 3-epoch training, and
+at most +0.87 versus a 9-epoch reference unless d1024 also improves with 9 epochs" - which is arm B, running now.
+
+The reference curve bounces hard (28.51 -> 27.07 -> 27.65 -> 27.67), so single epochs are unreliable and the checkpoint-selected best is
+quoted, as everywhere else here. `docs/D1024-BEATS-D512.md`.
 ## The 7-epoch arm failed its prediction, and its data had to be rescued from a log I destroyed
 
 ```
