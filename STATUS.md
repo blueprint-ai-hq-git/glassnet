@@ -1,3 +1,21 @@
+## Scoping my own claim: "about six epochs" is true of this recipe, not of the project
+
+I published that both exposure arms peak at epoch 6 and that ~6 epochs is the useful training length here, treating it as general.
+Testing it against all 52 curves on disk with at least six epochs:
+
+```
+peak epoch distribution across 52 arms: 1 x4, 2 x15, 3 x19, 4 x2, 5 x1, 6 x9, 8 x1, 11 x1
+median peak epoch 3.0 | inside 5-7: only 10 of 52
+```
+
+Across the project models peak **early** (median epoch 3); the 100-epoch arms peak at 1-3. **Inside the matched d512/d1024 direct-tied
+recipe** it is different: 3 of 4 long runs peak at epoch 6 (29.81 / 28.51 / 30.06) and one at epoch 8 (29.78).
+
+So the claim is now stated in its proper scope: **peak at epoch 6 holds for this recipe at 2M windows, three of four long runs; the
+project-wide median peak is epoch 3, so six is not a rule for other configurations.** Runs of six or fewer epochs are excluded from
+the distribution because they cannot peak later than their last epoch - several apparent "epoch 6 peaks" are that artefact.
+
+`docs/D1024-BEATS-D512.md`.
 ## Three-seed paired number: +3.95 (was +3.88 on two pairs), computed by a published tool
 
 Both arms now have three seeds, so `tools/compare_arms.py --paired` recomputes the equal-3-epoch result from the history files:
