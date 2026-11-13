@@ -1,3 +1,31 @@
+## RETRACTION: dmix is one of the most important components, not dead weight
+
+My parameter-budget audit measured `dmix` on a COPY-finetuned checkpoint and found it worth 0.00, then advised cutting it from the
+50M design. **That was the wrong model for a language-budget question.** On the pretrained language model
+(`matched_d512_s0_best`, route off, baseline 23.93%), zeroing each tensor gives:
+
+```
+emb            +18.33 points   (39.5% of params)
+dmix           +18.33 points   (53.9% of params)   <- joint largest
+answer.W        +3.60 points    (2.8%)
+concept.W       +1.93 points    (3.8%)
+answer.b        +0.47 points
+```
+
+**`dmix` is tied with `emb` as the single most important component of the language model.** My advice would have deleted the
+joint-largest contributor.
+
+The two measurements are not contradictory, they are different states: during pretraining (route OFF) `dmix` learns normally and
+every tensor shows non-zero drift; in the copy arms (route ON) `forward()` captures `_route_base` **before** the direct path adds
+its term, so the term is discarded - no contribution, no gradient, drift **exactly 0.0000**, ablation 0.00 on every task.
+**Turning on `route` silently disables the direct pathway**, so every route-on arm has been computing and discarding 8.4M
+parameters.
+
+Corrected advice for 50M: **keep the direct pathway** and fix the ordering (either include the direct term in the route combination
+or stop enabling `route` where `dmix` matters). The real question is which components earn budget *in the same model state*. What I
+got wrong: I measured a component in a state where a bug had already disabled it and published that as a property of the component.
+Details: `docs/PARAM-BUDGET-RETRACTION.md`.
+
 ## dmix is not dead weight - it is computed and then DISCARDED by the route switch
 
 A correction to the entry below: the 0.00 damage figure is right, the explanation was wrong. Measured on `early_s0_ep1000`
