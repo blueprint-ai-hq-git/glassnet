@@ -1,3 +1,24 @@
+## The first 50M-class model beats the 15.5M reference by +3.86 points
+
+Shape chosen from measurement: the direct pathway only contributes with `route` off, and `route`/`direct` are mutually exclusive. So
+the 50M model is the plain shape, wider: d=1024, direct/tied, no route, **47,468,238 parameters**.
+
+```
+                          parameters   ep1     ep2     ep3     VAL ppl (1/2/3)
+d512 reference            15,567,566   19.69   24.26   25.52   187.93 / 141.99 / 126.79
+d1024                     47,468,238   24.36   28.14   29.38   131.49 / 101.54 /  93.13
+difference                               +4.67   +3.88   +3.86
+```
+
+Assistant-only accuracy by position on the matched split, from each run's own log. **d1024 is ahead at every epoch, and its epoch 2
+already beats the reference's final epoch.** Perplexity 126.79 -> 93.13. The prediction (>= 28.0% at epoch 3) passed at **29.38%**,
+and was met a full epoch early. VRAM peaked at **2,145 MiB** of the 5 GB budget.
+
+**Caveats, written before the result and still binding:** one seed per side; and d1024 is data-starved by the trainer's own
+diagnostic - **1.35 tokens per parameter (UNDER-TRAINED)** against the reference's **8.91** - so the margin is not a clean estimate
+of width at matched tokens. Next: d1024 seeds 1-2, then a matched-token run, and only then treat 29.38% as the number to beat for the
+50M line. Details: `docs/D1024-BEATS-D512.md`.
+
 ## The route/direct repair is implemented: identical behaviour, half the parameters
 
 Rather than wire the discarded direct term INTO the route (measured: copy -82.8 points), the model builder now simply does not
