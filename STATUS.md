@@ -1,3 +1,27 @@
+## Reward density is not what was holding our RL back either
+
+`docs/RL-V1-METHOD.md` says our RL loses to supervised because a supervised step labels every answer token while the RL reward
+was one bit per sequence, and names reward density as the fix. Built it: per-digit verifiable reward (`glassnet/rl.py:
+token_rewards`) plus a per-token advantage against the same digit position of other samples of the same prompt
+(`tools/rl_compare.py --dense-reward`). Equal compute, three seeds:
+
+```
+arm      acc_in mean +/- sd      ece_in
+sup      28.06 +/- 2.21          0.087
+sparse   18.84 +/- 1.00          0.278
+dense    19.95 +/- 1.11          0.267
+```
+
+**Both predictions failed.** Dense beats sparse by **+1.11 points** against a 2.0 bar, and closes **12%** of the
+sparse-to-supervised gap against a 50% bar. With spreads of 1.11 and 1.00 that is about **1.3 standard errors** - not
+distinguishable from noise, and nowhere near enough to close the **8.1-point** deficit.
+
+So both diagnoses for why RL loses - a wrong implementation, then coarse reward - have now been tested and rejected by
+measurement. What is left, in the order this result makes it attractive: (1) group size, since 8 samples per prompt is a noisy
+advantage estimate - queued next with its prediction; (2) a task with **no demonstrations**, because every comparison so far
+asks RL to beat supervised on a task where supervised has full labels, which is the case RL is least likely to win. Details:
+`docs/RL-DENSITY.md`.
+
 ## Rebuilding the copy path structurally does not make it immune - refuted
 
 The successor to freezing was to stop trading: build the copy path so language cannot erode it - an **identity readout** (nothing
