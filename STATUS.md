@@ -1,3 +1,27 @@
+## The carry task IS reachable: 34.66% +/- 6.16 with demonstrations, 0.00 everywhere without
+
+Every RL arm sat at `acc_gen` 0.00 on sums >= 10, so before spending another one the task had to be shown reachable by
+*something*. Supervised, 800 steps, same 7,342-parameter model, only the training distribution changed:
+
+```
+arm        acc_gen (3 seeds)         mean +/- sd     acc_in (3 seeds)      mean
+sup_in     0.00,  0.00,  0.00          0.00          28.04, 25.85, 30.28    28.06
+sup_both  40.84, 28.57, 34.57         34.66 +/- 6.16   1.40,  0.98,  2.29     1.56
+sup_gen   41.36, 27.04, 34.04         34.15 +/- 7.02   0.00,  0.00,  0.00     0.00
+```
+
+**The task is reachable - ~35% on sums it never saw demonstrations for, when it is given two-digit answers to learn from.** So the
+earlier conclusion is not a task artefact: same model, same compute, supervised **34.66%** against RL from a verifier at **0.00**
+for all three reward shapes.
+
+**Second finding, about capacity rather than reward:** learning carry costs in-distribution accuracy. `sup_both` is given BOTH
+distributions and still cannot hold both - 34.66% on carries, **1.56%** on singles. That is the same competition already measured
+between copying and language, now reproduced on arithmetic, and it explains why every carry-trained RL arm lost the singles.
+
+Next: warm-start from a checkpoint that can already produce two digits, then RL with a binary verifier - with the reward
+satisfiable the advantage is no longer zero, so the question becomes whether RL holds or improves a working capability. Details:
+`docs/RL-REACHABILITY.md`.
+
 ## Reward the shape and the shape gets hacked: a constant two-token nonce
 
 The last arm of the carry investigation stopped rewarding digits and rewarded the **structure** - +0.2 for emitting any
