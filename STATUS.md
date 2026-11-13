@@ -1,3 +1,29 @@
+## Keeping the copy path learning beats freezing it
+
+Freezing the copy path halved the decay but stops it learning, so this runs the successor: **freeze it only on LANGUAGE
+batches, let it keep learning from COPY batches** - the separated-store idea applied to a mechanism. Mixed stream (50/50),
+4,000 steps from `early_s0_ep1000` (71.0% held-out).
+
+```
+arm            held-out copy (late, 3 seeds)   taught   language
+keep_scoped    77.3 +/- 1.4                    84.3%    15.64 +/- 0.19
+keep_none      75.2 +/- 1.1                    83.9%    16.49 +/- 0.07
+keep_always    71.3  (n=1)                     82.5%    15.97  (n=1)
+```
+
+**The scoped arm is the best copy result in the study**: 77.3% held-out, above the 71.0% it started from, above no-freeze
+(+2.1) and far above always-frozen (+6.0). The prediction's copy half passed; its language half failed by **0.85 points**
+(15.64 vs 16.49, separated by more than the spreads, so the cost is real and small).
+
+**Honest statistics:** +2.1 points with a combined standard error of ~1.03, i.e. about two standard errors on three seeds -
+**suggestive, not decisive**. The always-frozen comparison is a single seed and cannot carry a claim alone. What stands without
+hedging is the direction: every arm that shielded the copy path kept more copy, and the one that also let it keep learning kept
+the most.
+
+Still untested and recorded as next: a copy path with its **own** parameters that trains on copy batches and is invisible to
+language gradients - the full version of the idea, which would remove the language cost instead of trading for it. Details:
+`docs/COPY-KEEP-LEARNING.md`.
+
 ## Freezing the copy path halves the copy decay
 
 All arms continue from `early_s0_ep1000` (held-out copy **71.0%**) and train on **language-only** batches for 4,000 steps:
