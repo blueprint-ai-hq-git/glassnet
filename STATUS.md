@@ -1,3 +1,30 @@
+## The checking model passes its own gate for the first time
+
+The data filter that is supposed to stop looping or scrambled text reaching training failed two of three gates before
+(false alarm 7.30% against a 5% bar; one-token loops caught 69.5% against 80%). Rebuilt, and it now passes all three on
+three seeds:
+
+```
+                                   old judge     new judge (3 seeds)
+AUROC                               0.9597      0.9923 +/- 0.0001     (bar >= 0.90)  PASS
+false alarm on clean held-out        7.30%      2.59% +/- 0.02%       (bar <= 5%)    PASS
+soup caught                         100.0%      100.0% +/- 0.0                       PASS
+shuffled order caught                86.9%      80.9% +/- 0.3%                       PASS
+one-token loops caught               69.5%      90.0% +/- 0.2%                       PASS
+chunk repeats caught                 80.0%      92.6% +/- 0.1%                       PASS
+unknown flood caught                 92.6%      99.8% +/- 0.0                       PASS
+```
+
+Each failure had a named cause and a fix: the old threshold was chosen on the split it reported from (now three disjoint
+splits, threshold picked at 3% on calibration and reported on unseen test); bag-of-token features cannot see a one-token loop
+(now explicit repetition features); random soup sits at the *opposite* extreme from a loop (now two-sided |robust z|
+deviation features - soup went 0% -> 100%); and shuffled text keeps its tokens, only its order changes (now bigram/unigram
+plausibility plus pair/triple coverage from the training corpus - 8.8% -> 80.9%).
+
+Honest limits: shuffled clears its bar by only 0.9 points (stable across seeds, but a different corpus could push it under), it
+detects the five damage kinds it was trained on, and it is **not wired into training yet** - that is the next experiment, with
+its own numbers. Details: `docs/JUDGE-V2.md`.
+
 ## Our own RL trainer, built properly: still does not beat supervised
 
 First honest measurement of a from-scratch RL method with a **verifiable** reward (addition: right or wrong, no reward model).
