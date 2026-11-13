@@ -1,23 +1,22 @@
-## The cheapest freeze: concept.W alone is free, the pointer alone is the best copy
+## CORRECTED: concept.W alone does nothing; the pointer is the whole mechanism
 
-The freeze that protects copy (+2 points) was costing 0.73 language points, so each half was tested on its own against the same
-seeds. Prediction: `concept.W` alone holds >=75 copy for <=0.45 language cost - **it passed, and did better than that.**
+An earlier version of this entry compared arm averages and credited `concept.W` alone with +1.28 points of copy for no language
+cost. Those arms are **seed-matched** and that was an unpaired comparison: paired on seed the differences are +0.2 / 0.0 / +0.1.
 
 ```
-arm                frozen                      held-out copy        language
-none               -                           74.02                16.30
-concept.W only     concept.W                    75.30 +/- 1.01       16.46 +/- 0.03
-pointer only       ptrW, Wq, Wk                 77.20 +/- 1.40       15.70 +/- 0.15
-full freeze        all four                     75.97                15.56
+arm              copy gain (paired)   t     seeds up   language change (paired)   t
+concept.W only        +0.10         1.7      2 of 3            -0.03            -1.0
+pointer only          +2.07         3.9      3 of 3            -0.79            -6.4
+full freeze           +1.95         6.2      5 of 5            -0.74             -
 ```
 
-**`concept.W` alone buys +1.28 points of copy and costs nothing** - language 16.46 against 16.30 unfrozen. **The pointer alone
-buys +2.07, the largest copy gain in this line, for -0.79 language.** And freezing `concept.W` *on top of* the pointer makes copy
-**worse** (75.97 vs 77.20) at the same language cost, so the extra tensor is a small loss, not free protection.
+**`concept.W` alone does nothing measurable.** The **pointer matrices are the whole mechanism**: freezing `ptrW`/`Wq`/`Wk` gives
+**+2.07** points of held-out copy (3.9 SE, 3 of 3 seeds) against the full freeze's +1.95, at a language cost of -0.79. Ship
+configuration is therefore the **simplest set that works: freeze the three pointer matrices**.
 
-Ship configuration is now a measured trade: **77.20 copy / 15.70 language** (pointer only) or **75.30 copy / 16.46 language**
-(concept.W only), both above the 74.02 / 16.30 baseline. Three seeds per arm; the copy gaps are 2.5-5.2 standard errors. Details:
-`docs/COPY-FREEZE-SUBSET.md`.
+Also withdrawn: the claim that freezing `concept.W` on top of the pointer makes copy worse - both numbers come from separate arms
+with different seed counts, and the paired gain is the same within error. This is the second pairing error in this line, which is
+why paired-on-seed numbers are the only ones quoted here. Details: `docs/COPY-FREEZE-SUBSET.md`.
 
 ## The private copy path failed: worse on both counts than freezing
 
