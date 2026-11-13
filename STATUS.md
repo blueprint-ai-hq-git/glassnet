@@ -1,3 +1,28 @@
+## The copy win is real: 5 seeds, paired, +1.98 points (t = 6.2)
+
+Seeds 3 and 4 landed for the per-batch freeze, which I had recorded as "suggestive, not decisive" with a written falsifier (gap
+below 1.0 point on five seeds = noise). It did not trigger - and the test I used first was the wrong one:
+
+```
+seed   keep_scoped   keep_none   difference
+0         76.2         73.9         +2.3
+1         78.9         75.9         +3.0
+2         76.8         75.7         +1.1
+3         71.5         69.7         +1.8
+4         76.5         74.8         +1.7
+mean   75.97 +/- 2.72   74.02 +/- 2.52   +1.98
+```
+
+**Unpaired, this looks weak** (+1.98 with SE 1.66, about 1.2 SE) - that is what I quoted before. **But these arms are seed-matched**:
+seed 3 is low in both arms, seed 1 high in both, so the unpaired test counts shared variation against the effect. Paired on seed
+the differences are **+2.3, +3.0, +1.1, +1.8, +1.7** - mean **+1.98**, sd **0.71**, paired SE **0.32**, **t = 6.2**, and **5 of 5
+seeds favour the freeze** (sign test p = 0.031).
+
+**The effect was real; my statistical test was wrong.** Language cost on the same seeds: **15.6%** scoped against **16.5%**
+unfrozen, so the trade is 1.98 points of copy for about 0.9 of language. The recorded successor - a copy path with its own
+parameters, invisible to language gradients - is still unbuilt; this result is the target it has to beat. Details:
+`docs/COPY-FREEZE-SEEDS5.md`.
+
 ## Retraction: the data judge already passed, and my |z| clip is not the fix
 
 I took on the judge as "still fails its gate" and produced a mechanism, a fix and a claim. The control killed the claim:
