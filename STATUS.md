@@ -1,3 +1,25 @@
+## Copy decay measured off the checkpoints, not the log
+
+Rebuilt the copy task's evaluation from its own definitions (same vocab, same taught/held-out word split from rng(0), same three
+prompt forms, same item seeds, 600 items per side) and scored the saved checkpoints directly:
+
+```
+checkpoint               taught words   held-out words
+early_s0_ep1000.npz         83.0%           71.0%
+early_s0_ep2000.npz         83.8%           64.3%
+early_s0_ep3000.npz         82.5%           57.2%
+early_s0_ep4000.npz         84.3%           45.8%
+```
+
+**The decay is real and it is in the weights**: held-out copy falls **71.0 -> 45.8** (a 25.2-point loss) while taught-word copy
+stays flat at 82.5-84.3%. The recorded figures reproduce to within a point (I measure 71.0% vs the record's 70.2% at step 1000,
+and 45.8% vs 46.5% at step 4000) - a ~0.8 point offset because my evaluation items are rebuilt from the same seeds rather than
+reusing the trainer's arrays, stated rather than rounded away.
+
+This is now the reference the memorisation-store fix has to beat: a separated store must hold held-out copy near 71% across the
+same 4,000 steps with taught accuracy near 83%, on a 15.5M-parameter model with 4,852 taught and 4,853 held-out words. Details:
+`docs/COPY-DECAY-CURVE.md`.
+
 ## The separated memorisation store works: 96.1 points of forgetting -> 0.0
 
 Yahya's proposal tested directly. 128 key->value facts trained to 100%, then **language-only** training (no rehearsal), which is
