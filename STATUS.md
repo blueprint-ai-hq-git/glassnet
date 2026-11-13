@@ -1,3 +1,32 @@
+## The collapse was reward hacking: partial credit taught the model to always answer '1'
+
+`docs/RL-GEN-VERIFY.md` reported per-digit credit destroying in-distribution accuracy (22% -> 3.13%) without naming why. Three
+variables are now ruled out, each by bit-identical output when the variable changed:
+
+```
+configuration                                          acc_in seed 0   seed 1
+per-digit, lr 0.02                                        2.34          2.93
+per-digit, lr 0.005                                       2.34          2.93
+per-digit, lr 0.02, RL batch mixed in-dist + >=10          2.34          2.93
+per-digit, lr 0.02, entropy_beta 0.0                       2.34          2.93
+```
+
+So it is **not** the learning rate, **not** single-distribution training, **not** the entropy floor. The run now prints the
+model's greedy answers after training, and they name it:
+
+```
+3+4 = '1' (true 7)  conf 0.83      8+7 = '1' (true 15) conf 0.86
+9+0 = '1' (true 9)  conf 0.88      6+6 = '1' (true 12) conf 0.89
+```
+
+**It answers '1' to everything at 83-89% confidence.** On sums >= 10 the correct first digit is always 1 (10-18), so the cheapest
+way to collect the position-0 part of the reward is to emit '1' unconditionally - and the position-1 part is unreachable because
+the model never emits a second token. That is **reward hacking of a partial-credit reward**, and in-distribution accuracy falls
+to the rate of pairs summing to 1, which is exactly what 2.34% is.
+
+The requirement for the next reward is therefore concrete: it must not pay for a constant guess. Frequency-corrected per-digit
+credit is the next arm, prediction written before it runs. Details: `docs/RL-REWARD-HACK.md`.
+
 ## RL from a verifier on the carry problem: nothing learns it, and partial credit destroys what was known
 
 The honest test RL exists for - a checkable objective with **no demonstrations**. The supervised warm start only sees sums <= 9,
