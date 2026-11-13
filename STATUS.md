@@ -1,3 +1,26 @@
+## The separated memorisation store works: 96.1 points of forgetting -> 0.0
+
+Yahya's proposal tested directly. 128 key->value facts trained to 100%, then **language-only** training (no rehearsal), which is
+the situation behind the project's measured 70.2% -> 46.5% copy decay. Three seeds each:
+
+```
+arm      recall after warm-up   recall after 1500 language-only steps   language
+joint            100.0%                  3.9%  (drop 96.1 +/- 0.0)       100.0%
+split            100.0%                100.0%  (drop  0.0 +/- 0.0)       100.0%
+```
+
+**The joint model forgets the facts completely; the separated store forgets nothing, at identical language accuracy.** The
+mechanism is structural, not lucky: the store reads through its own key embedding and writes through its own read-out, so the
+language gradient updates a disjoint set of parameters and interference is impossible by construction.
+
+Two of my own design errors had to be fixed before the test meant anything: the first version rehearsed the facts on every
+language step (which prevents forgetting by construction and measured nothing - both arms hit ~100%), and the first split arm
+shared the key embedding with the language network, a half-measure that left recall frozen at 17.6%.
+
+Limits: this proves the mechanism in a controlled setting, not on the real corpus copy task, and it does not help language at
+all (language is identical between arms). Porting it to the real copy task with its 70.2% peak is the next experiment.
+Details: `docs/MEM-SPLIT.md`.
+
 ## The checking model passes its own gate for the first time
 
 The data filter that is supposed to stop looping or scrambled text reaching training failed two of three gates before
