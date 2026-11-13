@@ -1,3 +1,28 @@
+## Which weights carry copying, and what language training rewrites
+
+The decay is in **held-out** words (71.0% -> 45.8%) while taught words stay flat, so the thing that breaks is the copy
+**mechanism**, not the stored facts - a memorisation store would have fixed the wrong half. Two measurements on the real
+checkpoints find where it lives.
+
+**Mean-ablation (ep1000, taught 83.8% / held-out 69.5%):** `emb`, `ptrW`, `Wq`, `Wk` each destroy copying entirely. Then the
+interesting one:
+
+```
+concept.W      +15.0 points of HELD-OUT copy, and +1.0 (i.e. nothing) on taught words
+dmix (8.4M)     +0.0 - half the model's parameters have no role in this task at all
+```
+
+**Drift between ep1000 and ep4000 (relative L2):** the copy-carrying tensors move the most - `ptrW` 0.566, `concept.W` 0.269,
+`Wk` 0.242, `Wq` 0.230 - while the memorised-answer path barely moves: `emb` 0.096 and `answer.W` **0.0166**. `dmix` moved
+**0.0000**.
+
+The two agree: memorised answers sit in weights language barely touches (so taught copy holds at ~83%), the copy mechanism sits
+in weights language rewrites (so held-out copy loses 25 points). That also explains why the separated-store win (96.1 -> 0.0
+points of forgetting) is real but does not apply here: it fixed forgetting of FACTS, this task decays the MECHANISM.
+
+Next: freeze `ptrW`, `Wq`, `Wk`, `concept.W` during language-only training, with a control that freezes `answer.W`/`dmix`
+instead - if the control also holds copy, the freeze is not what is doing the work. Details: `docs/COPY-WEIGHTS.md`.
+
 ## Copy decay measured off the checkpoints, not the log
 
 Rebuilt the copy task's evaluation from its own definitions (same vocab, same taught/held-out word split from rng(0), same three
