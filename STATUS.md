@@ -1,3 +1,29 @@
+## Removing the direct pathway costs ~5 points at every epoch - it earns its budget
+
+The retraction said `dmix` matters in a trained model; this is the training answer. The shipped pretraining recipe with `--direct`
+omitted, three seeds, by position on the matched split:
+
+```
+epoch            1        2        3      params
+WITH dmix     19.69    24.26    25.52    15,567,566   (1 seed, its own log)
+WITHOUT mean  15.30    18.73    20.29     7,178,958   (3 seeds, sd 0.36/0.09/0.03)
+deficit       -4.39    -5.53    -5.23
+```
+
+**4.4-5.5 points lost at every epoch and roughly double the perplexity** for 8.4M fewer parameters. My prediction ("removable if
+within 1.0 point") is **falsified** and its falsifier ("losing >=3 points means it earns its budget") is triggered in all three
+seeds. Caveat stated: the reference is **one** seed, while the no-dmix arm is three with a spread of sd 0.03 at epoch 3 - the gap is
+far outside plausible seed variation, but that side has no measured spread.
+
+## And the ordering fix cannot be retrofitted
+
+`lens/scripts/run_routefix.sh` applied the fix, then tested itself: on a route-on checkpoint the direct term now reaches the output
+and language accuracy collapses **14.75% -> 0.25%**, with zeroing `dmix` restoring exactly 14.75%. Cause: every route-on checkpoint
+has `dmix` frozen at initialisation (drift 0.0000), so including its term injects 8.4M untrained parameters. The script reverted
+itself and `model.py` is byte-identical to the backup. **The fix needs a retraining arm, not a patch.** The script's verdict line was
+also wrong (it tested a signed difference, so it called a catastrophic change "no change"); that is corrected. Details:
+`docs/PARAM-DIRECT-MATTERS.md` and `docs/ROUTE-FIX-NEEDS-RETRAIN.md`.
+
 ## RETRACTION: dmix is one of the most important components, not dead weight
 
 My parameter-budget audit measured `dmix` on a COPY-finetuned checkpoint and found it worth 0.00, then advised cutting it from the
