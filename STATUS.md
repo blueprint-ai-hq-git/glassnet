@@ -1,3 +1,27 @@
+## Freezing the copy path halves the copy decay
+
+All arms continue from `early_s0_ep1000` (held-out copy **71.0%**) and train on **language-only** batches for 4,000 steps:
+
+```
+arm             late held-out copy (mean of last 3 evals)   drop from 71.0   language
+freeze_copy     68.7%  (69.5, 68.5, 68.2)                    -2.3 points      16.15%
+freeze_control  60.5%  (61.3, 63.5, 56.8)                   -10.5 points      17.70%
+freeze_none     60.5%  (61.5, 63.3, 56.7)                   -10.5 points      17.70%
+```
+
+**Freezing `ptrW`, `Wq`, `Wk`, `concept.W` is worth +8.2 points of held-out copy**, taught-word copy flat at 83% in every arm.
+Prediction passed on all three counts.
+
+**The control is what makes it mean something:** freezing `answer.W` and `dmix` gave numbers identical to no freezing at all
+(60.5% both, per-eval within 0.1), so it is the choice of what to freeze doing the work, not the act of freezing. The cost is
+**1.55 language points** (16.15% vs 17.70%) for 8.2 copy points - a real trade, stated rather than hidden.
+
+Limits: the decay here is 10.5 points, not the original curve's 25.2, because this run continues from ep1000 with
+language-only batches (different recipe), so it is comparable internally but not to that curve. And freezing protects a
+capability by refusing to update weights - the copy path stops learning. The untested successor is giving the copy path its own
+parameters that keep learning from copy batches only, i.e. the separated-store idea applied to a mechanism instead of a table.
+Details: `docs/COPY-FREEZE.md`.
+
 ## Which weights carry copying, and what language training rewrites
 
 The decay is in **held-out** words (71.0% -> 45.8%) while taught words stay flat, so the thing that breaks is the copy
