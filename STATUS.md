@@ -1,3 +1,31 @@
+## RL from a verifier on the carry problem: nothing learns it, and partial credit destroys what was known
+
+The honest test RL exists for - a checkable objective with **no demonstrations**. The supervised warm start only sees sums <= 9,
+so it cannot imitate an answer to 8+7; RL is handed sums >= 10 plus a checker. 3 seeds, equal compute:
+
+```
+arm          acc_gen (3 seeds)   acc_in (3 seeds)
+gen_sparse   0.00, 0.00, 0.00     18.22, 22.93, 21.10   -> 20.75
+gen_dense    0.00, 0.00, 0.00      2.34,  2.93,  4.13   ->  3.13
+sup_gen      0.00, 0.00, 0.00     28.04, 25.85, 30.28   -> 28.06
+```
+
+**`acc_gen` is exactly 0.00 in all nine runs.** And the prediction that partial credit would help failed catastrophically in the
+other direction: per-digit credit **collapsed in-distribution accuracy from ~22% to 3.13%** - it did not trade one ability for
+another, it destroyed what the warm start knew.
+
+The mechanism for why binary verification cannot start is measured, not asserted: mean reward **-0.006** with all group members
+receiving the same reward, so the group-relative advantage is exactly zero and every token gets zero weight. It is not learning
+slowly - it is receiving no signal at all.
+
+**A correction to my own script framing:** `sup_gen` was labelled the ceiling "when labels exist", but the tool trains it on the
+in-distribution split, so it never sees a sum >= 10 either. It shows the un-generalising model cannot do carry; it does **not**
+price the label advantage, and that prediction was not testable as written.
+
+Before blaming the RL method: every method sits at 0.00 on sums >= 10 at 7,342 parameters, so the task itself has to be shown
+reachable first. Next running: is the collapse a learning-rate artefact, and does mixing in-distribution pairs prevent it.
+Details: `docs/RL-GEN-VERIFY.md`.
+
 ## RL: more samples per prompt did not help either - the comparison is what is wrong
 
 Third cheap lever on the RL line, after the implementation and reward density were both tested and rejected:
