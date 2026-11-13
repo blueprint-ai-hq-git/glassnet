@@ -1,3 +1,25 @@
+## Rebuilding the copy path structurally does not make it immune - refuted
+
+The successor to freezing was to stop trading: build the copy path so language cannot erode it - an **identity readout** (nothing
+learned to overwrite) plus the copy path's **own embedding table** - and freeze nothing. Warning up that construction on copy
+batches first (so it is not judged untrained), then running 4000 language-only steps:
+
+```
+PHASE A warm-up (copy-only, 3000 steps)        PHASE B (language-only, 4000 steps, nothing frozen)
+before: taught 18.0 / held 0.0                  step 3000: taught 0.7 / held 0.2 / language 25.20
+step  500: taught 78.3 / held 0.0               step 3500: taught 0.8 / held 0.2 / language 25.52
+step 3000: taught 50.5 / held 0.0               step 4000: taught 0.8 / held 0.2 / language 26.15
+```
+
+**The prediction (held-out >= 60% after warm-up) is falsified, and not marginally: held-out copy is 0.0% for the entire 3000-step
+warm-up.** The construction memorises trained words (peaking at 78.3%, then eroding to 50.5% during warm-up) and cannot copy a
+word it has never seen. Language training then takes even the memorised copy from 50.5% to 0.8%.
+
+So a copy path built this way is not immune - it is **more** fragile than the shared one. The best copy protection measured
+remains the per-batch freeze (77.3 +/- 1.4 held-out, 0.85 language points, `docs/COPY-KEEP-LEARNING.md`). The `lens/model.py`
+note claiming the identity readout lifts held-out copy 71.5 -> 85.3 is **not a drop-in recipe** and is not an available win until
+the difference is identified. Ground truth, first void attempt included: `docs/COPY-STRUCT-REFUTED.md`.
+
 ## Keeping the copy path learning beats freezing it
 
 Freezing the copy path halved the decay but stops it learning, so this runs the successor: **freeze it only on LANGUAGE
