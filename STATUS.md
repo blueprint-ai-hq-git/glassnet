@@ -1,3 +1,28 @@
+## The KL anchor stops the damage: RL is safe now, but still not competitive
+
+`docs/RL-DEGRADES.md` measured unanchored RL costing a working capability **-5.94 points** (3 of 3 seeds worse). This adds a KL
+penalty against a frozen copy of the warm-start policy - gradient **numerically checked before use** (max abs 6.096e-11, rel
+1.557e-09, PASS):
+
+```
+arm        warm starts        deltas                 mean delta
+beta 5     32.98/22.96/26.60   -2.61, +6.12, -1.60    +0.64 +/- 4.78
+beta 20    32.98/22.96/26.60   +0.00, +6.12, -0.00    +2.04 +/- 3.53
+unanchored                     -13.61, -1.02, -3.20   -5.94
+supervised, same data                                 34.66 +/- 6.16
+```
+
+**The anchor removes the damage** - the first non-negative RL result in this line. But the beta-20 zeros are the honest caveat: a
+strong anchor buys 'not degrading' with 'not learning'. **Safe but not useful.** Verified before believing it: every log shows the
+anchor active with the right beta, the two seed-1 traces differ (reward 0.070 vs 0.057), and the identical +6.12 is a
+coarse-metric coincidence (13 of 214 items).
+
+**RL has now failed to beat supervised in eight configurations.** Two of those failures are not reward hacks: 'cannot start' and
+'does not improve'. Per the falsifier committed before the run, the line is not broken - the anchor works - but it is recorded as
+**not competitive with supervised learning here**, and stops being tuned. Next: the data judge, which fails its own gate (false
+alarm 0.0730 vs a 5% bar, loops 69.5% vs 80%) - an engineering problem with a measurable pass condition. Details:
+`docs/RL-KL-ANCHOR.md`.
+
 ## RL does not hold a working capability either: it degrades it in all three seeds
 
 The reachability result removed the last excuse - the task is solvable, so RL can be measured against a real target. So the arm
