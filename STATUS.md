@@ -1,3 +1,27 @@
+## The private copy path failed: worse on both counts than freezing
+
+Freezing the copy path buys ~2 points of held-out copy for -0.73 language, because language is then forbidden from updating the
+pointer. So the copy path was given its **own** `ptrW`/`Wq`/`Wk`, used only on copy batches - mechanism verified first at
+**0.000e+00** drift under 80 language-only batches.
+
+```
+arm        held-out copy        language
+none       74.02                16.30
+private    74.33                12.86
+frozen     75.97                15.56
+```
+
+**Prediction (copy >=74 and language >=16.1) failed on language by 3.24 points**, and the written falsifier triggered: the private
+path is **3.44 points worse than doing nothing** and 2.70 worse than freezing, while its copy is statistically the same as doing
+nothing. It is not a smaller trade, it is a worse outcome on both counts. **The freeze remains the best configuration.**
+
+My mechanism story (gradient redirected into shared components) is **refuted by the saved weights**: the private arm moves the
+shared pointer *less* (ptrW drift 0.105 vs 0.189) and moves `emb`/`concept.W`/`answer.W` identically to four decimals. The cause of
+the language loss is unknown and is recorded as unknown rather than dressed up. Details: `docs/COPY-PRIVATE-PATH-FAILED.md`.
+
+Two infrastructure faults, both fixed: arms idled 25 minutes waiting on a systemd unit that stays 'active' while the chain waits
+for the agent (now waits on the trainer process), and an EOF error caused by editing a bash script while bash was reading it.
+
 ## The copy-freeze win replicates from a different starting checkpoint
 
 Five seeds earlier gave +1.98 points of held-out copy from `early_s0_ep1000`, so every arm had started from that one checkpoint.
