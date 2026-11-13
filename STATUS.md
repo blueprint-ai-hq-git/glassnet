@@ -18,8 +18,7 @@ seed 3 is low in both arms, seed 1 high in both, so the unpaired test counts sha
 the differences are **+2.3, +3.0, +1.1, +1.8, +1.7** - mean **+1.98**, sd **0.71**, paired SE **0.32**, **t = 6.2**, and **5 of 5
 seeds favour the freeze** (sign test p = 0.031).
 
-**The effect was real; my statistical test was wrong.** Language cost on the same seeds: **15.6%** scoped against **16.5%**
-unfrozen, so the trade is 1.98 points of copy for about 0.9 of language. The recorded successor - a copy path with its own
+**The effect was real; my statistical test was wrong.** Language cost on the same seeds: **15.56%** scoped against **16.30%** unfrozen (paired -0.73), so the trade is **+1.98 points of copy for -0.73 of language**; taught-word copy is unchanged (84.26 vs 84.14). The recorded successor - a copy path with its own
 parameters, invisible to language gradients - is still unbuilt; this result is the target it has to beat. Details:
 `docs/COPY-FREEZE-SEEDS5.md`.
 

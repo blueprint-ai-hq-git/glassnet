@@ -30,13 +30,15 @@ and **5 of 5 seeds favour the freeze** (sign test **p = 0.031** one-sided).
 **So the per-batch freeze result stands, and is stronger than the version I published: +1.98 +/- 0.71 points across five seeds,
 positive on every seed.** What was wrong was not the effect, it was my test.
 
-## Language cost, on the same five seeds
+## Language cost, on the same five seeds (CORRECTED - the first version of this doc quoted three-seed numbers)
 ```
-arm            language accuracy (mean +/- sd)
-keep_scoped    15.6 +/- 0.19
-keep_none      16.5 +/- 0.07
+arm            language accuracy            taught-word copy
+keep_scoped    15.56 +/- 0.20               84.26 +/- 0.67
+keep_none      16.30 +/- 0.28               84.14 +/- 0.70
+paired language difference: -0.73 points
 ```
-So the trade is not free: **1.98 points of held-out copy for about 0.9 points of language**, consistent across seeds. That remains
+So the trade is not free: **+1.98 points of held-out copy for -0.73 points of language**, positive on 5 of 5 seeds for copy.
+Taught-word copy is unchanged (84.26 against 84.14), so the cost is specifically in the language objective, not in copy. That remains
 the honest price of shielding the copy path from language gradients without giving it its own parameters.
 
 ## What is still not right about this line
