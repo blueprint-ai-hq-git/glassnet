@@ -1,3 +1,31 @@
+## Our own RL trainer, built properly: still does not beat supervised
+
+First honest measurement of a from-scratch RL method with a **verifiable** reward (addition: right or wrong, no reward model).
+Group-relative advantage over 8 samples per prompt, repetition penalty in the reward, hinge entropy floor, two new ops with
+hand-written backward passes, both **gradient checked (4.9e-11)** before use.
+
+```
+arm                          in-distribution accuracy   2-digit generalisation   ECE
+supervised, 800 steps         51.12 +/- 3.30 %                 0.00%              0.131
+supervised, 400 steps (warm)  20.93 %                         0.00%                -
+RL, entropy bonus 0.05        20.56 +/- 3.69 %                 0.00%              0.219
+RL, entropy bonus 0.20        22.31 +/- 0.69 %                 0.00%              0.109
+RL, entropy hinge 0.5/2.0     18.84 +/- 1.00 %                 0.00%              0.278
+```
+
+**Against the fair baseline (its own 400-step warm start at 20.93%), RL is roughly neutral, slightly negative.** I have to
+correct myself: earlier today I reported RL "destroyed 29 points" - that compared 400+400 steps against 800 supervised steps,
+two differences at once. It never cost 29 points and it never gained any.
+
+Three of my own bugs were caught by measurement rather than by reading: a sign error in the new weighted log-prob op, float32
+quantisation of the loss scalar (which made the finite-difference check read a staircase), and an entropy term added as a
+constant bonus that swamped the policy loss.
+
+**Verdict: RL does not beat supervised, second time, now with a correct implementation.** The mechanism is measurable - the
+supervised signal is dense, the RL reward is one bit per sequence, so 400 RL steps buy less than 400 extra supervised steps. On
+a task where every label is known, RL has no structural advantage; the RL argument belongs to tasks with a checker but no
+labels. Details: `docs/RL-V1-METHOD.md`.
+
 ## Phase 2 gate, current state on the image task: 4 of 5 items measured
 
 Shipped configuration: 12 named concepts -> 32 linear rules (3 connections each) -> answer, alpha 3, per-rule variance floor
