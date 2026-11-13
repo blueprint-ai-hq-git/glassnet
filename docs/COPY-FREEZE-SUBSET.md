@@ -56,3 +56,26 @@ matrices on language batches. Three seeds per arm; the copy gain is 3.9 standard
 ## Reproduction
 `lens/scripts/run_freeze_subset.sh` (prediction and falsifier in the header), logs `logs/sub/{concept,ptr}_s{0,1,2}.log`, checkpoints
 `sub_concept_s*` / `sub_ptr_s*` in `lens/runs/chat/`. Late held-out copy = mean of the last three evaluations.
+
+## Five seeds: the ship configuration holds (added the same day)
+Prediction was "paired copy gain >= 1.5 with >= 4 of 5 seeds positive, language cost between -0.5 and -1.1". Seeds 3 and 4 were run:
+
+```
+seed   pointer-only (copy / language)   unfrozen (copy / language)
+0          76.1 / 15.75                    73.9 / 16.43
+1          78.8 / 15.53                    75.9 / 16.57
+2          76.8 / 15.82                    75.7 / 16.48
+3          71.2 / 15.65                    69.7 / 15.90
+4          76.4 / 15.30                    74.8 / 16.10
+```
+
+**Paired on seed: copy **copy +1.86 +/- 0.70 (t = 5.9, 5 of 5 seeds positive)**, language **-0.69 +/- 0.29 (t = -5.3)**.** Prediction PASSED on all three clauses (gain >= 1.5, 5 of 5 seeds positive, cost
+inside -0.5 to -1.1), and the falsifier (gain below 1.0 -> the +2.07 was seed luck) did not trigger.
+
+Seed 3 is the honest part of this table: pointer-only fell to 71.2 against the 76-79 of the first three seeds, and its unfrozen
+partner fell to 69.7 in the same seed. That is why the paired gain (+1.82) is smaller than the three-seed figure (+2.07) - the
+effect is real on every seed but its size moves with the seed, and the five-seed number is the one to quote.
+
+**The three-tensor set and the four-tensor set are now statistically indistinguishable** (pointer-only +1.82 +/- 0.70 over 5 seeds;
+all-four +1.95 over 5 seeds). The reason to ship the three-tensor set is not a bigger gain, it is that `concept.W` was measured as
+contributing nothing, so freezing it is unnecessary work with an unnecessary failure mode.
