@@ -73,9 +73,9 @@ seed   pointer-only (copy / language)   unfrozen (copy / language)
 inside -0.5 to -1.1), and the falsifier (gain below 1.0 -> the +2.07 was seed luck) did not trigger.
 
 Seed 3 is the honest part of this table: pointer-only fell to 71.2 against the 76-79 of the first three seeds, and its unfrozen
-partner fell to 69.7 in the same seed. That is why the paired gain (+1.82) is smaller than the three-seed figure (+2.07) - the
+partner fell to 69.7 in the same seed. That is why the paired gain (+1.86) is smaller than the three-seed figure (+2.07) - the
 effect is real on every seed but its size moves with the seed, and the five-seed number is the one to quote.
 
-**The three-tensor set and the four-tensor set are now statistically indistinguishable** (pointer-only +1.82 +/- 0.70 over 5 seeds;
+**The three-tensor set and the four-tensor set are now statistically indistinguishable** (pointer-only +1.86 +/- 0.70 over 5 seeds;
 all-four +1.95 over 5 seeds). The reason to ship the three-tensor set is not a bigger gain, it is that `concept.W` was measured as
 contributing nothing, so freezing it is unnecessary work with an unnecessary failure mode.
