@@ -1,3 +1,30 @@
+## Route and direct must stay mutually exclusive - both half-fixes measured, both rejected
+
+With `route` on, the direct term is computed and discarded (drift 0.0000, 8.4M params). Wiring the term INTO the route, trained with
+it from the start, one flag apart in one script, paired seeds:
+
+```
+arm           held-out copy   taught   language
+direct_out      83.1 / 85.1     83.4     12.62     (current: term computed and discarded)
+direct_in        1.4 /  1.2     30.5      8.91     (term included in the route base)
+difference       -82.82         -52.9     -3.71
+```
+
+**Including the direct term destroys the copy pathway: -82.8 points of held-out copy.** The falsifier (more than 3 points lost)
+triggered by a factor of twenty-seven, and the other prediction failed in the informative direction: on the checkpoint actually
+trained with the term, zeroing `dmix` **improves** language by **1.25 points**, so the term reaches the output and is unhelpful there.
+
+Mechanism: the direct term is ~**28x** the magnitude of the concept/answer logits (2.63 against 0.093), so putting it inside the
+route base makes the base drown the pointer readout - the switch stops being a choice between comparable readouts.
+
+**The correct repair is not to wire the term in, but to stop paying for it:** when `route` is on, do not build `dmix` at all. That
+changes no behaviour and saves 8.4M parameters plus the model's largest matmul on every step. `route` and `direct` should be
+mutually exclusive in the model builder, with a clear error if both are requested.
+
+Two of my own mistakes en route, both caught by reading artifacts: an arm that passed `--direct` to a trainer with no route flag (it
+became a reference replication), and an arm that passed `--route-gate` without `--pointer --pointer-qk` (copy read 0.0% on both
+sides, impossible for a copy task). Neither became a claim. Details: `docs/ROUTE-VS-DIRECT-VERDICT.md`.
+
 ## Removing the direct pathway costs ~5 points at every epoch - it earns its budget
 
 The retraction said `dmix` matters in a trained model; this is the training answer. The shipped pretraining recipe with `--direct`
