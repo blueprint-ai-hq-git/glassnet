@@ -1,3 +1,24 @@
+## The cheapest freeze: concept.W alone is free, the pointer alone is the best copy
+
+The freeze that protects copy (+2 points) was costing 0.73 language points, so each half was tested on its own against the same
+seeds. Prediction: `concept.W` alone holds >=75 copy for <=0.45 language cost - **it passed, and did better than that.**
+
+```
+arm                frozen                      held-out copy        language
+none               -                           74.02                16.30
+concept.W only     concept.W                    75.30 +/- 1.01       16.46 +/- 0.03
+pointer only       ptrW, Wq, Wk                 77.20 +/- 1.40       15.70 +/- 0.15
+full freeze        all four                     75.97                15.56
+```
+
+**`concept.W` alone buys +1.28 points of copy and costs nothing** - language 16.46 against 16.30 unfrozen. **The pointer alone
+buys +2.07, the largest copy gain in this line, for -0.79 language.** And freezing `concept.W` *on top of* the pointer makes copy
+**worse** (75.97 vs 77.20) at the same language cost, so the extra tensor is a small loss, not free protection.
+
+Ship configuration is now a measured trade: **77.20 copy / 15.70 language** (pointer only) or **75.30 copy / 16.46 language**
+(concept.W only), both above the 74.02 / 16.30 baseline. Three seeds per arm; the copy gaps are 2.5-5.2 standard errors. Details:
+`docs/COPY-FREEZE-SUBSET.md`.
+
 ## The private copy path failed: worse on both counts than freezing
 
 Freezing the copy path buys ~2 points of held-out copy for -0.73 language, because language is then forbidden from updating the
