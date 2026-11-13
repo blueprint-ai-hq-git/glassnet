@@ -1,3 +1,24 @@
+## The route/direct repair is implemented: identical behaviour, half the parameters
+
+Rather than wire the discarded direct term INTO the route (measured: copy -82.8 points), the model builder now simply does not
+create it when `route` is on - `GLASSNET_ROUTE_SKIP_DIRECT=1`, off by default so existing checkpoints load byte-identical. Verified
+on a real route-on checkpoint, same 200 held-out windows:
+
+```
+guard        dmix built   parameters   language
+OFF (today)      yes      16,354,001     13.00
+ON               no        7,965,393     13.00
+```
+
+**Half the parameters, identical output** - 8,388,608 parameters and the model's largest matmul gone from every route-on arm, with no
+behaviour change. Getting the guard in took three edits, each caught by running it: the first fell through an `elif` chain to
+low-rank tensors that were never built (`AttributeError: dproj`), the second hit `UnboundLocalError: copy_out` in the return dict,
+and the guard-off path was re-verified unchanged after every edit.
+
+Final state of the question: including the term in the route is **rejected** (-82.8 copy), not building it is **adopted** (free),
+and `direct` without `route` remains the only configuration where the direct pathway contributes (+18.33 ablation). The switches
+stay mutually exclusive, but the exclusivity now costs nothing. Details: `docs/ROUTE-VS-DIRECT-VERDICT.md`.
+
 ## Route and direct must stay mutually exclusive - both half-fixes measured, both rejected
 
 With `route` on, the direct term is computed and discarded (drift 0.0000, 8.4M params). Wiring the term INTO the route, trained with

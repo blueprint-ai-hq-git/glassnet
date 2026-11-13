@@ -62,3 +62,31 @@ Both were caught by printing the artifact's own state, which is why neither beca
 ## Reproduction
 `lens/scripts/run_route_pair.sh` (predictions and falsifier in the header) - both orderings in one file, paired seeds, logs
 `logs/routepair/{out,in}_s{0,1}.log`, checkpoints `rp_out_s*` / `rp_in_s*`. The switch: `GLASSNET_ROUTE_DIRECT`, default off.
+
+## The repair implemented and verified: don't build it, and behaviour is identical
+
+`GLASSNET_ROUTE_SKIP_DIRECT=1` makes the model builder leave `dmix` as `None` whenever `route` is on, so the pathway that would be
+discarded every step is never created. Verified on a real route-on checkpoint (`rp_out_s0_final.npz`), same 200 held-out windows:
+
+```
+guard        dmix built   parameters   language accuracy
+OFF (today)      yes      16,354,001        13.00
+ON               no        7,965,393        13.00
+```
+
+**Half the parameters, identical output.** The guard is OFF by default so every existing checkpoint loads byte-identical, and it is a
+pure configuration change: no weights move, no behaviour changes, 8,388,608 parameters and the model's largest matmul disappear from
+every route-on arm.
+
+Getting the guard in took three edits, each caught by running it rather than reading it: the first version skipped the tensor and
+then fell through an `elif` chain that referenced the low-rank tensors that were never built (`AttributeError: dproj`); the second
+still hit `UnboundLocalError: copy_out` in the return dict. Both branches now test `dmode`, and the guard-off path was re-verified
+unchanged (16,354,001 params, 13.00) after every edit.
+
+### Where this leaves the route/direct question
+- Including the direct term in the route: **rejected**, copy -82.8 points.
+- Not building it when route is on: **adopted**, identical behaviour and half the parameters.
+- Using `direct` without `route`: **still the only configuration in which the direct pathway actually contributes** (+18.33
+  ablation damage, ~5 points of training deficit if removed).
+
+So the two switches stay mutually exclusive, but the cost of the exclusivity is now zero instead of 8.4M parameters.
