@@ -1,3 +1,24 @@
+## The width effect depends on how the endpoint is picked: -0.17, +0.87 or +1.71 points
+
+Both curves bounce two to three points per epoch, so the endpoint rule decides the sign of the result. The same two runs:
+
+```
+how the endpoint is chosen              d1024 @3ep   d512 @9ep   width advantage
+best-of-N (what this project quotes)      29.38        28.51        +0.87
+final epoch                               29.38        27.67        +1.71
+last-3-epoch mean (robust end state)      27.29        27.47        -0.17
+```
+
+**By end-state averaging the reference is marginally ahead.** By best-of-N the wide model is ahead by 0.87. Same two runs, different
+questions. Selection inflation is measurable: d1024's best epoch is **+2.09** above its own mean, d512's is **+2.87** above its own mean
+with **six more chances** to be lucky - so best-of-9 against best-of-3 favours the arm with more epochs by construction.
+
+**Not established:** that width is worth +3.86 in general. That figure is a correct equal-3-epoch, equal-data, seed-matched result, but
+it is fragile to the endpoint rule once the reference trains longer. **Not yet settled:** 9 epochs against 3 is unequal; d1024 at 9
+epochs is running now. **Established:** single-epoch values cannot carry a conclusion on this recipe, and any width claim must state
+which endpoint rule it used. From here every such claim quotes best-of-N, final epoch and last-3-mean together.
+
+`docs/D1024-BEATS-D512.md`.
 ## Exposure test, arm A: the reference gains +2.99 points from more training and closes to within 0.87 of the wide model
 
 d512 at **9 epochs** (same windows, stretched lr schedule):
