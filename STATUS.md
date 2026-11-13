@@ -1,3 +1,31 @@
+## RL does not hold a working capability either: it degrades it in all three seeds
+
+The reachability result removed the last excuse - the task is solvable, so RL can be measured against a real target. So the arm
+no previous run tested: **warm start on sums >= 10 so the model CAN answer, then binary-verifier RL**. The reward is satisfiable
+and is actually collected. Prediction: stays >= 25% and improves >= 3 points.
+
+```
+seed   acc_gen after warm start   after 400 RL steps   delta
+0              32.98                   19.37          -13.61
+1              22.96                   21.94           -1.02
+2              26.60                   23.40           -3.20
+mean           27.51                   21.57           -5.94
+```
+
+**Zero of three seeds improved; all three got worse**, seed 0 losing more than a third of the capability. So the RL line stands
+like this, every row measured: from a policy that cannot emit two digits, binary reward gives zero advantage (no learning),
+per-digit reward answers '1' to everything (acc_in 22 -> 2.34), shape reward answers '98' (acc_in -> 0.00); from a policy that
+CAN (33%), binary reward **costs 5.94 points**. Supervised on the same data at equal compute: **34.66 +/- 6.16**.
+
+**RL has not beaten supervised in any configuration, and the last one is the standard recipe.** The failure is no longer
+'cannot start' and no longer a reward hack - with a satisfiable reward and a capable starting policy, 400 policy-gradient steps
+still cost accuracy, which points at the update itself (group-8 sampling noise, nothing keeping the policy near one that works,
+entropy added on top).
+
+Next arm: a **KL anchor** to the warm-start policy - the standard remedy for this exact failure. If a KL-anchored update still
+cannot improve on its own starting point, this RL implementation is not competitive here and the line stops rather than being
+tuned further. Details: `docs/RL-DEGRADES.md`.
+
 ## The carry task IS reachable: 34.66% +/- 6.16 with demonstrations, 0.00 everywhere without
 
 Every RL arm sat at `acc_gen` 0.00 on sums >= 10, so before spending another one the task had to be shown reachable by
