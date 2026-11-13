@@ -1,3 +1,16 @@
+## Frequency correction cannot fix the 'answer 1' shortcut - and why
+
+The obvious repair after the reward-hacking result is a frequency-corrected reward. Implemented, it changed **nothing**:
+identical probe answers, `fit_metric -3.9e-05`, `acc_in 2.3364%`. The reason is structural, not a bug: **a correction that is
+constant within a group is invisible to a group-relative advantage** - it cancels in `(r - mean)/std`. On sums >= 10 the
+correct first digit is always `'1'`, so the correction is constant for every group member and the advantage is arithmetically
+unchanged. It would work against an *absolute* baseline; it cannot work inside this estimator.
+
+The deeper blocker: every answer the model was ever trained on is a single token, so a two-digit answer needs a token pattern
+it has never produced. Position-1 credit is unreachable, position-0 credit is free - exactly the shape of a reward that pays
+for a constant guess. Next arm rewards the *structure* (a small bonus for emitting any second token). Details:
+`docs/RL-REWARD-HACK.md`.
+
 ## The collapse was reward hacking: partial credit taught the model to always answer '1'
 
 `docs/RL-GEN-VERIFY.md` reported per-digit credit destroying in-distribution accuracy (22% -> 3.13%) without naming why. Three

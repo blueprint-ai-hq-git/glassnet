@@ -53,3 +53,35 @@ present the model never emits one.
 ## Reproduction
 `lens/scripts/run_rl_gen3.sh` (entropy test), `lens/scripts/run_rl_gen2.sh` (lr and mixing), `--diag` in `tools/rl_compare.py`
 (the probe printout). Logs: `logs/rl_gen3/noent_s{0,1}.log`, `logs/rl_gen2/{lr005,mix}_s{0,1}.log`, `logs/rl_gen/dense_s*`.
+
+## Follow-up: frequency correction CANNOT fix this, and the reason is structural (added same day)
+
+The obvious repair after the 'answer 1' shortcut is a frequency-corrected reward: subtract, per digit position, what always guessing
+the batch's majority digit would collect, so the free digit pays nothing. It was implemented (`--freq-correct`) and it changed
+**exactly nothing**:
+
+```
+gen_verify + per-digit reward + frequency correction, seed 0
+after warm start: acc_in 21.96%
+DIAG after training: 3+4='1' conf 0.83, 9+0='1' conf 0.88, 8+7='1' conf 0.87 ... (identical to the uncorrected run)
+fit_metric -3.9e-05   acc_in 2.3364%   acc_gen 0.00%
+```
+
+**Why: a correction that is constant within a group is invisible to a group-relative advantage.** The reward is normalised per
+prompt group as `(r - mean(r_group)) / std(r_group)`, so subtracting the same `base` from every member of the group cancels
+exactly, whatever its size. On sums >= 10 the correct first digit is *always* `'1'`, so the correction is a constant for every
+sample in the group and the advantage is arithmetically unchanged. The correction would work for an **absolute** baseline (a
+running average across batches); it cannot work inside a group-relative scheme. That is a property of the estimator, not a bug in
+the implementation.
+
+**The deeper blocker is structural, not a reward-shape problem.** Every answer the model has ever been trained on is a single
+token (sums <= 9), so a two-digit answer requires it to emit a token pattern it has never produced. Position-1 credit is therefore
+unreachable no matter how the digits are weighted, while position-0 credit is reachable and worth exactly the same on every
+question - which is precisely the shape of a reward that pays for a constant guess.
+
+### What that means for the next reward
+The next arm rewards the **structure** rather than the digits: a small exploration bonus for emitting any second token, which is
+worth nothing for correctness but makes further learning possible at all. Its prediction and falsifier are written into the script
+before it runs. If two-token answers appear and `acc_gen` stays at 0.00, then verification cannot bootstrap a novel output
+structure at this model size, and the honest conclusion is that the task needs demonstrations (a curriculum with two-digit
+answers) rather than a better reward. Either way the answer stops being a guess.
