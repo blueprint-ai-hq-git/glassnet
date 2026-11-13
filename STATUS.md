@@ -1,3 +1,23 @@
+## d1024 three-seed result: 29.11% mean (sd 0.52), gap +3.59 over the single-seed reference
+
+The wider side now has three seeds, each re-derived from its own log:
+
+```
+seed    epoch 1   epoch 2   epoch 3
+0        24.36     28.14     29.38
+1        24.53     27.43     29.45
+2        24.57     26.09     28.51
+mean                          29.11   (sd 0.52, spread 0.94)
+```
+
+The prediction written before those runs passed on both clauses (worst seed 28.51 against a 27.88 floor; mean 29.11 against a 28.5
+floor) and the falsifier (any seed below 26.0%) was not triggered. Against the reference's 25.52% the honest three-seed gap is
+**+3.59** - averaging the winner correctly costs 0.27 points off the single-seed +3.86.
+
+**One side of the comparison is still open:** the d512 reference has one finished seed. Its seeds 1 and 2 are running with the
+reference recipe verified field by field (`--lr 0.4`; I had written 0.6 and caught it before the arm ran). Until they land, +3.59 is a
+three-seed mean against a single run and must be quoted that way. Details: `docs/D1024-BEATS-D512.md`.
+
 ## The first 50M-class model beats the 15.5M reference by +3.86 points
 
 Shape chosen from measurement: the direct pathway only contributes with `route` off, and `route`/`direct` are mutually exclusive. So
