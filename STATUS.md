@@ -1,3 +1,27 @@
+## Retraction: the data judge already passed, and my |z| clip is not the fix
+
+I took on the judge as "still fails its gate" and produced a mechanism, a fix and a claim. The control killed the claim:
+
+```
+arm                          AUROC     false alarm   one-token loop   verdict
+clipped |z|<=50 (3 seeds)    0.9820-22    0.0422        89.7-90.1%      PASS
+UNCLIPPED control, seed 0    0.9923      0.0257        90.1%           PASS
+```
+
+**The unclipped control passed and passed better** - false alarm **0.0257** against clipped **0.0422**, AUROC 0.9923 against
+0.9822. My hypothesis (that zero-MAD features reaching |z| = 1e9 explained the historical 69.5% miss) is **retracted as a cause**
+by the rule written before the run. The 1e9 values are real; they were not what broke the gate. Clipping now defaults **off** so
+the tool behaves as verified.
+
+**And the bigger correction: the judge was never failing.** `docs/JUDGE-V2.md` already records the rebuild passing (AUROC 0.9923,
+false alarm 2.59%), and my uncapped run reproduces it to the digit - 0.9923 and 0.0257. The "still fails its gate" line in my own
+status summary described the OLD judge in `docs/DATA-JUDGE.md`. That is a reporting error on my part, and the second time a stale
+status line nearly cost a wake of work.
+
+Verified now: AUROC **0.9923** (bar 0.90), false alarm **2.57%** (bar 5%), all five corruption kinds >= 80% - with one standing
+caveat, `shuffled order` sits on its bar at **80.7%**, the corruption that keeps every token and only destroys order. Details:
+`docs/JUDGE-ZCLIP-VOID.md`.
+
 ## The KL anchor stops the damage: RL is safe now, but still not competitive
 
 `docs/RL-DEGRADES.md` measured unanchored RL costing a working capability **-5.94 points** (3 of 3 seeds worse). This adds a KL
