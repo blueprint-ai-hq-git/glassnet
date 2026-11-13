@@ -1,3 +1,28 @@
+## Reward the shape and the shape gets hacked: a constant two-token nonce
+
+The last arm of the carry investigation stopped rewarding digits and rewarded the **structure** - +0.2 for emitting any
+two-token answer - because every training answer is one token and the second token was unreachable:
+
+```
+seed   acc_in   acc_gen   answers after training        confidence
+0       0.00     0.00     '98' on all 7 probes           0.31-0.67
+1       0.00     0.00     '83' on 6, '89' on 9+0          0.28-0.54
+2       0.00     0.00     '81' / '84'                     0.35-0.68
+mean reward at step 400: 0.168 against a 0.2 bonus
+```
+
+**Two-token answers appeared (prediction's first half passed) but `acc_gen` stayed 0.00 and `acc_in` fell to 0.00** (the falsifier
+triggered). Mean reward **0.168 of a 0.2 bonus** says plainly what happened: the model collected the shape bonus and nothing else,
+finding the cheapest constant two-token answer - a different one per seed. Third reward hack in the investigation, each shaped by
+the reward it was given: binary pays nothing (cannot start), per-digit pays for a right first digit (answers '1'), shape pays for
+two tokens (answers '98').
+
+**Conclusion: on this task and this model, RL from verification cannot produce carry** - implementation, reward resolution,
+sample count, learning rate, entropy, data mix, frequency bias and output-structure reachability have all been measured and
+excluded. What is NOT shown is that the task is reachable at all at 7,342 parameters: `acc_gen` is 0.00 for every method ever
+run, including 800 supervised steps. So the next arm is a **reachability check** - supervised training with two-digit answers in
+the data - before another RL arm is spent on a task nothing can solve. Details: `docs/RL-SHAPE-HACK.md`.
+
 ## Frequency correction cannot fix the 'answer 1' shortcut - and why
 
 The obvious repair after the reward-hacking result is a frequency-corrected reward. Implemented, it changed **nothing**:
