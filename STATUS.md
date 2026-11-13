@@ -1,3 +1,23 @@
+## Seed-matched comparison: +3.88 paired, on two pairs
+
+d512 seed 1 came in at **19.88 / 23.44 / 25.54** against reference seed 0's **19.69 / 24.26 / 25.52** - the reference reproduces to
+**0.02 points** at epoch 3, so the arms can now be compared paired on seed as this project requires:
+
+```
+seed    d1024    d512     paired difference
+0       29.38    25.52         +3.86
+1       29.45    25.54         +3.91
+paired mean                      +3.88   (sd 0.04, 2 of 2 seeds positive)
+
+unpaired arm means: d1024 29.11 (n=3) - d512 25.53 (n=2) = +3.58
+```
+
+**Quote +3.88.** It rests on two pairs, so no t-statistic is worth reporting (n=2); the honest statement is "two matched seeds, both
+positive, +3.86 and +3.91". d512 seed 2 is still running and started low (18.59 / 21.03), which is precisely why the paired number is
+the one quoted rather than the arm means. Falsifier not triggered: no d512 seed has reached 29.0% (best 25.54).
+
+`docs/D1024-BEATS-D512.md`.
+
 ## Correction: the epoch-2 claim in the d1024 result was a single-seed margin
 
 I published that "d1024's epoch 2 already beats the reference's final epoch". With three seeds that is still true in direction and
