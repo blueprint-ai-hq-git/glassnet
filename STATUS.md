@@ -1,3 +1,16 @@
+## New tool: `tools/compare_arms.py` prints every endpoint rule, so no single number can be cherry-picked
+
+Takes any number of `*_history.jsonl` files and prints each arm's full curve, **best-of-N**, **final epoch**, **last-3-mean** and
+**all-epoch mean**, plus its **selection inflation**, and warns when arms have different epoch counts. On the two arms that disagreed:
+
+```
+best-of-N       +0.87   (29.38 vs 28.51)
+final epoch     +1.71   (29.38 vs 27.67)
+last-3 mean     -0.17   (27.29 vs 27.47)
+all-epoch mean  +1.65   (27.29 vs 25.64)
+```
+
+Its final line: "no single number is printed as the answer - that is the point of this tool." Usage in `docs/D1024-BEATS-D512.md`.
 ## The width effect depends on how the endpoint is picked: -0.17, +0.87 or +1.71 points
 
 Both curves bounce two to three points per epoch, so the endpoint rule decides the sign of the result. The same two runs:
