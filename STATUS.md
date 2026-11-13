@@ -1,3 +1,24 @@
+## The copy-freeze win replicates from a different starting checkpoint
+
+Five seeds earlier gave +1.98 points of held-out copy from `early_s0_ep1000`, so every arm had started from that one checkpoint.
+Repeating the pair from `early_s0_ep2000` (a start already decayed to 64.3 percent):
+
+```
+seed   keep_scoped   keep_none   difference
+0         72.0         69.2         +2.9
+1         72.4         70.5         +1.9
+2         72.7         71.4         +1.3
+mean   72.37          70.37        +2.00
+```
+
+**+2.00 points, positive on 3 of 3 seeds** - same effect, same size, from a start about 7 points lower. The written falsifier (gap
+below 1.0 from this start means the effect is specific to ep1000) did not trigger. Combined across two starting checkpoints:
+**+1.98 on 5 of 5 seeds** and **+2.00 on 3 of 3**.
+
+It is still not free: the language cost is **-0.73 points** (15.56 vs 16.30 over five seeds). The successor meant to remove that
+trade - a copy path with its **own** pointer matrices, invisible to language gradients - is built, its mechanism verified at
+**0.000e+00** drift under 80 language-only batches, and its arms are running. Details: `docs/COPY-FREEZE-REPLICATES.md`.
+
 ## The copy win is real: 5 seeds, paired, +1.98 points (t = 6.2)
 
 Seeds 3 and 4 landed for the per-batch freeze, which I had recorded as "suggestive, not decisive" with a written falsifier (gap
