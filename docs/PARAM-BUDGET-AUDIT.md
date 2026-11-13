@@ -57,3 +57,39 @@ dmix          51.3%        +0.0            +0.00        dead weight on both
 ## Reproduction
 `tools/lang_ablation.py --windows 1500` (GPU, ~4 s), output `runs/lang_ablation/lang_early_s0_ep1000.json`. Copy numbers from
 `tools/copy_ablation.py`, documented in `docs/COPY-WEIGHTS.md`.
+
+## The reason is a code path, not uselessness (measured the same day)
+
+The number above is right and the explanation is not. Three checks were run on `early_s0_ep1000` (`route=True`, `direct=True`,
+`dmode=tied`):
+
+1. **Both ablation methods agree.** Replacing `dmix` with its mean gives +0.00 damage; replacing it with **zeros** gives +0.00 too
+   (language 16.53 either way on 1,500 windows). So the earlier "mean-ablation kept its rank-1 direction" worry was wrong - zeroing
+   the whole block changes nothing.
+2. **Direct zero-and-restore test:** language accuracy **14.75%** with `dmix` intact, **14.75%** with it zeroed, **14.75%** after
+   restoring it (400 windows).
+3. **The block is not dead in itself.** Its ReLU fires on **67.2%** of pre-activations, and a hand-computed pass gives a `relu(x @
+   dmix) @ E^T` term with mean magnitude **2.63** against the concept/answer logits' **0.093** - i.e. the term is enormous.
+
+So `dmix` computes a large term and the forward pass **discards it**. The mechanism is the route switch: when `self.route` is on,
+`forward()` stores `self._route_base = logits` *before* the direct path contributes, and at the end mixes that stored base with the
+pointer readout. `copylog` is added after the base is captured, so it never reaches the output. The consequence chain follows exactly:
+no output contribution -> no gradient -> **0.0000 relative drift** between checkpoints -> 0.00 in every ablation.
+
+**This is a real bug, not a design fact, and it is the inverse of one already fixed here:** a code comment nearby records the opposite
+fault ("pointer-only was applied mid-forward and the dmix copy path was silently added back on top", costing 58.0% -> 0.7% on a
+measured arm). The same class of ordering mistake, in the other direction.
+
+### What it means for the budget
+- **8,388,608 parameters (51.3% of the model) and the largest matmul in the model are computed every forward pass and thrown away**
+  whenever `route` is enabled. That is wasted compute as well as wasted memory.
+- Either the direct term must be included in the route combination (a third input to the switch), or `dmix` must not be built when
+  `route` is on. The second is free and immediate.
+- The audit's instruction for the 50M budget is unchanged: **do not scale a component that contributes nothing** - but the wording
+  changes from "dead weight" to "discarded by a routing branch, therefore unmeasurable and unlearned".
+
+### Honest correction of what I published first
+The first version of this audit said `dmix` "may simply never have been switched on in a way this objective could use". That was a
+guess and it is wrong: the block is switched on, computes a large term, and a routing branch drops it. The measurement was right, my
+explanation was not, and the difference matters because one is a plan ("don't spend the budget there") and the other is a bug ("fix
+the ordering and see what it was worth").

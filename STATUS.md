@@ -1,3 +1,24 @@
+## dmix is not dead weight - it is computed and then DISCARDED by the route switch
+
+A correction to the entry below: the 0.00 damage figure is right, the explanation was wrong. Measured on `early_s0_ep1000`
+(`route=True`):
+
+```
+language accuracy   dmix intact 14.75  |  dmix zeroed 14.75  |  restored 14.75
+mean-ablation +0.00   zero-ablation +0.00     relative drift 0.0000
+ReLU units firing: 67.2%   hand-computed dmix term magnitude: 2.63 vs main logits 0.093
+```
+
+The block is alive, its term is ~28x the main logits, and the forward pass throws it away: when `route` is on, `forward()` captures
+`_route_base = logits` **before** the direct path contributes and mixes that base with the pointer readout at the end, so `copylog`
+never reaches the output. No output contribution -> no gradient -> 0.0000 drift -> 0.00 in every ablation. It is the inverse of a
+bug already fixed in this file (pointer-only applied mid-forward with the copy path added back on top).
+
+**So 8,388,608 parameters - 51.3% of the model - and its largest matmul are computed every forward pass and discarded.** Either the
+direct term belongs in the route combination, or `dmix` should not be built when `route` is on; the second is free and immediate.
+The budget advice is unchanged (do not scale a component that contributes nothing) but the reason changes from 'dead weight' to
+'discarded by a routing branch, therefore unlearned'. Details: `docs/PARAM-BUDGET-AUDIT.md`.
+
 **Pointer-only ship number confirmed on five seeds:** paired copy gain **+1.86 +/- 0.70 (t = 5.9, **5 of 5 seeds positive**), language cost **-0.69 +/- 0.29** - the prediction (gain >= 1.5, >= 4 of 5 seeds) passed and the falsifier did not trigger. Seed 3 fell to 71.2 against 76-79 on the first three, and its unfrozen pair fell with it (69.7), which is why the five-seed gain (+1.86) is smaller than the three-seed figure (+2.07). Three-tensor and four-tensor sets are now statistically indistinguishable; the simpler set ships because concept.W was measured as contributing nothing.
 
 ## Half the model's parameters are measured dead weight on both objectives
