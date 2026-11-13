@@ -1,3 +1,27 @@
+## Half the model's parameters are measured dead weight on both objectives
+
+The 50M target is a budget question, so this measures which parameters earn their place on the **language** objective, the same way
+the copy line did for copy. Checkpoint `early_s0_ep1000`, baseline 16.53%, 16,354,001 parameters:
+
+```
+tensor        params      language damage   share
+emb           6,145,024       +16.53        37.6%
+ptrW            262,144       +14.40         1.6%
+Wq              262,144       +10.87         1.6%
+Wk              262,144       +10.47         1.6%
+concept.W       589,824        +0.40         3.6%
+answer.W        432,072        -0.07         2.6%
+dmix          8,388,608        +0.00        51.3%
+```
+
+**`dmix` is 51.3% of the model and worth 0.00 points of language accuracy** - and it was already 0.0 points of copy damage with
+0.0000 drift. Dead on both objectives. **The pointer matrices are 4.8% of the parameters and carry 10.5-14.4 points**, roughly
+**100x** `dmix`'s value per parameter.
+
+So a 50M model built the current way would spend about **26M parameters on a component measured at zero**. The budget should go to
+width and the pointer path instead: at `d = 1024` without `dmix` the model is **about 17.3M parameters** (emb 12.29M, concept
+1.34M, answer 0.49M, ptrW 1.05M, Wq/Wk 2.10M), inside the 50M limit with room to widen. Details: `docs/PARAM-BUDGET-AUDIT.md`.
+
 ## CORRECTED: concept.W alone does nothing; the pointer is the whole mechanism
 
 An earlier version of this entry compared arm averages and credited `concept.W` alone with +1.28 points of copy for no language
