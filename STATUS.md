@@ -1,3 +1,24 @@
+## CORRECTION: a caveat I published cited a number that is in no log
+
+I wrote that d1024's 1.35 tokens per parameter was measured against **8.91** for the d512 reference. **8.91 is in no log in this
+project** - a figure written from memory instead of read. What the runs actually print:
+
+```
+run                                    params        printed tokens/parameter
+d512 reference (and both r2 seeds)    15,567,566        4.11   (adequate)
+d1024 seed 0                          47,468,238        1.35   (UNDER-TRAINED)
+```
+
+The true ratio is **3.05x**, exactly the parameter ratio - same tokens, spread thinner. The nearest real figure to my invented 8.91 is
+8.22, and it belongs to a different full-corpus rung, not the matched reference.
+
+Two consequences that invalidate parts of my own plan: the diagnostic counts **one pass and ignores epochs**, so my P3 prediction on
+the 7-epoch arm is impossible by construction; and **7 epochs does not match the reference's exposure** - cumulative tokens give
+12.3 per parameter for the reference against 9.4 for the 7-epoch arm (76%), with **9.1 epochs** needed for a true match.
+
+**The three-seed result is not affected**: mean 29.11, paired +3.88 on two pairs, falsifier untriggered. The error was in my
+explanation of the comparison's imperfection, not in the comparison. `docs/D1024-BEATS-D512.md`.
+
 ## Seed-matched comparison: +3.88 paired, on two pairs
 
 d512 seed 1 came in at **19.88 / 23.44 / 25.54** against reference seed 0's **19.69 / 24.26 / 25.52** - the reference reproduces to
