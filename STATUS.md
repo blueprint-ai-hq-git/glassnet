@@ -3170,3 +3170,29 @@ concepts, a purely additive concept layer (interaction 0.0%), and rules a human 
 **Resolved same day:** the "~28% more parameters" caveat on the 18-concept result was tested and **withdrawn**. At identical 11,800
 parameters, 14 de-duplicated concepts score **80.13% +/- 0.81** with **0 of 14 concepts mislabeled** - so the gain is label
 quality, not capacity, and 14 clean concepts beat 18 clean ones. `docs/CONCEPT-SET14-MATCHED.md`.
+
+## Re-tuning alpha on clean labels: the readable stack is now 1.61 points behind a same-size plain net (2026-11-14)
+
+alpha=3.0 was tuned when the concept labels correlated up to 0.916 with each other. With the de-duplicated 14-concept set, accuracy
+falls monotonically as alpha rises and honesty becomes much cheaper:
+
+```
+alpha 0.5   83.13%   own-label corr 0.711   1 of 14 mislabeled     rule lift 0.87
+alpha 1.0   82.76%   own-label corr 0.772-0.786   0/0/1 mislabeled  rule lift 0.79
+alpha 3.0   80.20%   own-label corr 0.846-0.848   0/0/0 mislabeled  rule lift 0.92   <- shipped
+```
+
+**alpha 1.0 buys +2.56 accuracy and keeps 0 concepts below 0.50 in every seed**, at the cost of a lower mean own-label
+correlation and one mislabeled concept in one seed. alpha 3.0 remains the only setting with 0 mislabeled in all three seeds - so
+this is a genuine choice, not a winner:
+
+```
+matched plain control (10,345 params)                     84.37% +/- 1.04
+readable, 14 clean concepts, rules, alpha 1.0 (11,800)    82.76% +/- 0.35    -1.61
+readable, 14 clean concepts, rules, alpha 3.0 (11,800)    80.20% +/- 0.78    -4.17
+```
+
+**1.61 points is now the honest price of explain() on this task**, down from 4.24 before the labels were fixed.
+
+Still open, and independent of alpha: **19-20 of 32 rules wire together concepts that co-occur less than chance** (median rule-pair
+lift 0.79-0.92). Honest concepts do not guarantee sane rules. `docs/ALPHA-CLEAN-SWEEP.md`.
