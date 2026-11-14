@@ -50,3 +50,68 @@ An RL arm on `(a+b) mod 10` with a band widened to the measured range (for examp
 prompt), so dead groups are the exception rather than the rule. The predictions for that arm should be written before it runs
 and must include the greedy generalising accuracy measured *before* RL, because at 0.12% fuel the honest question is whether
 RL beats its own starting point at all - not whether it catches supervised learning.
+
+## Update 2026-11-14 10:35: the RL arm on the fuel-bearing task learned NOTHING, at every setting tried
+
+With fuel available (`docs/history/RL-TEST-BED-WITH-FUEL.md`), LENS-PG v2 was run on `(a+b) mod 10` - 600 RL steps, group 16,
+warm start 400 supervised steps held fixed at lr 0.05, evaluation greedy. Tool: `tools/rl_mod10_train.py`. Every number below
+is a 3-seed mean unless stated:
+
+```
+sampling T   RL lr     dead groups   reward mean   greedy gen accuracy    in-domain accuracy
+1.0          0.05          99%          0.0005       0.00% -> 0.00%       70.5% -> 42/24/54   (-31.2 mean)
+2.0          0.05          99%          0.0007       0.00% -> 0.00%                          (-48.8 mean)
+4.0          0.05          97.5%        0.0018       0.00% -> 0.00%                          (-51.3 mean)
+4.0          0.010         49.7%        0.0507       0.00% -> 0.00%                          (-51.3 mean)
+4.0          0.002         22.8%        0.0893       0.00% -> 0.00%                          (-41.5 mean)
+4.0          0.0005        21.0%        0.0948       0.00% -> 0.00%                          ( -6.2 mean)
+8.0          0.0005        37.3%        0.0654       0.00% -> 0.00%                          ( -5.3 mean)
+8.0          0.002         45.2%        0.0542       0.00% -> 0.00%                          (-46.2 mean)
+```
+
+**Greedy generalising accuracy never moves off 0.00%.** In-domain accuracy is damaged in proportion to the RL learning rate
+(-51 at lr 0.01, -6 at lr 0.0005), so the updates are doing something - they are just not doing the task.
+
+## Exploration was tested, not assumed
+
+Fuel is a function of sampling temperature, measured on 12,800 draws per point:
+
+```
+T=1   0.1172% of samples correct    6.00% of prompts can succeed
+T=2   1.5938%                      55.00%
+T=4   4.6719%                      93.50%
+T=8   7.1406%                      99.00%
+```
+
+So by T=4, 93.5% of generalising prompts can produce a correct sample and the dead-group fraction drops to ~21% at the right
+learning rate. **Every precondition I previously blamed was satisfied - fuel, group variance, dead-group rate - and the
+policy still did not learn.** Reward density, support, capacity and estimator design have now all been eliminated as the
+cause of this failure.
+
+## A diagnostic worth keeping: the model's strongest habit is the one answer that can never be right
+
+Exact enumeration of the generalising split (a+b >= 10, 45 prompt classes):
+
+```
+answer == 0  20.00%      answer == 4  11.11%      answer == 8   2.22%
+answer == 1  17.78%      answer == 5   8.89%
+answer == 2  15.56%      answer == 6   6.67%
+answer == 3  13.33%      answer == 7   4.44%      answer == 9   0.00%
+```
+
+**The answer is never 9** - the largest sum is 18, so `(a+b) mod 10 == 9` only if a+b is 9 or 19, and both are excluded by the
+>= 10 split. And the model emits **9 for 59.5%** of these prompts at T=1. Its single strongest habit points at the one digit
+that is never correct on the target distribution. That is why fuel is 0.12% at normal temperature, and it is a much sharper
+description of the failure than "RL does not work here".
+
+A constant-9 policy would score 0.00% on gen, so this fuel is NOT a mode-hacking artefact - the correct samples that exist
+are genuine, they are just rare and drowned by a confident wrong prior.
+
+## Where this leaves the RL line
+
+Twelve configurations, one outcome: the method does not move this policy. The next thing to try is not another estimator or
+another temperature - it is the mechanism that works when successes are rare but real: **rejection sampling**. Collect the
+samples that do pass (at T=4 there are ~600 correct samples per 9,600 draws), train on those supervised, and repeat. That
+converts rare success into ordinary supervision instead of asking a noisy advantage to carry it. It is the obvious next arm,
+and it should be judged against the same greedy generalising baseline reported above - which is 0.00%, so any movement at all
+is a result.

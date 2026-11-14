@@ -2891,3 +2891,20 @@ fuel per target sum 10..18 (34,560 draws)         0 correct at every sum
 irrelevant: a reward the model never attains carries no gradient. The task is still reachable **when taught** (supervised
 34.66% +/- 6.16), but not by sampling at any capacity or schedule tried. Our RL needs a task where a plausible wrong sample
 can actually pass the checker, not more tuning on this one.
+
+## With fuel present, our RL still learns nothing - 12 settings, one outcome (2026-11-14)
+
+On `(a+b) mod 10`, where fuel was measured to exist, LENS-PG v2 was run across sampling T 1-8 and RL lr 0.0005-0.05, 3 seeds each:
+
+```
+greedy generalising accuracy   0.00% -> 0.00%   at EVERY setting
+in-domain accuracy             damaged in proportion to lr (-51 at 0.01, -6 at 0.0005)
+dead groups                    21% at the best setting (so the variance gate is doing its job)
+```
+
+Exploration was raised until 93.5% of prompts could produce a correct sample (T=4) and 99% at T=8, and reward mean reached
+0.095. **Every precondition was satisfied and the policy still did not learn**, which eliminates reward density, support,
+capacity and estimator design as the cause.
+
+Sharpest diagnostic: on the generalising split the answer is **never 9** (max sum is 18), and the model emits **9 for 59.5%**
+of those prompts. Its strongest habit points at the one digit that can never be right. `docs/RL-TEST-BED-WITH-FUEL.md`.
