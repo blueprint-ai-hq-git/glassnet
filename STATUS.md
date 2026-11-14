@@ -3090,3 +3090,34 @@ Reference: **A3 no rule layer 83.13% +/- 0.42**, matched plain control **84.37% 
 Confound stated, not hidden: the earlier "no sparsity" arm (81.71%) also had `lam 0` while these arms keep `lam 0.005`, so the
 L1 penalty and the rule layer are **not yet separated**. Isolating `lam` is the next run.
 `docs/RULE-LAYER-COST.md`.
+
+## The concept-supervision knob, measured on the HONEST instrument (2026-11-14)
+
+```
+alpha   accuracy (3 seeds)   per-seed spread   AUROC
+1.0     82.68%               0.30              0.805
+3.0     78.46%               9.26              0.879   <- shipped
+6.0     74.34%               2.55              0.896
+10.0    63.51%               15.26             0.918
+```
+
+AUROC says alpha 1.0 is "slightly less honest" (0.805 vs 0.879). The project's own label audit says something much worse:
+
+```
+                                    alpha 1.0        alpha 3.0 (shipped)
+mean |rank corr| with own label       0.561              0.732
+concepts below 0.50                   7 of 14            2 of 14
+concepts tracking ANOTHER feature     5 of 14            2 of 14
+dead rules                            1 of 32            0 of 32
+```
+
+**At alpha 1.0 half the concept layer (7 of 14) does not track the name attached to it.** AUROC was the flattering instrument,
+exactly as `tools/phase2_reaudit.py` warns. So honesty costs **4.22 accuracy points** and even the shipped alpha 3.0 still leaves
+**2 of 14 concepts mislabeled** (`symmetry` and `vertical_edges` track other features at both settings).
+
+Two structural facts for free: **concept interaction is 0.0%** in both arms (purely additive - good for `explain()`, since
+contributions really do add up), and **12 of 32 rules combine concepts that rarely co-occur** (median rule-pair lift 1.12), which
+is hard for a human to check.
+
+Path forward is better concept DEFINITIONS, not more pressure: more alpha collapses accuracy faster than it fixes labels.
+`docs/CONCEPT-ALPHA-HONESTY.md`.
