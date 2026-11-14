@@ -3490,3 +3490,18 @@ lam     old pass   strict pass   median AUROC
   gain at the 0.55 bar was near-constant detectors (11 concepts fire on more than 90% of windows at lam 0.6) becoming slightly less
   arbitrary, not concepts becoming honest.
 - **New structural finding:** **11 of 36 chat concepts (31%) fire on >90% of windows.**
+
+### Fourth arm: lam-concept 1.2 - the curve keeps rising and accuracy still does not fall
+
+```
+lam      old pass   strict pass   median AUROC   fires > 0.90   VAL acc
+0.1        19/36      20/36         0.56490          ?           18.86%
+0.3        25/36      18/36         0.61657          ?           18.88%
+0.6        31/36      21/36         0.67186         11           18.89%
+1.2        36/36      30/36         0.76235          6           18.92%
+```
+
+- P1 held (36/36 old-bar, above the predicted 33); **P2 failed** - accuracy did not pay, it rose to 18.92%, the best of four arms.
+- Strict pass climbs **18 -> 21 -> 30 of 36** and median AUROC **0.61657 -> 0.67186 -> 0.76235** from lam 0.3 -> 0.6 -> 1.2.
+- **Near-constant concepts halve, 11 -> 6**, so the flaw that made the old bar misleading is itself reduced by pressure.
+- Not claimed for the shipped model: four 2-epoch, single-seed, d512 arms. Full-training confirmation is the next step.

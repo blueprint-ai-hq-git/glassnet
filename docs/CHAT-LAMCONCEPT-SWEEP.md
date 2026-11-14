@@ -48,3 +48,29 @@ His first standing item is a model that is 100% honest and understandable. On th
 to be the single most effective honesty lever and cost accuracy in exchange. **On chat the same lever appears to be free at this
 scale**, which - if it holds at full training - means the chat model's concept layer can go from 69% to 86% name-honest without
 trading anything measurable.
+
+## Fourth arm: lam-concept 1.2 finishes the curve, and it holds up under the corrected verdict
+
+Predictions were pre-registered in `lens/runs/CHAT-LAM12-PREDICTIONS.txt`. Result in `lens/runs/CHAT-LAM12.txt`,
+log `logs/exposure/lamconc_1p2.log`.
+
+```
+lam      old pass   strict pass   median AUROC   mean AUROC   fires > 0.90   VAL acc
+0.1        19/36      20/36         0.56490       0.58931         ?            18.86%
+0.3        25/36      18/36         0.61657       0.62950         ?            18.88%
+0.6        31/36      21/36         0.67186       0.66788        11            18.89%
+1.2        36/36      30/36         0.76235       0.75623         6            18.92%
+```
+
+- **P1 HOLDS**: 36 of 36 pass the trainer's own audit at 1.2, above the predicted 33.
+- **P2 FAILED**: I predicted accuracy would finally pay, dropping to 18.59% or below. It **rose to 18.92%**, the highest of all four
+  arms. Concept pressure is still free at 1.2 on this scale.
+- **Falsifier NOT TRIGGERED**: honesty did not saturate at 31/36.
+- **The strict verdict keeps climbing too**: 18 -> 21 -> 30 of 36, and median AUROC **0.61657 -> 0.67186 -> 0.76235** for lam
+  0.3 -> 0.6 -> 1.2.
+- **The near-constant problem HALVES**: concepts firing on more than 90% of windows fall from **11 to 6**, so the very property that
+  made the old 0.55 bar misleading is itself improved by pressure, not worsened.
+
+So the corrected bottom line, with every caveat intact: **on 2-epoch d512 chat arms, raising `--lam-concept` from the 0.3 default to 1.2
+takes own-name honesty from 18 to 30 of 36 under a strict instrument and from 0.617 to 0.762 median AUROC, while validation accuracy
+does not fall at all.** Whether that survives full training (9 epochs, d1024) and more seeds is the next question and is not claimed.
