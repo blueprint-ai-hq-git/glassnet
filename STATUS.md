@@ -3595,3 +3595,20 @@ that I had omitted the direct term. `docs/CHAT-EXPLAIN-CAUSAL.md`.
 `lens/concepts.py` explain() now returns `direct_term`, `concept_share` and `direct_share` (shares sum to 1), so the ~90% that the
 concept layer does not explain is stated in every explanation rather than left in an unnamed residual. Verified on three held-out
 windows: concept share **37.6% / 14.1% / 7.5%**, direct share **62.4% / 85.9% / 92.5%**.
+
+### Verified across consumers, and measured over 200 windows instead of 3
+
+The added explain() fields broke nothing (`api.explain` keys PASS, shares sum to 1 PASS, `explain_text()` still returns 884 chars).
+Distribution over 200 held-out windows:
+
+```
+concept_share   median 18.00%  (q25 11.48, q75 29.54, min 3.90, max 66.98)
+direct_share    median 81.99%
+concept layer is the MAJORITY contributor : 10 of 200  (5.0%)
+concept layer contributes under 25%       : 136 of 200 (68.0%)
+explain() exact on this checkpoint        : 0 of 200
+```
+
+Two share numbers, both recorded with their definition: **9.74%** net-signed (ablation tool, decision-relevant) and **18.00%**
+absolute (explain()'s own reporting). **On 95% of windows the concept layer is not the majority reason for the prediction, and
+explain() is not exact on any of the 200.**

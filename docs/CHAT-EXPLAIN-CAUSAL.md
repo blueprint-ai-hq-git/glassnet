@@ -96,3 +96,43 @@ windows and that the rest came from a pathway with no name in the concept layer.
 The remaining open question is unchanged and is the important one: **should the concept path carry the decision** (removing or
 constraining the direct path for a readable checkpoint), and what does that cost in accuracy and copy behaviour? That is a training
 experiment, not a reporting fix, so it needs his call before it burns an hour of GPU.
+
+## Verified the fix across consumers, and replaced the 3-window figure with a 200-window distribution
+
+`tools/explain_share_distribution.py`, runner `lens/scripts/run_explain_share_distribution.sh`, output
+`lens/runs/EXPLAIN-SHARE-DISTRIBUTION.txt` and `.json`. Inference only.
+
+**Consumer regression check - the added fields broke nothing:**
+
+```
+api.explain returns all expected keys (incl. direct_term, concept_share, direct_share) : PASS
+concept_share + direct_share == 1                                                        : PASS
+explain_text() still produces output                                                     : PASS (884 chars)
+```
+
+**explain()'s own share, 200 held-out windows (d512, 9 epochs):**
+
+```
+concept_share   median 18.00%   q25 11.48%   q75 29.54%   min 3.90%   max 66.98%
+direct_share    median 81.99%
+windows where the concept layer is a MAJORITY contributor (>50%) :  10 of 200  (5.0%)
+windows where it contributes less than 25%                        : 136 of 200 (68.0%)
+explain() exact on this checkpoint                                :   0 of 200
+residual  median 9.913   max 18.773
+```
+
+## Two share numbers, and why both are honest
+
+- **9.74%** - the ablation tool's figure, the **net signed** concept contribution at the predicted token. This is the
+  decision-relevant one: if two concepts push in opposite directions, the cancellation means neither moved the answer much.
+- **18.00%** - explain()'s own figure, the sum of **absolute** per-concept attributions. Contributions that cancel still count
+  here, so it is larger by construction.
+
+Both say the same thing: the concept layer is a minority of the decision. Quoting either alone without saying which metric it is
+would be exactly the kind of unattributed number this project keeps getting bitten by, so both are recorded with their definitions.
+
+## The sharper statement for the goal
+
+**On 95% of held-out windows the concept layer is not the majority reason for the prediction, and explain() is not exact on a single
+one of 200 windows.** That is the honest state of chat readability today: causal (4.13x random) but covering a median 10-18% of the
+decision, with 90%+ arriving through a pathway that has no name in the concept layer.
