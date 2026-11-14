@@ -49,3 +49,34 @@ What this sweep does establish, on its own terms:
 - capture full per-arm output plus exit codes, so a crashed config is visible as an error instead of an absence;
 - run the **pruned** configuration at 3 seeds, so the published 4.96 and this sweep are finally the same measurement;
 - re-test `patch 5` once it runs, because P1 (finer patches beat width) is still open.
+
+## Update 10:52 - P1 refuted, and the crash explained (a config that cannot exist)
+
+**Why `patch 5` crashed.** 28 is not divisible by 5: the front end reshapes each image to `(B, C, 5, 5, 5, 5)`, which asks for
+625 values where there are 784. Valid patch sizes for a 28x28 image are **1, 2, 4, 7, 14, 28** and nothing else. So the
+"finest patches" arm could never have run as written - it was a configuration that does not exist, not an unlucky failure.
+
+`lens/vision.py` now **refuses** a non-divisible patch size with a message naming the valid ones, instead of dying inside the
+forward pass:
+
+```
+ValueError: patch size 5 does not divide the 28x28 image (28 % 5 = 3). Valid patch sizes here: 1, 2, 4, 7, 14, 28.
+```
+
+(My first attempt at that guard tested `X.ndim == 2`, but `X` had already been reshaped to 4-D two lines earlier, so the guard
+never fired. Fixed to test the geometry, `self.image % p`, and verified: patch 5 refuses before training starts, patch 7 runs.)
+
+**The finer arm, run correctly as patch 4 (49 patches), 24 epochs, 2 seeds:**
+
+```
+patch 4 (finer, 42,009 params)    readable 83.86 / 83.81   plain 87.67 / 87.38   gap -3.81 / -3.57
+patch 7 (shipped, 24,458 params)  readable 84.36 / 84.27   plain 86.42 / 85.81   gap -2.06 / -1.54
+```
+
+**P1 is REFUTED.** I predicted finer patches would close more of the gap. They made it **1.75 to 2.03 points worse**. The
+shipped patch-7 layout is the better of the two, and the finer-patch direction is closed by measurement rather than by
+assumption.
+
+That is the second prediction of this sweep to fail in an informative direction (the first being that wider concepts would
+help, which they did not). The pattern is consistent: **more concepts and finer concepts both cost accuracy** - the readable
+model's price is paid in concept count, not in concept granularity.

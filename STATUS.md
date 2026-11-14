@@ -2965,3 +2965,9 @@ fine     patch 5       crashed, no result
 
 Softer honesty pressure buys accuracy and costs honesty, as predicted (lam 0.15 gives the smallest gap with honesty below the
 85% bar). Wider concepts do **not** close the gap. `docs/READABILITY-SWEEP.md`.
+
+**Update (same run):** the `patch 5` arm could never run - 28 is not divisible by 5, so the front end asks for 625 pixels per
+image where there are 784. Valid patch sizes are 1, 2, 4, 7, 14, 28, and `lens/vision.py` now refuses others with a message
+naming them. Re-run correctly as **patch 4**, the finer layout is **worse**: gap **-3.81 / -3.57** against patch 7's
+**-2.06 / -1.54**. Finer concepts cost 1.75-2.03 points, so the readable model's price is paid in concept count, not concept
+granularity. `docs/READABILITY-SWEEP.md`.
