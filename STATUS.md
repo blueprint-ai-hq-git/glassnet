@@ -3411,3 +3411,23 @@ free machine. Prediction written in advance: no pair above 0.50, at most two abo
 floor (confirmed in every training log). The finding is unaffected and applies to the set that matters: the overlap check covered
 all 43 defined concepts, a superset of the 36 kept, and the worst overlap anywhere is **jaccard 0.08** with **0 pairs above
 0.20**. So the chat labels are still not redundant and image-side de-duplication is still unnecessary there.
+
+## Chat concept labels are not redundant in effect either - the one real correlation is a single ambiguous word (2026-11-14)
+
+Disjoint vocabulary does not imply disjoint events, so the follow-up measured pairwise phi between every pair of the live chat
+concept labels over **60,000 sampled training windows**:
+
+```
+595 pairs    above |phi| 0.50: 0    above 0.30: 1
+strongest: is_an_agreement ~ mentions_law +0.415
+next:      is_a_request ~ mentions_the_user +0.203
+commonest concept (mentions_the_user): max |phi| with any other = 0.203
+```
+
+All three pre-registered predictions held. **The only correlation above 0.30 is explained and fixable:** `is_an_agreement` and
+`mentions_law` share exactly one token - the word **"right"** ("you're right" vs "right to remain silent") - so one ambiguous word
+manufactures the only meaningful co-occurrence in the whole set. Give "right" to one of them and the set is essentially orthogonal.
+
+**Conclusion: redundant labels are not why chat concept neurons fail to mean their names** - ruled out in both forms (vocabulary
+max jaccard 0.08, effect max phi 0.415), with numbers, so the remaining suspects are training pressure and the rule wiring, in that
+order. `docs/CHAT-CONCEPT-CORRELATION.md`.
