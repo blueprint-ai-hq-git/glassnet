@@ -97,3 +97,46 @@ above zero for the first time) and P3 (at least +2 points over its own warm star
 
 Wiring into `tools/rl_compare.py` (group-normalised advantages, curriculum sampling, repetition term) and the first seeded
 run. Until that lands, this document describes a method with tested arithmetic and **no result**.
+
+## The three attempts, and what they actually establish (2026-11-14 10:15)
+
+```
+attempt 1  no warm start, equal SAMPLES, 3 seeds each
+  v1 (g8,  800 steps)  acc_in  0.00   acc_gen 0.00   dead 59.9%
+  v2 (g16, 400 steps)  acc_in  0.00   acc_gen 0.00   dead 28.9%
+  -> BOTH AT THE FLOOR. The outcome metric cannot separate two arms that both learn nothing, so this attempt cannot
+     answer the question. It DOES establish the dead-group effect, which does not depend on the outcome.
+
+attempt 2  warm start, equal SAMPLES, 3 seeds each        (lens/runs/RL-V2-VERDICT-WARM.txt)
+  v1 (g8,  800 steps)  acc_in 47.72 +/- 3.39   dead 51.2%
+  v2 (g16, 400 steps)  acc_in 41.26 +/- 2.01   dead 24.7%
+  -> v2 six and a half points worse, BUT it had HALF the gradient updates. My equal-compute definition was wrong.
+
+attempt 3  warm start, equal UPDATES, 3 seeds each        (lens/runs/RL-V2-VERDICT-EQUPD.txt)
+  v1 (g8,  800 steps)  acc_in 47.72 +/- 3.39   acc_gen 0.00   dead 51.2%
+  v2 (g16, 800 steps)  acc_in 50.42 +/- 5.62   acc_gen 0.00   dead 36.6%
+  -> v2 is +2.70 points BETTER, and the falsifier ("v2 more than 2 points worse") did not trigger.
+```
+
+Two facts make attempt 3 trustworthy in a way attempt 2 was not:
+- **v1 reproduced exactly**: 47.72 +/- 3.39 in both attempts, same seeds, same recipe. The harness is deterministic, so
+  the attempt-2 result really was my confound and not noise.
+- **the dead-group effect is consistent across all three attempts**: 59.9 -> 28.9, 51.2 -> 24.7, 51.2 -> 36.6. The
+  variance gate does what it is for.
+
+## What is established, and what is not
+
+**Established:** counting and dropping zero-variance groups works and roughly halves the fraction of batches that carry no
+learning signal. That is a real mechanism, measured three times.
+
+**Not established:** that the +2.70 points come from the machinery. v2 at group 16 with 800 steps draws 12,800 samples
+against v1's 6,400 - **twice the sampling** - so "v2 recipe beats v1 recipe" is not "the variance gate and the curriculum
+cause the gain". And with 3 seeds the standard error on that +2.70 is about 3.2 points, so the direction is positive but the
+size is not separated from noise. Claiming otherwise would be exactly the endpoint-picking this project has had to correct
+three times already.
+
+**Still zero, fourth time:** `acc_gen` is 0.00 in every arm of every attempt. Together with the 9 earlier arms that makes
+13 measurements of the same failure, and they now point at one conclusion: **our RL's blocker is the objective, not the
+estimator.** A verifier that only says right or wrong gives this model nothing to climb; a better advantage estimator cannot
+manufacture a gradient that the reward does not contain. That reframes the next RL work as reward design, not more
+machinery.

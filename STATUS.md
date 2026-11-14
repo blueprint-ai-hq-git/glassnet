@@ -2840,3 +2840,21 @@ model PREDICTS <unk> on              21.73%   (true <unk> rate is 5.40%)
 `<unk>` is where the model puts its uncertainty, it uses it four times too often, and it is wrong almost every time. That
 is a **data and vocabulary** defect, not a scaling one - and it is the most actionable finding of the day. All three
 pre-registered predictions held. `docs/UNK-AUDIT.md`.
+
+## Our own RL: the variance gate works, the objective is the blocker (2026-11-14)
+
+Three attempts, warm start, 3 seeds each, equal updates (`lens/runs/RL-V2-VERDICT-EQUPD.txt`):
+
+```
+                       acc_in (in-domain)   acc_gen (never-trained)   dead groups
+v1  group  8, 800 steps   47.72 +/- 3.39           0.00                  51.2%
+v2  group 16, 800 steps   50.42 +/- 5.62           0.00                  36.6%
+```
+
+The variance gate **roughly halves the batches that carry no learning signal** (51.2% -> 36.6%, and 59.9% -> 28.9% in an
+earlier pair), which is what it exists for. The +2.70 points on in-domain accuracy is **not** attributed to the machinery:
+v2 draws twice the samples, and the standard error is about 3.2 points.
+
+**`acc_gen` is 0.00 for the 13th time.** Verifier-only learning has now failed 13 measurements in a row, which points at the
+**objective, not the estimator** - there is no gradient to estimate in a reward that only says right or wrong.
+`docs/RL-METHOD-V2.md`.
