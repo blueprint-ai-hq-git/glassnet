@@ -3505,3 +3505,27 @@ lam      old pass   strict pass   median AUROC   fires > 0.90   VAL acc
 - Strict pass climbs **18 -> 21 -> 30 of 36** and median AUROC **0.61657 -> 0.67186 -> 0.76235** from lam 0.3 -> 0.6 -> 1.2.
 - **Near-constant concepts halve, 11 -> 6**, so the flaw that made the old bar misleading is itself reduced by pressure.
 - Not claimed for the shipped model: four 2-epoch, single-seed, d512 arms. Full-training confirmation is the next step.
+
+## RETRACTION (same night): every full-training run already passes, so lam-concept is not a lever for the shipped model
+
+Checked the audit logs of the six full-length runs already on disk - free, no GPU:
+
+```
+log                epochs  median AUROC   old pass   STRICT pass   fires > 0.90
+d1024_e9_s0..s2      9      0.968-0.973     36/36       36/36            0
+d512_e9_s0..s2       9      0.871-0.874     36/36       36/36            0
+dropunk_d1024_s0     9      0.97111         36/36       36/36            0
+short arms (2 ep)    2      0.565-0.762     19-36/36    18-30/36       0-16
+```
+
+**Withdrawn:** that the default `--lam-concept 0.3` leaves concepts on the table (it already delivers 36/36 strict at 9 epochs), and
+that 11 of 36 concepts are near-constant (all six full-length runs have **zero** - it is an under-training artefact).
+
+**Survives:** the instrument flaw was real and is fixed (strict verdict + 7-case self-test), and at low compute concept pressure does
+raise concept ranking (median 0.565 -> 0.762).
+
+The lesson, now written into the docs: **a short arm answers a question about short training, never about the shipped model.**
+
+**Next open question:** full training scores 36/36 against *the same deterministic label function the neurons were trained to predict*,
+so a high AUROC partly measures "it learned its own target". The honest follow-up is an independent-label audit plus a causal
+explain() test, not another knob sweep.
