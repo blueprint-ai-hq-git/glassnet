@@ -2858,3 +2858,19 @@ v2 draws twice the samples, and the standard error is about 3.2 points.
 **`acc_gen` is 0.00 for the 13th time.** Verifier-only learning has now failed 13 measurements in a row, which points at the
 **objective, not the estimator** - there is no gradient to estimate in a reward that only says right or wrong.
 `docs/RL-METHOD-V2.md`.
+
+## The 13 RL zeros are explained: zero correct samples in 12,800 draws (2026-11-14)
+
+`tools/fuel_check.py`, warm start 400 steps on sums <= 9 then 200 generalising prompts (a+b >= 10) x G=64 samples:
+
+```
+answers drawn              12,800
+correct answers                 0   (0.0000%)
+prompts with >=1 correct    0 of 200
+```
+
+**No self-training method could have started.** The 13 consecutive `acc_gen = 0.00` measurements are not evidence about our
+advantage estimator, curriculum or KL anchor - the reward was always wrong, so the gradient was always empty. The task is
+not unreachable in principle (supervised training reaches 34.66% +/- 6.16 on the same split), so the gap is
+**reachable-when-taught, unreachable-when-sampled at this capacity**. The next RL question is how much capacity the fuel
+needs, not how to improve the estimator. `docs/RL-FUEL-CHECK.md`.
