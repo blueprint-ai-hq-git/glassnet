@@ -3043,3 +3043,24 @@ A3 no rule layer                   83.13% +/- 0.42        72.26 +/- 1.89        
 With the matched control at 84.37% +/- 1.04, the price is now attributed piece by piece: ~1.2 points for the concept layer,
 2.7 more for the 3-connection constraint, 4.1 more for the rule layer in the strict configuration.
 `docs/PHASE2-ABLATION-CLOSED.md`.
+
+## Scaled up: 96.15% generalising on its own, or 77.03% generalising with the old task IMPROVED by 19 points (2026-11-14)
+
+The rejection-sampling pilot went from 4 rounds / 400-prompt evaluation to **8 rounds / 2,000-prompt held-out evaluation / 3
+seeds**, on a task the model starts at **0.00%**:
+
+```
+                       generalising    in-domain      what it is
+no replay (8 rounds)      96.15%          2-3%        max new task, old task gone
+replay 0.5 (8 rounds)     77.03%         90.33%       both tasks, old task +19.0 over its warm start
+```
+
+Seed 0 of the no-replay arm scores **100.00% - 2,000 of 2,000 held-out prompts** - from 0.00%, with no labelled generalising
+example, in a 7,342-parameter model.
+
+**With replay there is no trade-off at all**: in-domain accuracy ends **19.00 points above** where it started (71.33% ->
+90.33%) *while* the new task reaches 77%. The pilot's apparent trade-off was a 4-round artefact. All three predictions held; the
+wider evaluation did not flatter the pilot's number. `docs/RL-REJECT-SCALED.md`.
+
+Not claimed: this is `(a+b) mod 10` with a 7k model, not the 47M chat line; and the method needs a free verifier, which this
+task has and language does not.
