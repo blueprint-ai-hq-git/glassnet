@@ -3929,3 +3929,26 @@ readable        0.7193    0.7256   +0.0063    0.5392    0.5436   +0.0044
 **The single sentence: the 36-concept bottleneck caps the readable chat model on accuracy, vocabulary breadth AND the meaning of its
 own concept names simultaneously, and none of the three can be relieved with more width.** The only untested lever is widening the
 constraint itself.
+
+## Prepared, not launched: a measured concept-widening design, 36 -> 60 concepts (2026-11-14)
+
+Every other lever has been measured and come back negative on the readable chat model (width +0.006 on concept names, four readout
+repairs all failing, bias exonerated, more training helping but not closing the gaps). The constraint that explains all of it is that
+**13-18 of 36 concepts fire on a median window**.
+
+So the widening design is measured rather than guessed: 26 candidate concepts, support measured on 20,000 held-out windows of the full
+corpus against the trainer's own 0.005 floor.
+
+```
+24 of 26 candidates survive -> the set goes from 36 to 60 concepts
+strongest: code_refs 0.2623, modality 0.2261, help_ask 0.0850, sequence 0.0846, commands 0.0663
+dropped at the floor: emotion_neg 0.0016, weather_sky 0.0016  (dropped, not forced)
+```
+
+Predictions for the widening arm are written down before it runs: **W1** diversity above 110 distinct tokens (78 now), **W2** median
+concepts firing below 13 of 60, **W3** held-out concept honesty above 0.60 (0.5676 now), **W4** accuracy no worse than 20.98% (21.48
+now). **Falsifier**: if diversity stays under 90 and honesty under 0.58, then 60 concepts is not enough either and the bottleneck needs
+a different capacity mechanism, which is a finding about the architecture rather than the concept list.
+
+**Nothing is trained by this document and no existing concept definition is changed.** It waits on the owner, because adding concepts
+changes the definitions every audit compares against. `docs/CONCEPT-WIDENING-DESIGN.md`.
