@@ -2931,3 +2931,19 @@ replay 0.8   gen 10-14%   in-domain 81-85%   (above the 70.5-72.5% baseline)
 
 **Verified self-training beats policy gradient decisively in this setting:** +78 to +88 points in four rounds, same model and
 same warm start, with less machinery. `docs/RL-REJECTION-SAMPLING.md`.
+
+## Refusing to train on unanswerable targets raises real token accuracy by +1.62 points (2026-11-14)
+
+Same d1024 reference recipe, ONE flag added (`--drop-unk`, which zero-weights training targets whose token is `<unk>` - 83,211
+of 2,000,000 targets, 4.161%). Measured with the same tool and the same 20,000 held-out windows as the baseline:
+
+```
+                          reference      drop-unk     change
+overall accuracy            29.34%        27.83%      -1.51
+accuracy, <unk> excluded    27.79%        29.41%      +1.62   <- the real test
+model predicts <unk> on     21.73%         0.00%     -21.73
+```
+
+All three pre-registered predictions held. The raw headline falls 1.51 points - necessarily, since `<unk>` targets were scoring
+56.41% and are now untrained - while accuracy on tokens that actually exist **rises 1.62 points** and `<unk>` emissions go to
+**exactly zero**. `docs/UNK-DROP-RESULT.md`.
