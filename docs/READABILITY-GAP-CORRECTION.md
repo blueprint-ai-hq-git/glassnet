@@ -67,3 +67,37 @@ statement is:
 Run the phase-2 pruned configuration (`VF0.10` sweep, 3 seeds, pruning applied) with the same matched plain control inside the
 same run, so one run answers both questions at once: what pruning does, and what readability costs at equal size. Predictions
 for it will be written into the script before it runs, as always.
+
+## Confirmed at three seeds: the matched gap is -1.53 +/- 0.44 points
+
+Runner `lens/scripts/run_matched_gap_3seed.sh`, shipped configuration (d 64, patch 7, lam-concept 0.3, 24 epochs, batch 256,
+lr 0.3, `--extra none`), Fashion-MNIST, each seed training its own PLAIN control at a matched parameter count in the same run
+(readable 16,665 vs plain 16,705, 0.24% apart):
+
+```
+seed   readable    plain     gap      concept honesty
+0      84.36%      86.42%    -2.06     100.0%  (13/13)
+1      84.27%      85.81%    -1.54      92.3%  (12/13)
+2      83.69%      84.67%    -0.98     100.0%  (13/13)
+
+MEAN MATCHED GAP   -1.53 points   sd 0.44
+```
+
+Predictions, written before the run, all three **HOLD**:
+- **P1** mean gap between -1.0 and -2.6 -> **-1.53 HOLDS**;
+- **P2** mean above -3.0, i.e. materially smaller than the published 4.96 -> **-1.53 HOLDS**, so the correction stands and the
+  size mismatch is the explanation;
+- **P3** concept honesty at or above 85% mean -> **97.4% HOLDS**.
+
+**So the honest headline for the readable image model is: 1.53 +/- 0.44 points behind a plain MLP of the same size, with 97.4%
+concept honesty.** Not 4.96. The readable architecture still does not win, but the penalty is roughly a third of what the
+project has been quoting, and it now has a standard deviation attached.
+
+## Third harness bug found and fixed in this run
+
+The trainer prepends its own `lens/runs/image/` to `--out`, so passing an already-prefixed path writes to a **nested**
+`lens/runs/image/lens/runs/image/` directory. Every arm whose numbers appear above therefore "disappeared" from the summary
+that globbed the flat directory and reported **"NO RESULTS - every arm failed"** while three arms had in fact succeeded. The
+files were recovered by copying (never moving) to `lens/runs/image/recovered/`, and the runner now passes a bare output name.
+That is the third time today that my own harness hid a real result - the grep that filtered a traceback, the 3-tuple unpack,
+and now a path prefix. Each one reported success or emptiness instead of the truth.

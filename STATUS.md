@@ -2996,3 +2996,9 @@ softlam  lam 0.15      -1.63 / -1.36             honesty  84.6% / 92.3%
 Also flagged, not papered over: the phase-2 document's "+5.63 from pruning" implies its unpruned readable model scored ~76.1%,
 while the current trainer measures 84.36% unpruned - so those are not the same implementation, and the ~76% is not quoted
 anywhere until that is located. `docs/READABILITY-GAP-CORRECTION.md`.
+
+**Confirmed at three seeds (same run):** matched gap **-1.53 +/- 0.44** points (seed values -2.06 / -1.54 / -0.98), concept
+honesty **97.4%** mean, with the plain control trained at a matched parameter count inside each seed's run. All three
+pre-registered predictions held. The honest headline for the readable image model is **1.53 +/- 0.44 points behind a plain MLP
+of the same size**, not 4.96 - the readable net still does not win, but the penalty is about a third of the quoted figure and
+now carries a standard deviation. `docs/READABILITY-GAP-CORRECTION.md`.
