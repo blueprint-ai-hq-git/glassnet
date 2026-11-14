@@ -3321,3 +3321,23 @@ misled by a concept the architecture physically denies the rules.
 Recommended config: 14 de-duplicated concepts, alpha 1.0, lam 0.02, 32 single-concept rules, keep 3, `--rule-idle` for the 5 →
 **81.58% +/- 0.50** (matched plain 84.37 +/- 1.04), 0 of 14 concepts mislabeled, and `explain()` verified causal.
 `docs/RULE-MASK-CHANNEL.md`.
+
+## Rule count is saturated: 64 rules do not beat 32 (81.27% +/- 0.65 vs 81.58% +/- 0.50), so the gap is the concept bottleneck (2026-11-14)
+
+Also closed last run's open gap - concept honesty is now audited **at the final configuration**: **0 of 14 concepts mislabeled in both
+seeds**, mean own-label correlation 0.768-0.773.
+
+Doubling the rules changed nothing, and my saturation falsifier fired (P1 predicted >= 82.08, got 81.27). The decomposition of the
+readable model's 2.79-point gap is now measured rather than assumed:
+
+```
+matched plain MLP (10,345 params)                     84.37% +/- 1.04
+readable, concepts -> classes only (no rules)         83.13% +/- 0.42   -1.24  <- concept bottleneck
+readable, 14 concepts -> 32 single-concept rules      81.58% +/- 0.50   -2.79  <- +1.55 for the rules
+```
+
+**The largest remaining lever is the concept layer, not the rules:** 14 hand-computed pixel statistics cannot represent Fashion-MNIST
+as well as 784 raw pixels. That is the honest price of a readable middle layer, now quantified.
+
+Also recorded so nobody wastes a run: **`--keep` is now a dead knob.** At lam 0.02 every rule carries exactly one weight above 0.50,
+so keep 3/6/12 describe a structure training already produces on its own. `docs/RULE-COUNT-SATURATED.md`.
