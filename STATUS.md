@@ -2827,3 +2827,16 @@ predictions copied from window   60.23% of all, 67.66% of correct ones
 **Two thirds of its correct answers are tokens retrieved from the window.** When the answer has to be *produced* rather
 than found, accuracy is **17.32%**. That, not width (+0.53 paired) or training length (plateau at epoch 6), is where the
 next lever is. All three pre-registered predictions held. `docs/FAILURE-ATTRIBUTION.md`.
+
+## The model over-predicts `<unk>` by 4x, and 86% of those predictions are wrong (2026-11-14)
+
+```
+overall accuracy                     29.34%
+accuracy, <unk> targets excluded     27.79%   (-1.55: the headline overstates token prediction this much)
+model PREDICTS <unk> on              21.73%   (true <unk> rate is 5.40%)
+  of those predictions, correct      14.02%
+```
+
+`<unk>` is where the model puts its uncertainty, it uses it four times too often, and it is wrong almost every time. That
+is a **data and vocabulary** defect, not a scaling one - and it is the most actionable finding of the day. All three
+pre-registered predictions held. `docs/UNK-AUDIT.md`.
