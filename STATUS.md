@@ -2971,3 +2971,28 @@ image where there are 784. Valid patch sizes are 1, 2, 4, 7, 14, 28, and `lens/v
 naming them. Re-run correctly as **patch 4**, the finer layout is **worse**: gap **-3.81 / -3.57** against patch 7's
 **-2.06 / -1.54**. Finer concepts cost 1.75-2.03 points, so the readable model's price is paid in concept count, not concept
 granularity. `docs/READABILITY-SWEEP.md`.
+
+## Correction: the "4.96 points worse" readability headline compares a 24k model to a 102k model (2026-11-14)
+
+Both published numbers are right; the comparison is unmatched. Arithmetic:
+
+```
+plain Phase-1 baseline 784->128->10   101,770 params, 10 epochs
+readable model                          24,458 params, 24 epochs
+                                        4.2x size difference
+```
+
+So "the readable model does not beat the baseline" attributes to **readability** what is at least partly **size**. With
+parameters matched inside the same run (readable 24,458 vs plain 24,467, same data, same epochs, same seed):
+
+```
+shipped  d64 patch 7   -2.06 / -1.54 (2 seeds)   honesty 100.0% / 92.3%
+wide     d96 patch 7   -2.23 / -1.91             honesty 100.0% / 100.0%
+softlam  lam 0.15      -1.63 / -1.36             honesty  84.6% / 92.3%
+```
+
+**At matched parameters the readable model costs 1.4-2.2 points, not 4.96.** Direction unchanged, magnitude roughly halved.
+
+Also flagged, not papered over: the phase-2 document's "+5.63 from pruning" implies its unpruned readable model scored ~76.1%,
+while the current trainer measures 84.36% unpruned - so those are not the same implementation, and the ~76% is not quoted
+anywhere until that is located. `docs/READABILITY-GAP-CORRECTION.md`.
