@@ -2798,3 +2798,17 @@ Sorted by confidence, accuracy climbs monotonically 4.95% -> 86.13%. So the conf
 and the model already signals its own uncertainty when it is wrong. The defect is a uniform inflation of ~14 points, which
 is a calibration fix, not an architecture problem. Two of my three predictions failed: I expected ECE > 0.15 and expected
 wrong answers to be confidently wrong (>50%), and they are not. `docs/CONFIDENCE-AUDIT.md`.
+
+## One temperature removes 62% of the over-confidence, free (2026-11-14)
+
+Fit on the first half of held-out windows, scored on the second half, `tools/calibrate.py`:
+
+```
+                  accuracy   mean conf      ECE      AUC
+BEFORE (T=1)        27.71%      41.41%     0.1370   0.7955
+AFTER  (T=1.132)    27.71%      32.83%     0.0521   0.7980
+```
+
+**ECE 0.1370 -> 0.0521 with accuracy exactly unchanged**, because a temperature cannot move an argmax. The model's
+confidence was ordered correctly all along and only needed to be scaled down. My 0.05 bar was missed by 0.0021, so a
+single parameter removes most of the over-confidence, not all of it. `docs/CALIBRATION.md`.
