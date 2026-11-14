@@ -2747,3 +2747,22 @@ What the record now says:
 The equal-3-epoch number (**+3.95**, three paired seeds) remains a correct answer to the question "width when both
 sides train for only three epochs". It is not an answer to "width in general", and this page previously implied it
 was closer to one than the data now supports.
+
+## Freezing the pointer protects memorised copy by +8.2 points (2026-11-14)
+
+Base `early_s0_ep1000` (copy 83.0% taught / 71.0% held-out), 4000 steps of language-only batches, 2 seeds each:
+
+```
+arm                        held-out copy (mean)   language (mean)
+freeze ptrW/Wq/Wk                 67.2               16.42
+no protection (control)           59.0               17.66
+difference                        +8.2               -1.24
+```
+
+**+8.2 points of held-out copying kept, for 1.24 points of language.** Same direction as the earlier five-seed +2.07.
+
+The separate-memory arm meant to test the stronger claim was **void twice** and both times the tell was identical
+numbers to the control: attempt 1 started from a language checkpoint (taught copy 0.0%, impossible), attempt 2 hit a
+`--sep-emb` block nested inside `if a.pointer:` so the flag did nothing. Adding `--pointer` to fix that destroys the
+base (83.0/71.0 becomes 19.2/0.0). The trainer now refuses to run that arm silently, and the corrected run is in
+flight. `docs/MEMORY-PROTECTION-FREEZE-VS-SEPARATE.md`.
