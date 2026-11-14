@@ -59,6 +59,14 @@ are exact on 100 of 100** windows (mean residual **5.6e-07**, named concepts car
 concept capacity, not accuracy - 15 of 36 concepts fire on a median window, so 36 half-saturated numbers cannot address 12,002
 output tokens. See [docs/READABLE-CHAT-9EP-MATCHED.md](docs/READABLE-CHAT-9EP-MATCHED.md).
 
+**Doubling the width does not help the readable model, and it makes the direct-path model overfit.** Same config at d1024:
+readable final validation accuracy **19.95%**, identical to d512's 19.95%, with diversity 44 -> 49. Its direct-path control, at the
+same width, peaks at 21.05% and then **falls to 18.57%** while validation perplexity explodes from 263 to **987.76** - the readable
+arm, throttled by its bottleneck, improves monotonically for all nine epochs and is still improving when it stops. So on the final
+epoch the readable model is **+1.38 ahead**, on the last-3 mean **+0.08 ahead**, on best-of-N **-1.89 behind**, and its final
+perplexity is **3.4x better**. Which one wins depends on the endpoint, so "readable is better at width" is not claimed - see
+[docs/WIDTH-PAIR-D1024-OVERFIT.md](docs/WIDTH-PAIR-D1024-OVERFIT.md).
+
 What moved it: **linear rules instead of sigmoid rules (+5.09 points)** and **deleting rules that were hurting borderline
 predictions (+4.48)**. Honest concept names cost **1.18 points** at this size, down from 3.68 for the sigmoid stack.
 
