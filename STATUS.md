@@ -3612,3 +3612,21 @@ explain() exact on this checkpoint        : 0 of 200
 Two share numbers, both recorded with their definition: **9.74%** net-signed (ablation tool, decision-relevant) and **18.00%**
 absolute (explain()'s own reporting). **On 95% of windows the concept layer is not the majority reason for the prediction, and
 explain() is not exact on any of the 200.**
+
+### Doubling the width halves the concept layer's share of the decision (pre-registered, all 3 predictions held)
+
+Same instrument, same 200 windows, only the checkpoint changed:
+
+```
+checkpoint   concept_share median   direct_share   concepts majority   concepts <25%   exact
+d512  e9 s0       18.00%              81.99%         10 of 200          136 of 200    0 of 200
+d1024 e9 s0        8.89%              91.11%          1 of 200          174 of 200    0 of 200
+```
+
+Two independent instruments now agree in direction: **the name-generalisation gap WIDENS with width (0.2117 -> 0.2576) and the concept
+share of the decision SHRINKS (18.00% -> 8.89%)**, with majority-contributor windows falling 10 -> 1. The bigger model routes more of
+the answer around the named layer while its own audit improves to 0.9754.
+
+**So "chat readability is not a scaling problem" is a two-metric finding: width makes the readable story weaker on both meaning and
+coverage.** Getting a bigger model will not fix it; the direct pathway has to be constrained by design, and every future width
+increase should carry this measurement.

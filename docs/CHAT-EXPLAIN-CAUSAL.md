@@ -136,3 +136,48 @@ would be exactly the kind of unattributed number this project keeps getting bitt
 **On 95% of held-out windows the concept layer is not the majority reason for the prediction, and explain() is not exact on a single
 one of 200 windows.** That is the honest state of chat readability today: causal (4.13x random) but covering a median 10-18% of the
 decision, with 90%+ arriving through a pathway that has no name in the concept layer.
+
+## Doubling the width HALVES the concept layer's share of the decision
+
+Predictions pre-registered in `lens/runs/EXPLAIN-SHARE-SCALE-PREDICTIONS.txt`. Same instrument, same 200 held-out windows, only the
+checkpoint changed (`exposure_d1024_e9_s0_best.npz`, 47M parameters). Output
+`lens/runs/EXPLAIN-SHARE-DISTRIBUTION-d1024.json` / `.txt`, runner `lens/scripts/run_explain_share_d1024.sh`.
+
+```
+checkpoint   concept_share median   q25     q75     direct_share median   concepts majority   concepts <25%   exact
+d512  e9 s0       18.00%          11.48   29.54         81.99%             10 of 200           136 of 200    0 of 200
+d1024 e9 s0        8.89%           5.87   16.69         91.11%              1 of 200           174 of 200    0 of 200
+```
+
+- **P1 HOLDS**: the d1024 concept share (8.89%) is lower than d512's 18.00%.
+- **P2 HOLDS**: explain() is exact on 0 of 200 windows at d1024 as well (residual median 11.389, max 20.295).
+- **P3 HOLDS**: majority-contributor windows fall from 10 to **1** of 200.
+- **Falsifier NOT TRIGGERED**: scale does not buy coverage.
+
+## Why this matters more than the number
+
+This is the **second independent instrument** pointing the same way, and they agree in direction:
+
+```
+metric                                              d512 -> d1024
+name generalisation gap (own labels vs synonyms)   0.2117 -> 0.2576   WIDER
+concept share of the decision                      18.00% -> 8.89%     SMALLER
+windows where concepts are the majority reason      10/200 -> 1/200    FEWER
+```
+
+**The bigger model routes more of the decision around the named layer, while its own audit looks better.** On d1024 the concepts are
+91.1% bypassed on a median window even though they score 0.9754 on the labels they were trained on. So "chat readability is not a
+scaling problem" is no longer a single-metric claim: on both the meaning test and the coverage test, **width makes the readable story
+weaker, not stronger.**
+
+That directly contradicts the natural plan of "get a bigger model and the concepts will carry it". For the project's first standing
+goal, the implication is that the direct pathway has to be constrained by design, and that any future width increase must carry the
+share measurement with it or the honesty percentage will keep rising while the explanation keeps covering less.
+
+## Caveats
+
+- One seed per width (s0 for both), 200 windows, same instrument.
+- The two checkpoints differ in more than width in principle (same recipe, same corpus, same epochs), but the trainer's own config
+  records d512 vs d1024 as the only change; that is asserted from the reference invocation, not re-derived here.
+- The share metric is explain()'s absolute-attribution share (18.00% / 8.89%); the net-signed ablation share was 9.74% at d512 and has
+  not been re-run at d1024. Direction is consistent across both metrics where both exist.
