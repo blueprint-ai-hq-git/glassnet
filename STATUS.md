@@ -3166,3 +3166,7 @@ parameters.
 
 Against the matched plain control (84.37% +/- 1.04) the full readable stack now costs **4.24 points**, in exchange for honest
 concepts, a purely additive concept layer (interaction 0.0%), and rules a human can read. `docs/CONCEPT-SET14-MATCHED.md`.
+
+**Resolved same day:** the "~28% more parameters" caveat on the 18-concept result was tested and **withdrawn**. At identical 11,800
+parameters, 14 de-duplicated concepts score **80.13% +/- 0.81** with **0 of 14 concepts mislabeled** - so the gain is label
+quality, not capacity, and 14 clean concepts beat 18 clean ones. `docs/CONCEPT-SET14-MATCHED.md`.

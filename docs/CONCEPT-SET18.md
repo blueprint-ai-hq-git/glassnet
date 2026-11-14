@@ -72,3 +72,20 @@ python3 gates/phase2_train.py --concept-names "center_ink,quad_UL_ink,..." --R 3
         --rule_linear --varfloor 0.1 --seeds 0 1 2 --epochs 10 --batch 128 --lr 0.1 --tag SET18
 GLASSNET_CONCEPT_NAMES="center_ink,..." python3 tools/phase2_reaudit.py runs/phase2_sweep/SET18/final_seed0.npz
 ```
+
+## Resolution of caveat 1 (same day): it was capacity, and the caveat is withdrawn
+
+This document flagged that the 18-concept set has ~28% more parameters (15,068 vs 11,800), so the +1.23 accuracy gain might be
+capacity rather than label quality. That was tested directly with a **parameter-matched** control - the same de-duplication rule
+truncated to 14 features, so the model has **exactly** the shipped 11,800 parameters and only the labels differ:
+
+```
+                               shipped 14     18 concepts      14 de-duplicated
+parameters                      11,800          15,068             11,800
+accuracy (3 seeds)          78.46% +/- 4.63  79.69% +/- 1.13   80.13% +/- 0.81
+concepts mislabeled              2 of 14         1 of 18            0 of 14
+```
+
+**At equal parameters the de-duplicated labels gain +1.67 accuracy and eliminate every mislabeled concept.** So the gain is label
+quality, not capacity - and remarkably, 14 clean concepts beat 18 clean concepts with 3,268 fewer parameters. Details:
+`docs/CONCEPT-SET14-MATCHED.md`. Caveat 1 is withdrawn.
