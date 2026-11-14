@@ -3681,3 +3681,35 @@ misleading. The retained accuracy is the `<unk>` base rate, not retained skill.
 **So there are two separate defects - coverage (direct path carries 82-91%) and a degenerate readout - and fixing one without the
 other changes nothing.** A constrained-path arm must fix the readout too, or it just becomes a `<unk>` machine. P1 and P2 held; P3
 failed (my magnitude hypothesis was wrong). `docs/CONCEPT-READOUT-DEGENERATE.md`.
+
+## The concept activations carry almost no generalisable information (2026-11-14)
+
+Two tests, both inference-only, both predicted before running:
+
+**1. Can the model's own readout be repaired post-hoc? No.**
+```
+baseline 5.25% | no_unk 3.15% | centred 0.60% | no_unk+centred 0.65% | zrow 5.25%
+```
+Every repair fails; three are worse than doing nothing, and it drops BELOW the `<unk>` base rate once `<unk>` is excluded - there is
+no hidden ranking under that column.
+
+**2. Is the information in the activations at all? Almost none.** My own softmax-regression probe from the 36 concept activations to
+the next token, fitted on 20,000 train positions:
+
+```
+probe TRAIN accuracy      18.32%    <- it can fit, so the probe is not broken
+probe HELD-OUT accuracy    4.45%    <- below the <unk> base rate of 5.25%
+```
+
+Train 18.32% vs held-out 4.45% is memorisation, not representation. P4 (>=15%) failed, P5 (<8%) held.
+
+**So no readout fix can rescue the chat concept layer - the information is not there to read.** The readable layer is decorative for
+prediction: direct pathway 82-91% of the decision, concept path answers a constant `<unk>`, held-out probe 4.45% against a full model
+of 28.25%.
+
+**Consequence: do not spend a GPU hour on a readout tweak.** The next readable-chat arm must force the concepts to carry the answer -
+a bottleneck like the image model's concepts -> rules -> classes (81.95% +/- 0.53 at 10,166 parameters) - and until it trains, every
+public statement must say the concepts do not yet carry the answer. `docs/CONCEPTS-CARRY-NOTHING.md`.
+
+Two of my own bugs were caught and fixed before any number was trusted: an underfitted 400-step probe (2.25%, thrown away) and a
+weight-gradient shape error.
