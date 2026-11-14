@@ -2908,3 +2908,26 @@ capacity and estimator design as the cause.
 
 Sharpest diagnostic: on the generalising split the answer is **never 9** (max sum is 18), and the model emits **9 for 59.5%**
 of those prompts. Its strongest habit points at the one digit that can never be right. `docs/RL-TEST-BED-WITH-FUEL.md`.
+
+## Rejection sampling: the first method here to create generalising ability from nothing (2026-11-14)
+
+On the fuel-bearing task, after twelve policy-gradient configurations failed to move greedy generalising accuracy off 0.00%:
+
+```
+4 rounds of: sample at T=4 -> keep correct answers -> supervised train on them
+seed 0   0.00% -> 40.75% -> 60.00% -> 77.50% -> 88.00%
+seed 1   0.00% -> 39.25% -> 54.75% -> 66.25% -> 82.75%
+seed 2   0.00% -> 38.25% -> 51.00% -> 70.50% -> 78.25%
+```
+
+It costs in-domain accuracy (70.5-72.5% -> 2-3%): textbook forgetting. Mixing in-domain rows into each batch (`--replay`)
+trades smoothly:
+
+```
+replay 0.0   gen 78-88%   in-domain  2-3%
+replay 0.5   gen 34-40%   in-domain 62-72%
+replay 0.8   gen 10-14%   in-domain 81-85%   (above the 70.5-72.5% baseline)
+```
+
+**Verified self-training beats policy gradient decisively in this setting:** +78 to +88 points in four rounds, same model and
+same warm start, with less machinery. `docs/RL-REJECTION-SAMPLING.md`.
