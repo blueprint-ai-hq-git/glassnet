@@ -3341,3 +3341,26 @@ as well as 784 raw pixels. That is the honest price of a readable middle layer, 
 
 Also recorded so nobody wastes a run: **`--keep` is now a dead knob.** At lam 0.02 every rule carries exactly one weight above 0.50,
 so keep 3/6/12 describe a structure training already produces on its own. `docs/RULE-COUNT-SATURATED.md`.
+
+## More concepts is not the fix: +8 concepts bought 0.57 accuracy, cost 3 mislabeled labels, and widened the penalty (2026-11-14)
+
+The concept bottleneck (1.24 points) - is it the *number* of statistics or their *kind*? Tested with 22 features instead of 14, each
+against a plain control of the same parameter count:
+
+```
+                                params    accuracy (3 seeds)   vs its own matched plain
+14 concepts (recommended)       11,800    81.58% +/- 0.50      84.37 +/- 1.04  -> -2.79
+22 concepts                     18,336    82.15% +/- 0.38      85.28 +/- 0.46  -> -3.13
+```
+
+**The count does help a little (+0.57), but the readable penalty gets WORSE (2.79 -> 3.13)** because extra capacity helps the plain
+network half again as much (+0.91 vs +0.57). And the 22-set costs honesty: **3 of 22 concepts mislabeled** against **0 of 14** for
+the clean set, because relaxing the correlation limit put overlapping labels back.
+
+So the 22-concept set is **not adopted** - it is a worse model on the project's own priority order. The finding that matters is a
+scaling statement: **the readable architecture falls further behind as it grows**, which points at the *kind* of statistic
+(whole-image summaries discard spatial detail) rather than the count.
+
+Next: the same measurements computed **per image region**, so concepts keep spatial information while remaining nameable. Prediction
+rule pre-registered: closing more than 1 point of the 3.13-point gap means resolution was the constraint; otherwise ~3 points is the
+honest, irreducible price of a small readable middle layer. `docs/SET22-MORE-CONCEPTS.md`.
