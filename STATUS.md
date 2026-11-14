@@ -2766,3 +2766,18 @@ numbers to the control: attempt 1 started from a language checkpoint (taught cop
 `--sep-emb` block nested inside `if a.pointer:` so the flag did nothing. Adding `--pointer` to fix that destroys the
 base (83.0/71.0 becomes 19.2/0.0). The trainer now refuses to run that arm silently, and the corrected run is in
 flight. `docs/MEMORY-PROTECTION-FREEZE-VS-SEPARATE.md`.
+
+## The separate memory table does nothing; freezing is what works (two seeds, 2026-11-14)
+
+Corrected, properly engaged arm (the trainer used to skip the flag silently - it now refuses to run instead):
+
+```
+                          held-out copy (mean)   language (mean)
+separate table (idea)            58.5                17.70
+control, no table                59.0                17.66
+difference                       -0.5                +0.04
+```
+
+Half a point of copy and four hundredths of a point of language: **the separate table changes nothing.** The mechanism
+that does work on this base is freezing the pointer matrices, **+8.2 points of copy for -1.24 language** (67.2 vs 59.0).
+`docs/MEMORY-PROTECTION-FREEZE-VS-SEPARATE.md`.

@@ -56,7 +56,40 @@ re-attaching wiped the memory the experiment is about.
 - P3 (both beat control by >= 1.5): freeze **+8.2 PASSED**, sep **VOID**.
 - Falsifier (sep > 1 point worse than freeze on copy): could not be evaluated.
 
-## Running now
+
+## The corrected separate-memory result, two seeds: the table does nothing
+
+Same trainer version, same seeds, same command - only the table differs:
+
+```
+                            held-out copy              language
+                          seed0  seed1  mean        seed0  seed1  mean
+separate table (his idea)  55.8   61.3   58.5        17.75  17.65  17.70
+control, no table          56.7   61.3   59.0        17.70  17.62  17.66
+difference                 -0.9   +0.0   -0.5        +0.05  +0.03  +0.04
+```
+
+**Giving the memory its own table changes nothing measurable** - half a point of copy, four hundredths of a point of
+language. Not protection, and not a tax either.
+
+Predictions, scored:
+- P2 (separate table holds copy >= 3 points above control): **FAILED** (-0.5).
+- P3 (no more than 0.5 points of language paid): holds (+0.04) - but it holds because the arm does nothing, not because
+  his trade-off is real.
+- Falsifier ("within 1 point means the separate table does not protect memory in this configuration, and the idea needs a
+  different mechanism, not a bigger table"): **TRIGGERED**.
+
+So of the two mechanisms tested on this base, exactly one works: **freezing the pointer matrices, +8.2 points of held-out
+copy for -1.24 language.** A separate table, correctly engaged and confirmed engaged (the `SEPARATE embedding ... pemb
+(12002, 512)` line appears in both sep logs), buys nothing.
+
+Sources: `logs/split51m/sep3_s*.log`, `logs/split51m/ctl3_s*.log`, and the freeze arms `logs/split51m/frz2_s*.log` /
+`non2_s*.log`.
+
+Note on determinism: the control run reproduced **56.7** exactly in two separate attempts across a trainer change, so
+this task is deterministic on a fixed seed and the -0.5 is a real -0.5, not sampling noise.
+
+## Running now (superseded - the run above finished)
 `lens/scripts/run_split_mem_test_v3.sh`: the sep arm re-run properly (`--sep-emb` alone, table engaged, base intact at
 83.0/71.0) against a matched control, 2 seeds, with P2 requiring sep to hold held-out copy **at least 3 points** above
 its control. Falsifier: within 1 point means the separate table does not protect memory in this configuration and the
