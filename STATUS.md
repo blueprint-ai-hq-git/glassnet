@@ -3271,3 +3271,30 @@ matched plain control** (84.37 +/- 1.04).
 Also recorded: the audit's `rule-pair lift` metric (27 of 32 below 1.0 at lam 0.02) is **provably meaningless for single-concept
 rules** - it tests a rule's second-strongest weight against noise - and the honest connectivity count supersedes it.
 `docs/LAM-SINGLE-CONCEPT-RULES.md`.
+
+## explain() is causal, but 5 of the 14 named concepts are read by no rule - and trimming them costs 1.55 points (2026-11-14)
+
+`tools/explain_verified.py` prints a receipt and then **removes the rules it named** to check the claim:
+
+```
+image 2  true trouser  predicted trouser  margin +5.083
+   rule #25 reads light_region_count (-0.76) -> +0.969 to class trouser
+   rule #26 reads top_heavy (-0.85)          -> +0.812 to class trouser
+   remove top-2 rules -> margin +3.192 (37% gone)
+   remove 2 RANDOM    -> margin +4.110 (19% gone)
+```
+
+Across images, removing the top-2 **named** rules removed a mean **346.7%** of the margin (sign flips on some images) against
+**10.8%** for 2 random rules - **the receipt is causal, not decoration.**
+
+**But 32 rules read only 9 of the 14 concepts.** Five concepts - `center_ink`, `border_ink`, `outline_ratio`, `symmetry_center`,
+`tall_shape` - are read by no rule. They are honest (they track their own labels) and **idle**: nothing downstream reads them, so
+they cannot affect a prediction.
+
+The coverage penalty cannot fix it: `--cov` is genuinely wired into the loss, but at `lam 0.02` the L1 penalty shrinks exactly the
+weights coverage tries to grow, and coverage stayed at exactly 9 of 14 for cov 0.05 and 0.2.
+
+Trimming the set to those 9 costs **80.16% +/- 2.13 against 81.71% +/- 0.78** - 1.55 points and a tripled spread - which triggers my
+own written falsifier: the idle concepts help through the joint objective, not through rule weight. So they stay, and the honest
+burden becomes **disclosure**: `explain()` names only rules that actually contributed and never presents the idle five as reasoning.
+`docs/EXPLAIN-CAUSAL-IDLE-CONCEPTS.md`.
