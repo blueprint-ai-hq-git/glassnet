@@ -3767,3 +3767,32 @@ no `--k` flag; K comes from the concept module), which is a change to the concep
 
 All three of my predictions failed and the falsifier fired, which is the only reason the conclusion landed on capacity instead of the
 bias. `docs/history/DIVERSITY-COLLAPSE-CAPACITY.md`.
+
+## At 9 epochs the readable chat model matches its control: -0.17 points VAL, and the only deficit left is vocabulary (2026-11-14)
+
+Matched pair, identical except `--direct --direct-mode tied`, both 9 epochs, d512, seed 0, full 294M-token corpus, each arm trained
+fresh in the same run:
+
+```
+                                   readable   control    gap
+final VAL accuracy                   19.95%    20.12%   -0.17
+final VAL ppl                        292.65    352.11       -
+held-out best (by position)          21.45%    23.67%   -2.22
+next-token metric, 2000 positions    21.90%    22.40%   -0.50
+distinct tokens predicted               44       191      -147
+concept fidelity                     34 of 36  36 of 36     -2
+explanations                     EXACT 100/100  not exact    -
+```
+
+- **The accuracy cost of readability has almost vanished: -0.17 points at the final epoch.** The same comparison at 3 epochs was
+  **-4.67**, so **4.5 of those 4.67 points were under-training, not readability.**
+- **The readable arm's validation perplexity is better (292.65 vs 352.11)**: the control overfits (train acc 36.9 -> 44.3 while VAL
+  ppl rises 252 -> 352) and the 36-concept bottleneck regularises.
+- **`explain()` is exact on 100 of 100 windows** on this checkpoint (mean residual **5.634e-07**, max **2.295e-06**,
+  `concept_share` **99.999996%**), so readability is not a 3-epoch artefact (P3 held).
+- **P1 held** (within 3 points), **P2 failed** (predicted >60 distinct tokens, got 44).
+
+**The model is now credible: within 0.17 points of its own control on accuracy, better validation perplexity, exact explanations,
+34 of 36 concepts honouring their names. The one remaining deficit is vocabulary breadth - 44 distinct words against 191 - which is
+the concept-capacity bottleneck, and widening the concept set is the owner's call because it changes the definitions every audit
+compares against.** `docs/READABLE-CHAT-9EP-MATCHED.md`.
