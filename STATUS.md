@@ -3451,3 +3451,25 @@ chat honesty **is** governed by supervision pressure, agreeing with the image li
 **The default `--lam-concept 0.3` is leaving 6 concepts per run of honesty for nothing.** Not yet claimed for the shipped model: these
 are 2-epoch, single-seed, d512 arms, and the curve has not plateaued (31/36 at 0.6), so the next arm is lam 1.2 to find where
 honesty saturates and where accuracy finally pays. `docs/CHAT-LAMCONCEPT-SWEEP.md`.
+
+## Correction: the concept honesty audit passes degenerate concepts and fails accurate rare ones (2026-11-14)
+
+The fidelity check (`lens/api.py:176`) passes a concept when **AUROC >= 0.55 and fires >= 0.02**. So "31 of 36 concepts mean their
+name" means "31 of 36 beat barely-above-chance". The full ladder from the same three runs:
+
+```
+lam        >=0.55*   >=0.60   >=0.70   >=0.80   >=0.85
+0.1           19       13        4        2        0
+0.3           25       19        8        4        3
+0.6           31       25       13        4        3
+```
+
+At a bar that means something, lam 0.6 is **13 of 36 (36%)**, and 3 of 36 reach 0.85.
+
+The instrument also inverts its own purpose:
+
+- `mentions_a_number` is **well detected (AUROC 0.84468)** and is FAILED only because it fires on 1.7% of windows against a 2% floor.
+- Seven concepts pass **only** because the bar is 0.55, and all seven fire on **90-97%** of windows - a nearly constant detector can
+  take a slightly-above-chance AUROC for free.
+
+Fix queued: quote the ladder, drop the positive-rate penalty, and add a constant-detector guard. `docs/CONCEPT-AUDIT-INSTRUMENT-FLAW.md`.
