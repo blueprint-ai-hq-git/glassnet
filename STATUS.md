@@ -3064,3 +3064,29 @@ wider evaluation did not flatter the pilot's number. `docs/RL-REJECT-SCALED.md`.
 
 Not claimed: this is `(a+b) mod 10` with a 7k model, not the 47M chat line; and the method needs a free verifier, which this
 task has and language does not.
+
+## Where the readable rule layer's cost comes from: not the rule count, not the sparsity (2026-11-14)
+
+Two 3-seed sweeps at K=14 named concepts, alpha 3.0, lam 0.005, 10 epochs, with predictions written before each:
+
+```
+rules (connections fixed at 3)          connections per rule (R=32)
+R=16   76.41% +/- 6.35                  keep=1    65.44% +/- 3.06
+R=32   78.57% +/- 3.87                  keep=3    77.76% +/- 4.20   <- shipped
+R=64   79.42% +/- 1.53                  keep=6    78.60% +/- 4.34
+                                        keep=12   78.45% +/- 4.55   <- no sparsity at all
+```
+
+Reference: **A3 no rule layer 83.13% +/- 0.42**, matched plain control **84.37% +/- 1.04**.
+
+- **Rule count is not the constraint**: R=64 beats R=32 by only **+0.85** (bar was +1.0). But it collapses the spread **4x**
+  (+/-6.35 -> +/-1.53), so more rules buy **reliability**, not average accuracy.
+- **Connectivity is not the constraint either**: even at ~**12 connections per rule** - no sparsity at all - the readable model is
+  still **4.68 points** below removing the rule layer. The written falsifier triggered.
+- **The sharpest positive result: keep=3 is already the sweet spot.** 1 -> 3 connections is worth +12.32 points, 3 -> 6 only
+  +0.84, 6 -> 12 is flat. **The project did not pay accuracy for the sparsity it advertises.**
+- So the ~4-point cost of `explain()` is **structural**, sitting in having a small bottleneck between concepts and classes.
+
+Confound stated, not hidden: the earlier "no sparsity" arm (81.71%) also had `lam 0` while these arms keep `lam 0.005`, so the
+L1 penalty and the rule layer are **not yet separated**. Isolating `lam` is the next run.
+`docs/RULE-LAYER-COST.md`.
