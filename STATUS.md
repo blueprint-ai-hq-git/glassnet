@@ -3740,3 +3740,30 @@ next-token metric, 2000 positions:  no-direct 17.25% (28 distinct tokens) | cont
 P1 failed (I predicted <=12%, got 14.84%) and P2 failed (predicted >100 distinct tokens, got 28); P3 held. **Readable chat is not
 hypothetical and needs no new architecture - it needs a full-length arm of the arm that already works, plus diversity work.**
 `docs/READABLE-CHAT-NODIRECT-ARM.md`.
+
+## Why the readable chat arm is narrow: 36 saturated concepts cannot cover 12,002 tokens (2026-11-14)
+
+Decomposing the readable arm's predictions against its matched control (2,000 held-out positions, both 3-epoch d512):
+
+```
+                              no-direct   control
+concept-only accuracy           16.45%      3.25%
+concept agreement with full     84.8%       6.6%
+bias agreement with full        19.5%       7.2%
+distinct tokens, full              28        121
+distinct tokens, concept only      27         12
+mean entropy (nats)            6.3085     5.1881
+concepts firing (>0.5)        18 of 36    7 of 36
+```
+
+- **In the readable model the concepts really do decide** - concept-only agreement 84.8% and accuracy 16.45% against the full
+  17.25%. The readable path is faithful, unlike the direct-path model (6.6% agreement, 3.25%).
+- **The bias is NOT the cause** (19.5% agreement, 2.60% alone, top two entries nearly tied).
+- **It is not over-confidence either - it UNDERTALKS**: entropy is HIGHER (6.3085 vs 5.1881) while it emits only 28 words.
+
+**Cause: 18 of 36 concepts fire on a median window, so the code is half-saturated and the 36 -> 12,002 projection can only learn
+about 28 output modes.** That is a capacity problem in the concept layer. Fixing it means widening the concept set (the trainer has
+no `--k` flag; K comes from the concept module), which is a change to the concept definitions and is being raised with the owner.
+
+All three of my predictions failed and the falsifier fired, which is the only reason the conclusion landed on capacity instead of the
+bias. `docs/history/DIVERSITY-COLLAPSE-CAPACITY.md`.
