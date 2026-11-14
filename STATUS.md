@@ -3121,3 +3121,26 @@ is hard for a human to check.
 
 Path forward is better concept DEFINITIONS, not more pressure: more alpha collapses accuracy faster than it fixes labels.
 `docs/CONCEPT-ALPHA-HONESTY.md`.
+
+## Dropping the redundant concepts: 17 of 18 neurons now mean their name, and accuracy went UP (2026-11-14)
+
+The label set was the problem, not the neurons. Measured on labels alone: **8 concept pairs correlate above 0.80** (max 0.916),
+`ink_amount` correlates 0.87+ with four quadrant "concepts", and `symmetry` is 82.1% positive - so a neuron could be 82%
+"accurate" by always saying yes. When two names describe the same measurement, no pair of neurons can both mean their own name.
+
+`tools/select_concept_set.py` greedily selected **18 of the 36 features the library already defines**, keeping only
+|corr| <= 0.60: pairwise correlation now **median 0.000, max 0.587**. Every feature has a documented plain-English definition.
+
+```
+                               shipped 14 concepts      18 de-duplicated concepts
+accuracy (3 seeds)               78.46% +/- 4.63            79.69% +/- 1.13
+mean |rank corr| with own label      0.732               0.844 / 0.845 / 0.845
+concepts below 0.50                  2 of 14                    0 of 18
+concepts tracking ANOTHER feature    2 of 14                    1 of 18
+```
+
+**17 of 18 concept neurons track their own name better than any other feature** (the holdout is `vertical_edges`). Honestly
+flagged: the 18-concept model has ~28% more parameters, so part of the +1.23 accuracy may be capacity and needs a
+parameter-matched control; and **rule plausibility got worse** (median rule-pair lift 1.12 -> 0.92, 12 -> 19 of 32 rules combine
+concepts that rarely co-occur) - decorrelated concepts make honest *concepts* easier and honest *rules* harder.
+`docs/CONCEPT-SET18.md`.
