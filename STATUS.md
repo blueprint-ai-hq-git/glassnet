@@ -3822,3 +3822,36 @@ shrinks 18.00% -> 8.89%); on a **readable** model, where routing around is impos
 
 **Widening the hidden size is measured out as a route to a better readable chat model; widening the concept layer is the remaining
 lever** - and that is the owner's decision. `docs/WIDTH-DOES-NOT-HELP-READABLE.md`.
+
+## At double width the direct-path model overfits and the readable model catches it (2026-11-14)
+
+Matched d1024 pair, both arms 9 epochs, seed 0, identical except `--direct --direct-mode tied`. All three endpoints, per this
+project's own rule:
+
+```
+endpoint                     readable    control    difference
+final epoch VAL accuracy       19.95%     18.57%     +1.38  readable
+last-3-epoch mean VAL acc      19.59%     19.51%     +0.08  readable
+held-out best (by position)    21.57%     23.46%     -1.89  control
+final VAL perplexity           291.04     987.76     readable 3.4x better
+```
+
+The trajectories are the finding:
+
+```
+readable VAL acc  10.02 13.84 15.82 17.38 18.12 18.64 19.21 19.60 19.95   monotonic, still improving at the end
+control  VAL acc  17.12 19.41 20.07 20.32 20.54 21.05 20.19 19.76 18.57   peaks at epoch 6 then falls
+control  VAL ppl    318   263   262   276   318   363   512   679   988   3.8x explosion
+```
+
+**The direct-path model overfits catastrophically at this width** - training accuracy 55.46% while validation accuracy falls and
+perplexity goes 263 -> 988. **The readable model, forced through its 36-concept bottleneck, improves monotonically for all nine
+epochs and is still improving when it stops.**
+
+So the readable model is ahead on the final epoch and last-3 mean and behind on best-of-N, because best-of-N rewards the control's
+single lucky epoch before it collapsed. **P1 FAILED** - I predicted the readable arm would fall >2 points behind at d1024; it did
+not. **P2 and P3 held.**
+
+Honest limits: the readable arm had **not converged** (still improving at epoch 9), one seed per arm, and the ordering is
+endpoint-dependent. "Readable is better at width" is **not** supported; "at double width the direct-path model overfits and the
+readable model catches it" is. `docs/WIDTH-PAIR-D1024-OVERFIT.md`.
