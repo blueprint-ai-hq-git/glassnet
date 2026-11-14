@@ -71,3 +71,28 @@ Two possible repairs, to be tested rather than assumed:
   model with concepts forced off inside the forward pass - the model has no hook to force that, so this measures path attribution.
 - `concept_share` is the concept path's share of the *predicted token's* logit against the absolute direct term, not a share of the
   whole logit vector.
+
+## Fixed the same wake: explain() now names the direct pathway instead of hiding it in a residual
+
+explain() already reported `exact` and `residual`, so it was not lying - but a residual with no name makes an incomplete
+explanation read like a complete one. `lens/concepts.py` now also returns:
+
+- `direct_term` - exactly `logits[pred] - (b[pred] + sum of concept contributions)`, the undecomposed direct pathway
+- `concept_share` and `direct_share` - the two shares of the predicted token's logit, which sum to 1
+
+Verified on the d512 checkpoint, three held-out windows:
+
+```
+window pred    logit    residual  exact  concept_share  direct_share  direct_term
+0      <unk>   10.011     5.8870  False       37.6%         62.4%        5.887
+1      2       11.041    11.1718  False       14.1%         85.9%       11.172
+2      int     10.920    10.8929  False        7.5%         92.5%       10.893
+```
+
+`residual` and `direct_term` agree, as they must (the residual IS the direct term), and the two shares sum to 1 on every window.
+So a reader of a chat explanation now sees, in the same output, that the concepts account for 7.5-37.6% of the decision on these
+windows and that the rest came from a pathway with no name in the concept layer. That is the honest version of the number.
+
+The remaining open question is unchanged and is the important one: **should the concept path carry the decision** (removing or
+constraining the direct path for a readable checkpoint), and what does that cost in accuracy and copy behaviour? That is a training
+experiment, not a reporting fix, so it needs his call before it burns an hour of GPU.

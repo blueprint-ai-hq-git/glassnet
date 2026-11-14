@@ -3589,3 +3589,9 @@ shares, or make the concept path carry the decision and pay whatever accuracy co
 
 My first run of the tool was invalid - it reported a negative margin removed (-56.55%), which is impossible, and that is what exposed
 that I had omitted the direct term. `docs/CHAT-EXPLAIN-CAUSAL.md`.
+
+### Fixed in the same wake: explain() now names the direct pathway
+
+`lens/concepts.py` explain() now returns `direct_term`, `concept_share` and `direct_share` (shares sum to 1), so the ~90% that the
+concept layer does not explain is stated in every explanation rather than left in an unnamed residual. Verified on three held-out
+windows: concept share **37.6% / 14.1% / 7.5%**, direct share **62.4% / 85.9% / 92.5%**.
