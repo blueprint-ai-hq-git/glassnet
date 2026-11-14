@@ -3196,3 +3196,29 @@ readable, 14 clean concepts, rules, alpha 3.0 (11,800)    80.20% +/- 0.78    -4.
 
 Still open, and independent of alpha: **19-20 of 32 rules wire together concepts that co-occur less than chance** (median rule-pair
 lift 0.79-0.92). Honest concepts do not guarantee sane rules. `docs/ALPHA-CLEAN-SWEEP.md`.
+
+## The rules are not really 3-concept rules - effective connectivity is 1, and the "implausible rules" finding was measuring noise (2026-11-14)
+
+Audited the recommended alpha 1.0 checkpoint at `runs/phase2_sweep/CLEAN14_A1p0/final_seed0.npz`.
+
+**1. The old audit ignored weight polarity.** 22 of 32 rules have opposite-signed top-2 weights, and a rule weighted (+A, -B) means
+"A high AND B low", so below-chance P(A and B) is *expected*. Correcting polarity flips rule 24 from **0.53 to 1.47** and rule 26
+from **0.59 to 1.41**, but only moves the below-chance count 19 -> 18, so it was necessary and not sufficient.
+
+**2. The real problem: the weights, not the wiring.**
+```
+nonzero kept weights per rule      min 3   median 3   max 3    <- the advertised "2-3 concepts"
+effective concepts at |w| > 0.50   median 1   rules with <=1: 27 of 32
+share of |weight| in the top concept: median 0.71, 11 of 32 above 0.90
+```
+Real examples: `rule 23: outline_ratio +1.14, light_region_count -0.01, diag_edges +0.01`. Most rules are **single-concept rules
+wearing two near-zero weights**, and `explain()` would faithfully print three concepts when two contribute nothing.
+
+**3. The "implausible rules" claim is withdrawn.** The 13 rules that genuinely read two concepts (both weights > 0.40) have a naive
+co-occurrence lift median of **1.25 - above chance, i.e. plausible**. The below-chance numbers came from rules whose second weight
+is noise, where a pair test measures nothing (correlation between |second weight| and lift is +0.494).
+
+**Honest statement of the architecture's effective structure: at |w| > 0.50 the median rule reads ONE concept, and 27 of 32 rules
+read one or fewer.** 13 of 32 rules are genuine two-concept rules and they behave plausibly. The fix is a minimum-contribution
+floor during pruning, and reporting multi-concept and single-concept rule counts separately.
+`docs/RULE-EFFECTIVE-CONNECTIVITY.md`.
