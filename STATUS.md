@@ -3529,3 +3529,25 @@ The lesson, now written into the docs: **a short arm answers a question about sh
 **Next open question:** full training scores 36/36 against *the same deterministic label function the neurons were trained to predict*,
 so a high AUROC partly measures "it learned its own target". The honest follow-up is an independent-label audit plus a causal
 explain() test, not another knob sweep.
+
+## Do chat concept neurons mean their names, or only their keyword lists? (2026-11-14)
+
+The trainer's own fidelity audit scores each concept against **the same label the neuron was trained to predict**, so 36/36 at AUROC
+0.87-0.97 cannot tell "learned the meaning" from "learned its own target". Scored instead against **held-out synonyms** chosen
+disjoint from every concept's trained token list (22 concepts, d512 9-epoch checkpoint, 4,000 held-out windows, inference only):
+
+```
+median trained-label AUROC   0.9097
+median held-out AUROC        0.6980     (chance 0.50)
+concepts below 0.60         6 of 22
+worst: mentions_law 0.9515 -> 0.4217  (below chance)
+biggest drops: work -0.39, science -0.34, number -0.34, weather -0.32, explanatory -0.31
+best: time 0.90, family 0.90, food 0.90 held-out
+spearman(trained-list length, held-out AUROC) +0.2772
+```
+
+**So the concept layer is not a pure keyword detector - it transfers to unseen synonyms at median 0.70 - but it is far short of its
+own audit number, and some concepts collapse.** My P1 (median <= 0.65) and P2 (half below 0.60) both FAILED; P3 held; the falsifier
+did not trigger. Caveats stated in the doc: only 7-234 held-out positives per concept, synonym lists are my own choice, one seed, and
+the two instruments differ on the trained-label number (0.9097 here vs 0.87449 in the trainer log - different val sampling).
+`docs/CHAT-CONCEPT-MEANING-VS-KEYWORDS.md`.
