@@ -3405,3 +3405,9 @@ spending GPU time. What is NOT established: uncorrelated labels *in practice* - 
 constantly (greeting/farewell by position, food/request by topic). That check needs the 1.1 GB token file loaded, so it waits for a
 free machine. Prediction written in advance: no pair above 0.50, at most two above 0.30.
 `docs/CHAT-CONCEPT-OVERLAP.md`.
+
+**Correction (same run):** my first version said the 12-concept module is the one `train_chat.py` uses. It is not -
+`train_chat.py:860` defaults `TC_WIDE=1`, so the **live set is `chat_concepts_wide`, 43 defined and 36 kept** after the support
+floor (confirmed in every training log). The finding is unaffected and applies to the set that matters: the overlap check covered
+all 43 defined concepts, a superset of the 36 kept, and the worst overlap anywhere is **jaccard 0.08** with **0 pairs above
+0.20**. So the chat labels are still not redundant and image-side de-duplication is still unnecessary there.
