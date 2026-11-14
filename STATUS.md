@@ -2812,3 +2812,18 @@ AFTER  (T=1.132)    27.71%      32.83%     0.0521   0.7980
 **ECE 0.1370 -> 0.0521 with accuracy exactly unchanged**, because a temperature cannot move an argmax. The model's
 confidence was ordered correctly all along and only needed to be scaled down. My 0.05 bar was missed by 0.0021, so a
 single parameter removes most of the over-confidence, not all of it. `docs/CALIBRATION.md`.
+
+## Where the 29% comes from: two thirds of its successes are copying (2026-11-14)
+
+`tools/failure_attribution.py`, 14,145 held-out assistant-masked positions:
+
+```
+overall accuracy                 29.34%
+target IS in the input window    43.90%  (45.2% of positions)
+target is NOT in the window      17.32%  (54.8% of positions)   ratio 2.54x
+predictions copied from window   60.23% of all, 67.66% of correct ones
+```
+
+**Two thirds of its correct answers are tokens retrieved from the window.** When the answer has to be *produced* rather
+than found, accuracy is **17.32%**. That, not width (+0.53 paired) or training length (plateau at epoch 6), is where the
+next lever is. All three pre-registered predictions held. `docs/FAILURE-ATTRIBUTION.md`.
