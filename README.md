@@ -39,9 +39,25 @@ are looking for a capable assistant, this is not it yet - and this file will say
 ## Readable architecture: what it scores today (2026-11-12)
 
 On Fashion-MNIST the phase-2 readable stack - 12 named concept neurons -> 32 sparse rules with 3 connections each -> answer -
-scores **81.73% +/- 0.54** over three seeds, after pruning rules whose removal does not cost accuracy. The phase-1 plain baseline
-is **86.69% +/- 0.59**, so the readable version is **4.96 points worse**. Readability has not paid for itself yet, and this file
-says so instead of implying otherwise.
+scores **81.73% +/- 0.54** over three seeds, after pruning rules whose removal does not cost accuracy.
+
+**The "4.96 points worse" headline that used to sit here has been WITHDRAWN.** It compared a 24,458-parameter readable model
+against the 101,770-parameter Phase-1 baseline. Trained at matched parameters, with the plain control built inside the same run, the
+readable architecture costs **1.53 +/- 0.44 points** (three paired seeds: -2.06 / -1.54 / -0.98) - see
+[docs/READABILITY-GAP-CORRECTION.md](docs/READABILITY-GAP-CORRECTION.md). The direction is unchanged, readability does cost
+accuracy; the size of the cost is about a third of what this page used to claim.
+
+### Chat: the readable model now matches its own control (2026-11-14)
+
+Forced to answer through the concept vector alone - no direct pathway - a chat model lands within **0.17 points** of a matched
+control trained in the same run: **19.95% vs 20.12%** validation accuracy at 9 epochs, d512, seed 0, full corpus. Its **explanations
+are exact on 100 of 100** windows (mean residual **5.6e-07**, named concepts carrying **99.999996%** of the answer), it keeps
+**better validation perplexity (292.65 vs 352.11)** because the 36-concept bottleneck regularises while the control overfits, and
+34 of 36 concepts honour their names.
+
+**What it cannot do yet: talk widely.** It predicts **44 distinct tokens** where its control uses **191**. The remaining deficit is
+concept capacity, not accuracy - 15 of 36 concepts fire on a median window, so 36 half-saturated numbers cannot address 12,002
+output tokens. See [docs/READABLE-CHAT-9EP-MATCHED.md](docs/READABLE-CHAT-9EP-MATCHED.md).
 
 What moved it: **linear rules instead of sigmoid rules (+5.09 points)** and **deleting rules that were hurting borderline
 predictions (+4.48)**. Honest concept names cost **1.18 points** at this size, down from 3.68 for the sigmoid stack.
@@ -203,7 +219,7 @@ including the ones that killed our own ideas.
 | Live inspector (`lens/liveview.py`) | **works** | serves real weights and live neuron activations on port 8770 |
 | Exports | **works** | `.npz`, `.safetensors`, `.gguf` |
 | Named concept layer | **partial** | 256 neurons; every name audited per run, unprovable names dropped |
-| `explain()` | **partial** | reports which concepts fired and how much each contributed |
+| `explain()` | **exact on a readable checkpoint, visibly partial on a direct-path one** | readable chat checkpoint: exact on **100 of 100** windows (mean residual **5.6e-07**), named concepts carry **99.999996%** of the answer. Direct-path checkpoint: exact on **0 of 200**, concepts carry a median **8.9-18%** while a direct pathway holds the rest - so `explain()` now reports `concept_share` and `direct_share` beside the residual instead of letting a partial account look complete |
 
 ## What does not work yet
 
