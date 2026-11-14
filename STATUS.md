@@ -2874,3 +2874,20 @@ advantage estimator, curriculum or KL anchor - the reward was always wrong, so t
 not unreachable in principle (supervised training reaches 34.66% +/- 6.16 on the same split), so the gap is
 **reachable-when-taught, unreachable-when-sampled at this capacity**. The next RL question is how much capacity the fuel
 needs, not how to improve the estimator. `docs/RL-FUEL-CHECK.md`.
+
+## Our RL was training on an empty support, not losing to supervised (2026-11-14)
+
+Thirteen arms measured `acc_gen = 0.00` on the generalising split. Four measurements now explain why
+(`docs/RL-EMPTY-SUPPORT.md`):
+
+```
+fuel at the shipped model (12,800 draws)          0 correct
+fuel with an 8,000-step warm start                0 correct
+fuel at 103,054 parameters (14x the model)        0 correct
+fuel per target sum 10..18 (34,560 draws)         0 correct at every sum
+```
+
+**The support is empty, not thin** - so group-relative advantage, dense credit, KL anchors and curricula were all
+irrelevant: a reward the model never attains carries no gradient. The task is still reachable **when taught** (supervised
+34.66% +/- 6.16), but not by sampling at any capacity or schedule tried. Our RL needs a task where a plausible wrong sample
+can actually pass the checker, not more tuning on this one.
