@@ -3144,3 +3144,25 @@ flagged: the 18-concept model has ~28% more parameters, so part of the +1.23 acc
 parameter-matched control; and **rule plausibility got worse** (median rule-pair lift 1.12 -> 0.92, 12 -> 19 of 32 rules combine
 concepts that rarely co-occur) - decorrelated concepts make honest *concepts* easier and honest *rules* harder.
 `docs/CONCEPT-SET18.md`.
+
+## Every concept neuron now means its name: 0 of 14 mislabeled in all three seeds, +1.67 accuracy at IDENTICAL parameters (2026-11-14)
+
+My own capacity caveat from the 18-concept result was tested and **refuted**. The same de-duplication rule truncated to 14 features
+gives a model with **precisely the shipped parameter count (11,800)**, so only the labels differ:
+
+```
+                              shipped 14           14 de-duplicated        change
+parameters                     11,800                  11,800             identical
+accuracy (3 seeds)         78.46% +/- 4.63         80.13% +/- 0.81        +1.67
+mean |rank corr|, own label     0.732           0.846 / 0.847 / 0.848     +0.114
+concepts below 0.50             2 of 14               0 of 14             none left
+concepts tracking ANOTHER       2 of 14               0 of 14             none left
+```
+
+**In all three seeds every one of the 14 concept neurons tracks its own name better than any other feature.** First configuration
+in this project where "each middle neuron means what its label says" holds with no exceptions - and it cannot be a capacity
+artefact because the parameter count is identical. The 14-set also **beats the 18-set** (80.13 vs 79.69) with 3,268 fewer
+parameters.
+
+Against the matched plain control (84.37% +/- 1.04) the full readable stack now costs **4.24 points**, in exchange for honest
+concepts, a purely additive concept layer (interaction 0.0%), and rules a human can read. `docs/CONCEPT-SET14-MATCHED.md`.
