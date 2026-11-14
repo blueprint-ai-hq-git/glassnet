@@ -3796,3 +3796,29 @@ explanations                     EXACT 100/100  not exact    -
 34 of 36 concepts honouring their names. The one remaining deficit is vocabulary breadth - 44 distinct words against 191 - which is
 the concept-capacity bottleneck, and widening the concept set is the owner's call because it changes the definitions every audit
 compares against.** `docs/READABLE-CHAT-9EP-MATCHED.md`.
+
+## Doubling the width changes almost nothing for the readable chat model (2026-11-14)
+
+Readable arms only (d512 and d1024, both 9 epochs, both forced through the concept vector). The d1024 control is still training, so no
+gap claim is made yet:
+
+```
+                          readable d512   readable d1024
+final VAL accuracy             19.95%          19.95%
+next-token, 2000 positions     21.90%          22.45%
+distinct tokens predicted          44              49
+concepts firing (>0.5)       15 of 36        15 of 36
+concept fidelity audit        34 of 36        34 of 36
+explain() exact              100 of 100      100 of 100
+```
+
+**Final validation accuracy is identical to two decimals at double the width.** The concept layer was diagnosed as the bottleneck (15
+of 36 concepts fire on a median window), and if the concept layer is the choke point then hidden width above it should buy nothing -
+which is what happened.
+
+Two independent facts now agree: on a **direct-path** model, width buys accuracy by routing *around* the concepts (concept share
+shrinks 18.00% -> 8.89%); on a **readable** model, where routing around is impossible, width has nowhere to go (19.95% -> 19.95%).
+**The 36-concept layer, not the hidden width, is the binding constraint.**
+
+**Widening the hidden size is measured out as a route to a better readable chat model; widening the concept layer is the remaining
+lever** - and that is the owner's decision. `docs/WIDTH-DOES-NOT-HELP-READABLE.md`.
