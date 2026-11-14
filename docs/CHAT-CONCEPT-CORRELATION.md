@@ -50,3 +50,30 @@ barred from concepts they should not read).
 
 It does **not** show that the chat concept neurons are honest - that is the fidelity audit's job on a trained checkpoint, and the
 last one reported 36/36 checks passing. What is now ruled out is a specific and plausible alternative explanation, with numbers.
+
+## Follow-up the same day: the collision was removed, and removing it exposed something bigger
+
+`"right"` sat in both `is_an_agreement` and `mentions_law`. Removing it from `mentions_law` (agreement-sense dominates in
+conversation) was measured in three variants on the same 60,000 windows, each in its own process because the concept builder caches
+a spec file and a single-process comparison gave contradictory numbers:
+
+```
+variant                                       concepts kept   mentions_law support   pairs above |phi| 0.30
+A  "right"  (original, 7 tokens)                     35              0.0140                    1  (0.415)
+B  no "right" (shipped, 6 tokens)                    35              0.0065                    0
+C  "rights" instead of "right" (7 tokens)            35              0.0071                    0
+```
+
+- **The fix costs no concept** (35 kept in every variant) and **removes the only pair above 0.30**.
+- **It halves `mentions_law`'s support**, from 0.0140 to 0.0065, against the 0.005 floor. A plural filler (`rights`) recovers only
+  0.0071, so the missing support is not the plural form - **most of that concept's support WAS the ambiguous word in its agreement
+  sense.**
+- **That is the real finding: `mentions_law` was substantially measuring "agreement", not law**, which is exactly why it correlated
+  at 0.415 with `is_an_agreement`. With the shared word gone it barely clears the support floor, and since C's filler token does not
+  restore it honestly, **the shipped definition is B (no filler)**: if a run on the full corpus drops `mentions_law` for having
+  support under 0.005, that is the correct outcome - a concept whose support depended on a word sense collision should not be kept
+  by inventing a token to prop it up.
+
+Also corrected in this follow-up: an earlier note in this document implied the concept count fell from 36 to 35 because of the fix.
+It did not. The 36 figure comes from training runs on the **294M-token prepared corpus**, while every measurement here uses the
+**13.3M-token cached corpus** that `chat_data.build()` loads by default, which keeps 35. Corpus difference, not causation.
