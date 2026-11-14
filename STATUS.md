@@ -3884,3 +3884,28 @@ information unrelated to its declared name - which is what a drop in own-label A
 **For the "100% honest" goal: the readable chat model is honest about the arithmetic of its own decision, and its concept names are
 less trustworthy than the direct-path model's.** Reporting only the exactness would be a half-truth.
 `docs/HONESTY-TRADEOFF-READABLE.md`.
+
+## The readable model's ceiling is above what 9 epochs showed: 21.48% VAL, 78 distinct tokens, still improving (2026-11-14)
+
+Same readable config at **18 epochs** instead of 9 (config-only change, predictions pre-registered):
+
+```
+                          9 epochs    18 epochs    change
+final VAL accuracy         19.95%       21.48%      +1.53
+final VAL perplexity       291.04       253.02      -38.02
+held-out best              21.57%       23.67%      +2.10
+distinct tokens predicted      49           78        +29
+concept fidelity           34 of 36     36 of 36       +2
+concept own-label AUROC     0.7193       0.8384      +0.12
+concept held-out synonyms   0.5392       0.5676      +0.03
+```
+
+**All three predictions held** (P1 >=20.95% got 21.48; P2 ppl <291.04 got 253.02; P3 diversity 50-190 got 78), and the falsifier did
+not trigger. The held-out best was set at the **last** epoch, so this arm had not converged - **quoting the 9-epoch numbers as the
+readable model's ability understates it.**
+
+**No head-to-head claim against the 9-epoch control** (18.57% final, ppl 987.76): different epoch counts, so it is not a matched
+comparison. The matched 18-epoch control is the outstanding experiment, queued rather than launched.
+
+Concept honesty narrows the trade-off found earlier but does not close it: own-label recovers 0.7193 -> 0.8384, held-out synonyms only
+0.5392 -> 0.5676 against the direct-path model's 0.6980. `docs/READABLE-CEILING-18EP.md`.
