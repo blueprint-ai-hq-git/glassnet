@@ -3952,3 +3952,36 @@ a different capacity mechanism, which is a finding about the architecture rather
 
 **Nothing is trained by this document and no existing concept definition is changed.** It waits on the owner, because adding concepts
 changes the definitions every audit compares against. `docs/CONCEPT-WIDENING-DESIGN.md`.
+
+## Matched 18-vs-18: the readable chat model wins on accuracy, perplexity and explanation - and still loses on vocabulary (2026-11-14)
+
+The arms are now matched (both 18 epochs, d1024, seed 0, full corpus, identical except `--direct --direct-mode tied`):
+
+```
+endpoint                          readable    control    advantage
+final epoch VAL accuracy           21.48%     17.73%    +3.75  readable
+last-3-epoch mean VAL accuracy     21.41%     17.71%    +3.70  readable
+held-out best (by position)        23.67%     23.43%    +0.24  readable
+final VAL perplexity              253.02   54,751.20    readable 216x better
+next-token, best checkpoint        23.15%     22.05%    +1.10  readable
+distinct tokens, best checkpoint       78        226      -148  control
+concept path carries the answer     83.4%       3.8%    readable by construction
+concept-only accuracy              22.75%      2.45%    readable 9.3x
+```
+
+**The direct-path control memorises**: training accuracy 70.29% while validation accuracy falls from 21.07% (epoch 6) to 17.73% and
+validation perplexity explodes **263 -> 54,751** (208x). The readable arm improves monotonically and sets its held-out best at the
+**last** epoch.
+
+**So on every accuracy endpoint and on perplexity the readable model is ahead of its matched control, and it is the only one whose
+named concepts explain the answer (83.4% vs 3.8%).** Its single remaining deficit is vocabulary breadth: **78 distinct tokens against
+226.**
+
+All three control-side predictions held (P1: <=18.57% and ppl >=987.76; P2: held-out best within 0.5 of 23.46%; P3: training far past
+55.46% while validation degrades), so the falsifier did **not** trigger - the 9-epoch control had not been stopped early in a way that
+flattered the readable arm.
+
+**Not claimed**: that the readable model is better in general. It speaks in 78 words against 226, it is one seed, and its concept
+neurons remain less name-aligned than the direct-path model's (held-out synonyms 0.5676 vs 0.7178). The open lever is diversity, and
+the measured widening design (36 -> 60 concepts) is ready and waiting on the owner.
+`docs/MATCHED-18EP-READABLE-WINS.md`.
