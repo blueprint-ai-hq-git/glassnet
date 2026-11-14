@@ -3658,3 +3658,26 @@ accuracy would be 15-25% FAILED at 28-29%). This is an upper bound on removal co
 
 Recommendation: **report both shares now** (truthful today, costs nothing) while a constrained-path arm runs as an experiment.
 `docs/DIRECT-PATH-COST.md`.
+
+## The concept readout is degenerate: it answers `<unk>` every time (2026-11-14)
+
+The concept-only accuracy was **5.25% at both widths**, which is suspicious, so it was checked instead of quoted:
+
+```
+checkpoint        concept-only acc   bias-only acc   distinct tokens predicted   top-1 share
+d512  e9 s0            5.25%             5.25%                 1                    100.0%
+d1024 e9 s0            5.25%             5.25%                 1                    100.0%
+targets that are <unk> : 105 of 2000 = 5.2500%
+```
+
+**The concept path predicts `<unk>` on 2,000 of 2,000 positions, so its accuracy is exactly the `<unk>` base rate.** Cause, measured:
+`bias[<unk>] = 1.2886` against `0.3276` for the next token (3.9x), and the concept-to-answer column for `<unk>` averages `0.3197`
+against `0.1879` for all tokens (1.7x). The concepts are not too weak - median contribution 2.618 vs bias 1.289 at d512 - they are
+simply all funnelled into the same winning column.
+
+**This corrects the previous number:** the "concept path keeps 18.58% / 17.92% of the accuracy" figure is arithmetically true and
+misleading. The retained accuracy is the `<unk>` base rate, not retained skill.
+
+**So there are two separate defects - coverage (direct path carries 82-91%) and a degenerate readout - and fixing one without the
+other changes nothing.** A constrained-path arm must fix the readout too, or it just becomes a `<unk>` machine. P1 and P2 held; P3
+failed (my magnitude hypothesis was wrong). `docs/CONCEPT-READOUT-DEGENERATE.md`.
