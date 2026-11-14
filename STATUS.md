@@ -3473,3 +3473,20 @@ The instrument also inverts its own purpose:
   take a slightly-above-chance AUROC for free.
 
 Fix queued: quote the ladder, drop the positive-rate penalty, and add a constant-detector guard. `docs/CONCEPT-AUDIT-INSTRUMENT-FLAW.md`.
+
+### Follow-up measured the same night: what survives the corrected verdict
+
+With the strict verdict wired in (`lens/api.py`, old `pass` untouched; self-test `tools/test_strict_audit.py` 7/7):
+
+```
+lam     old pass   strict pass   median AUROC
+0.1       19/36      20/36         0.56490
+0.3       25/36      18/36         0.61657
+0.6       31/36      21/36         0.67186
+```
+
+- **What survives:** concept pressure genuinely raises ranking quality - median AUROC **0.56490 -> 0.61657 -> 0.67186**.
+- **What does not:** the "19 -> 25 -> 31 of 36 pass" improvement. Under the corrected instrument it is **20 -> 18 -> 21**, so most of the
+  gain at the 0.55 bar was near-constant detectors (11 concepts fire on more than 90% of windows at lam 0.6) becoming slightly less
+  arbitrary, not concepts becoming honest.
+- **New structural finding:** **11 of 36 chat concepts (31%) fire on >90% of windows.**

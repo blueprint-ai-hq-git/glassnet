@@ -72,3 +72,41 @@ for free. **So the audit currently rewards the degenerate concept and punishes t
 2. **Fix the instrument**: replace "fires >= 0.02" with a rule that does not punish rare concepts (e.g. bar AUROC only, and report the
    positive rate beside it), and add a **constant-detector guard** so a concept firing on >0.90 of windows cannot pass on a 0.56 AUROC.
 3. Re-run the audit on the existing checkpoints with the fixed instrument to see how the honest count moves on both sides.
+
+## Correction to what the sweep claims, after rebuilding the verdict
+
+I patched `lens/api.py` so every concept row also carries a **strict** verdict (the old `pass` is untouched, so no published number
+moves). Strict = AUROC bar only, no rarity penalty, and any concept firing on more than 90% of windows must clear **0.75** instead of
+0.55. Self-test `tools/test_strict_audit.py`, 7 of 7 cases pass.
+
+```
+lam        old pass   strict pass   median AUROC   mean AUROC
+0.1          19/36      20/36          0.56490       0.58931
+0.3          25/36      18/36          0.61657       0.62950
+0.6          31/36      21/36          0.67186       0.66788
+```
+
+At lam 0.6 the strict instrument **demotes 11 concepts** and promotes 1:
+
+```
+DEMOTED - near-constant and weak (old pass, strict fail)
+  mentions_time 0.55603 f0.916   mentions_family 0.56518 f0.907   mentions_a_quantity 0.57052 f0.958
+  mentions_work 0.57850 f0.955   mentions_place  0.58323 f0.947   mentions_sport      0.59890 f0.967
+  mentions_body 0.63152 f0.923   mentions_animals 0.64550 f0.907  mentions_travel     0.67738 f0.916
+  is_imperative 0.73098 f0.943   is_a_denial     0.74966 f0.912
+PROMOTED - accurate but rare (old fail, strict pass)
+  mentions_a_number 0.84468 f0.017
+```
+
+So two corrections to my own sweep claim:
+
+1. **The threshold-free effect is real and monotone**: median AUROC rises **0.56490 -> 0.61657 -> 0.67186** with lam 0.1 -> 0.3 -> 0.6.
+   Concept pressure genuinely improves how well the layer ranks each concept. This survives the rebuilt verdict.
+2. **The "19 -> 25 -> 31 of 36" table is not a usable honesty metric.** Under a corrected instrument the count is **20 -> 18 -> 21**,
+   i.e. no monotone improvement, because most of the growth at the 0.55 bar was near-constant detectors becoming slightly less
+   arbitrary. The claim "the default leaves 6 concepts on honesty for nothing" does **not** survive - what survives is "pressure raises
+   AUROC, and the binary pass count was measuring the wrong thing".
+
+Also newly visible and worth its own line: **11 of 36 chat concepts (31%) fire on more than 90% of windows at lam 0.6.** That is a
+structural property of the concept layer, not a training-pressure artifact, and it is a better explanation of thin explanations than
+the five "failures" that started this thread.
