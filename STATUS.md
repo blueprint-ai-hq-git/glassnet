@@ -3713,3 +3713,30 @@ public statement must say the concepts do not yet carry the answer. `docs/CONCEP
 
 Two of my own bugs were caught and fixed before any number was trusted: an underfitted 400-step probe (2.25%, thrown away) and a
 weight-gradient shape error.
+
+## A fully readable chat checkpoint exists: forcing the concepts to carry the answer costs ~4 points, not 23 (2026-11-14)
+
+Two matched 3-epoch d512 arms, identical except `--direct --direct-mode tied`:
+
+```
+epoch      no-direct VAL   control VAL   gap
+1             9.94%          16.63%      -6.69
+2            13.53%          18.97%      -5.44
+3            14.84%          19.51%      -4.67
+held-out      15.63%          21.53%      -5.90
+
+next-token metric, 2000 positions:  no-direct 17.25% (28 distinct tokens) | control 21.20% (121) | 9-epoch direct 28.25% (132)
+```
+
+- **`explain()` is exact on 100 of 100 windows on the no-direct checkpoint** (mean residual 0.000000, max 0.000003, concept_share
+  100.00% by construction), against exact on none of 200 with concepts carrying 8.9-18% on the direct-path model.
+- **The price is ~4 points of validation accuracy, not the 23-24 the inference ablation suggested** - that number was labelled an
+  upper bound on a model trained *with* the path, and this matched pair shows a retrained model recovers most of it.
+- **`<unk>` degeneracy disappears: 0.0% of predictions in both 3-epoch arms** versus 18.75% in the 9-epoch direct checkpoint. So
+  `<unk>` dominance was a product of the direct pathway plus `--drop-unk`, not the concept layer.
+- **The real cost accuracy hides: output diversity collapses to 28 distinct tokens against 121.** At 3 epochs the no-direct model
+  is a narrow talker.
+
+P1 failed (I predicted <=12%, got 14.84%) and P2 failed (predicted >100 distinct tokens, got 28); P3 held. **Readable chat is not
+hypothetical and needs no new architecture - it needs a full-length arm of the arm that already works, plus diversity work.**
+`docs/READABLE-CHAT-NODIRECT-ARM.md`.
