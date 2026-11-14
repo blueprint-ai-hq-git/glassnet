@@ -3298,3 +3298,26 @@ Trimming the set to those 9 costs **80.16% +/- 2.13 against 81.71% +/- 0.78** - 
 own written falsifier: the idle concepts help through the joint objective, not through rule weight. So they stay, and the honest
 burden becomes **disclosure**: `explain()` names only rules that actually contributed and never presents the idle five as reasoning.
 `docs/EXPLAIN-CAUSAL-IDLE-CONCEPTS.md`.
+
+## The idle concepts act only through supervision - excluding them from the rules is FREE (2026-11-14)
+
+Last run left a contradiction: 5 of 14 concepts are read by no rule, yet trimming them from the concept set costs **1.55 points**.
+New trainer flag `--rule-idle` keeps the full 14-concept supervision but **forbids the rule layer** from reading those five:
+
+```
+                                                     accuracy (3 seeds)   spread
+14 concepts, rules free (baseline)                   81.71% +/- 0.78      0.78
+14 concepts, rules FORBIDDEN the 5 idle concepts     81.58% +/- 0.50      0.50
+9 concepts only (trimmed entirely, not recommended)   80.16% +/- 2.13      2.13
+```
+
+**-0.13 points, inside the noise floor, with a tighter spread.** So the five concepts matter purely through the concept-supervision
+term and never through a path a prediction can take.
+
+That makes the readable claim stronger than disclosure: **14 named concepts, 8 read by the 32 single-concept rules, and the other 6
+training-time only - excluded from the rules by construction, so they cannot appear in any explanation at all.** A reader cannot be
+misled by a concept the architecture physically denies the rules.
+
+Recommended config: 14 de-duplicated concepts, alpha 1.0, lam 0.02, 32 single-concept rules, keep 3, `--rule-idle` for the 5 →
+**81.58% +/- 0.50** (matched plain 84.37 +/- 1.04), 0 of 14 concepts mislabeled, and `explain()` verified causal.
+`docs/RULE-MASK-CHANNEL.md`.
