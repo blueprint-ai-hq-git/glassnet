@@ -3551,3 +3551,15 @@ own audit number, and some concepts collapse.** My P1 (median <= 0.65) and P2 (h
 did not trigger. Caveats stated in the doc: only 7-234 held-out positives per concept, synonym lists are my own choice, one seed, and
 the two instruments differ on the trained-label number (0.9097 here vs 0.87449 in the trainer log - different val sampling).
 `docs/CHAT-CONCEPT-MEANING-VS-KEYWORDS.md`.
+
+### Doubling the width widens the meaning gap (same audit, d1024 checkpoint)
+
+```
+checkpoint        trained-label   held-out   gap      below 0.60
+d512  e9 s0         0.9097        0.6980   0.2117      6 of 22
+d1024 e9 s0         0.9754        0.7178   0.2576      3 of 22
+```
+
+Width buys **+0.0657 on the concepts' own trained labels** but only **+0.0198 on meaning transfer**, so the gap **widens** by +0.0459
+with scale. The model improves at what the audit measures faster than at what it is supposed to measure - **concept honesty on the
+chat line is not a scaling problem**, and an independent-label instrument has to be part of the gate.

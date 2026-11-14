@@ -78,3 +78,31 @@ set, which is consistent with the earlier finding that this concept's support wa
 - **The two instruments disagree slightly on the trained-label number**: this tool reports 0.9097 median where the trainer's own
   audit logged 0.87449 for the same checkpoint, most likely because this tool samples its own 4,000 val windows with a different
   seed. Same conclusion, not the same number; recorded rather than smoothed over.
+
+## Doubling the width widens the meaning gap, not closes it
+
+The same audit on the d1024 checkpoint (the 47M-parameter model), same 22 concepts, same windows:
+
+```
+checkpoint        trained-label   held-out   gap      below 0.60
+d512  e9 s0         0.9097        0.6980   0.2117      6 of 22
+d1024 e9 s0         0.9754        0.7178   0.2576      3 of 22
+```
+
+Doubling width buys **+0.0657 on the concept's own trained labels** and only **+0.0198 on meaning transfer to unseen synonyms**. The
+gap between "scores its own target" and "means its name" therefore **widens** by +0.0459 with scale.
+
+**This is the important result of the night for the project's first standing goal.** The model gets better at the thing the audit
+measures faster than it gets better at the thing the audit is *supposed* to measure. So concept honesty on the chat line is **not a
+scaling problem**, and a bigger model will not fix it - an independent-label instrument has to be part of the gate, or the reported
+honesty percentage will keep climbing while the meaning does not.
+
+One good sign alongside: concepts below 0.60 on held-out synonyms fall from 6 to 3 with width, so the worst cases do improve, and
+`mentions_law` remains the clearest offender. But the median does not follow.
+
+## Bug of this run, recorded
+
+The first d1024 invocation died with `No module named 'numpy._core._multiarray_umath'` because I called the virtualenv python inline
+without clearing Hermes's inherited `PYTHONPATH`. The documented rule in this project is `env -u PYTHONPATH -u PYTHONHOME`, and the
+runner script does it; my ad-hoc call did not. Re-ran through the same guard and it worked. The earlier d512 numbers were never
+affected because they only ever ran through the script.
