@@ -62,6 +62,37 @@ with correctness `[0,0,1,0]` has rate 0.25, not 0.5 - the function was right, my
   binary at this model size and the fix is the reward, not the estimator - and P2 fails, which means our RL line is not
   competitive for a reason none of these nine arms has yet isolated.
 
+
+## First measurement from the wiring (added 2026-11-14 09:52): 44.6% of groups carry no signal
+
+The method is now wired into `tools/rl_compare.py` behind four flags, all defaulting OFF so every existing arm is
+byte-identical in behaviour:
+`--lens-adv-clip` (advantage clip, v2 setting 3.0), `--lens-rep` (repetition weight), `--lens-band lo,hi` (curriculum),
+`--lens-band-min` (samples before a prompt is judged). `train_rl()` gained the matching keyword arguments with defaults,
+and the dead-group accounting is read-only, so it reports even when every flag is off.
+
+Measured on the addition task, CPU, group = 8, curriculum band 0.10..0.90:
+
+```
+6 steps,  batch 8,  group 8  ->   23 of  48 groups dead (47.9%)
+60 steps, batch 16, group 8  ->  428 of 960 groups dead (44.6%)
+```
+
+**Roughly 45% of sampled groups produce exactly zero advantage.** Those groups contribute nothing to the gradient, which
+means v1 was effectively training on about half the batches it paid for - and, worse, reporting a normal loss curve while
+doing it. This is the first direct measurement of the mechanism behind the 9/9 `acc_gen 0.00` result, and it is the number
+v2 exists to move.
+
+Two wiring errors of mine, caught by the smoke tests rather than by a 40-minute run:
+1. the flags were added to the CLI but `train_rl()` is a function with its own signature, so the first run died with
+   `NameError: name 'lens_band' is not defined`;
+2. the dead-group report was written in `main()` while the counters live inside `train_rl()`, so it printed nothing until a
+   module-level `LENS_STATS` channel was added.
+
+Next: run v2 as a real arm against the v1 baseline on the addition task (equal compute, 3 seeds), with the predictions in
+the section above unchanged - `dead_fraction` below 0.5 is already met at 0.446, so the live questions are P2 (`acc_gen`
+above zero for the first time) and P3 (at least +2 points over its own warm start).
+
 ## What is not done yet
 
 Wiring into `tools/rl_compare.py` (group-normalised advantages, curriculum sampling, repetition term) and the first seeded
