@@ -3563,3 +3563,29 @@ d1024 e9 s0         0.9754        0.7178   0.2576      3 of 22
 Width buys **+0.0657 on the concepts' own trained labels** but only **+0.0198 on meaning transfer**, so the gap **widens** by +0.0459
 with scale. The model improves at what the audit measures faster than at what it is supposed to measure - **concept honesty on the
 chat line is not a scaling problem**, and an independent-label instrument has to be part of the gate.
+
+## Is chat explain() causal? Yes - but it accounts for only ~10% of the decision (2026-11-14)
+
+Ablating the concepts explain() names vs random concepts, 200 held-out windows (d512, 9 epochs):
+
+```
+margin removed, NAMED top-3 concepts : 17.51%
+margin removed, RANDOM 3 concepts    :  2.08%      ratio 4.13x
+prediction flipped, named 22.50%  |  random 5.83%
+median share of the predicted logit from the concept path: 9.74%
+explain() residual: max 18.7734     (its docstring says ~0)
+concepts needed for 90% of the margin: 21 of 36
+```
+
+- **explain() is causal, not a story** (4.13x random; P1 held).
+- **But the named concepts account for a median 9.74% of the predicted logit.** About 90% comes from the direct pathway
+  (`logits += relu(x @ dmix) @ E.T`, `lens/model.py:427`), which explain() does not decompose and never mentions.
+- **explain()'s own claim of an exact decomposition is false on direct-path checkpoints**: residual up to 18.7734 against a
+  documented 1e-4 bar (P3 failed).
+
+**So the chat explanation is correct and incomplete, and the incompleteness is invisible unless the residual is read.** That is the
+sharpest defect found on the chat line so far. Next options, to be measured not assumed: decompose the direct term too and show both
+shares, or make the concept path carry the decision and pay whatever accuracy cost that has.
+
+My first run of the tool was invalid - it reported a negative margin removed (-56.55%), which is impossible, and that is what exposed
+that I had omitted the direct term. `docs/CHAT-EXPLAIN-CAUSAL.md`.
