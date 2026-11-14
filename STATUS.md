@@ -3244,3 +3244,30 @@ in the 0.25-0.50 band are **collectively load-bearing**. The rules are **sparse 
 tail is worth ~3.8 points and dropping it silently would misreport the model.
 
 Next: try making sparsity true by **training** (higher L1) instead of by amputation. `docs/WFLOOR-MINIMUM-CONTRIBUTION.md`.
+
+## Stronger L1 buys SINGLE-concept rules, not multi-concept ones - and that is the better readable model (2026-11-14)
+
+I predicted a stronger L1 penalty would concentrate each rule onto two concepts. It did the opposite:
+
+```
+lam      accuracy (3 seeds)    rules by REAL connectivity (|w| >= 0.50)
+0.005    82.76% +/- 0.35       12 multi / 11 single / 9 dead
+0.01     82.06% +/- 0.69        0-2 multi / 30-32 single / 0-1 dead
+0.02     81.71% +/- 0.78        0 multi / 32 single / 0 dead
+0.05     80.53% +/- 0.89        0 multi / 32 single / 0 dead
+```
+
+**At lam >= 0.02 every one of the 32 rules reads exactly ONE named concept and no rule is dead.** L1 shrinks the minor weights
+harder than the dominant one, so a rule ends up concentrated on its single best concept instead of split across two.
+
+This replaces a false complex claim with a true simple one. Instead of "each rule connects to 2-3 concepts" (measured false in
+effect: 1.55 real concepts per rule), the architecture can now honestly say: **32 rules, each reading exactly one named concept
+with one signed weight, no dead rules, concept interaction 0.0%** - a statement a 12-year-old can check by reading 32 numbers. The
+concept layer stays honest at this setting (0 of 14 below 0.50, 0 mislabeled).
+
+Cost: **-0.70 points at lam 0.01, -1.05 at lam 0.02**, putting the fully single-concept readable model **2.66 points behind the
+matched plain control** (84.37 +/- 1.04).
+
+Also recorded: the audit's `rule-pair lift` metric (27 of 32 below 1.0 at lam 0.02) is **provably meaningless for single-concept
+rules** - it tests a rule's second-strongest weight against noise - and the honest connectivity count supersedes it.
+`docs/LAM-SINGLE-CONCEPT-RULES.md`.
