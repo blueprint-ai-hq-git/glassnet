@@ -2781,3 +2781,20 @@ difference                       -0.5                +0.04
 Half a point of copy and four hundredths of a point of language: **the separate table changes nothing.** The mechanism
 that does work on this base is freezing the pointer matrices, **+8.2 points of copy for -1.24 language** (67.2 vs 59.0).
 `docs/MEMORY-PROTECTION-FREEZE-VS-SEPARATE.md`.
+
+## The model's confidence is real, just inflated by 14 points (2026-11-14)
+
+`exposure_d1024_e9_s0_best`, 14,145 held-out assistant-masked positions, from the checkpoint's own logits:
+
+```
+accuracy                     29.34%
+mean confidence              43.02%      (+13.68: over-confident)
+ECE                           0.1368
+AUC (confidence -> correct)   0.8069      (0.50 = noise)
+wrong answers, mean conf      33.49%      (quiet, not loud)
+```
+
+Sorted by confidence, accuracy climbs monotonically 4.95% -> 86.13%. So the confidence **carries information** (AUC 0.81)
+and the model already signals its own uncertainty when it is wrong. The defect is a uniform inflation of ~14 points, which
+is a calibration fix, not an architecture problem. Two of my three predictions failed: I expected ECE > 0.15 and expected
+wrong answers to be confidently wrong (>50%), and they are not. `docs/CONFIDENCE-AUDIT.md`.
