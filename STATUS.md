@@ -3222,3 +3222,25 @@ is noise, where a pair test measures nothing (correlation between |second weight
 read one or fewer.** 13 of 32 rules are genuine two-concept rules and they behave plausibly. The fix is a minimum-contribution
 floor during pruning, and reporting multi-concept and single-concept rule counts separately.
 `docs/RULE-EFFECTIVE-CONNECTIVITY.md`.
+
+## Enforcing a minimum contribution: the honest rule structure is ~1.5 concepts per rule (2026-11-14)
+
+The advertised "each rule connects to 2-3 concepts" was true in span and false in effect. Adding a **minimum contribution floor**
+(after the top-`keep` cut, zero any weight below it) measures the real structure:
+
+```
+floor   accuracy (3 seeds)   avg conns/rule   rules reading >= 2 concepts (|w| >= 0.50)
+none    82.76% +/- 0.35         3.00 reported        12 / 11 / 9  (multi / single / dead)
+0.25    82.22% +/- 0.35         1.55                  5 / 24 / 3
+0.50    78.95% +/- 0.88         1.06                  5 / 24 / 3
+```
+
+**The real structure is ~1.55 concepts per rule**, and only **4-5 of 32 rules** genuinely read two or more - the rest are
+single-concept rules wearing a 3-connection costume. A 0.25 floor costs just **-0.54 points** and makes the number honest; a 0.50
+floor costs **-3.81 points without reducing the multi-concept count at all**, which triggers my own written falsifier: the weights
+in the 0.25-0.50 band are **collectively load-bearing**. The rules are **sparse in span, dense in effect**.
+
+**Recommended: floor 0.25**, and `explain()` must report effective connectivity at that floor plus the disclosed tail, because the
+tail is worth ~3.8 points and dropping it silently would misreport the model.
+
+Next: try making sparsity true by **training** (higher L1) instead of by amputation. `docs/WFLOOR-MINIMUM-CONTRIBUTION.md`.
