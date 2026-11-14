@@ -67,6 +67,29 @@ epoch the readable model is **+1.38 ahead**, on the last-3 mean **+0.08 ahead**,
 perplexity is **3.4x better**. Which one wins depends on the endpoint, so "readable is better at width" is not claimed - see
 [docs/WIDTH-PAIR-D1024-OVERFIT.md](docs/WIDTH-PAIR-D1024-OVERFIT.md).
 
+**At matched 18 epochs the readable chat model WINS.** Both arms 18 epochs, d1024, seed 0, full corpus, identical except the direct
+pathway:
+
+```
+endpoint                        readable    control    advantage
+final epoch VAL accuracy         21.48%     17.73%    +3.75  readable
+last-3-epoch mean VAL            21.41%     17.71%    +3.70  readable
+held-out best                    23.67%     23.43%    +0.24  readable
+final VAL perplexity            253.02   54,751.20    readable 216x
+concept path carries the answer   83.4%       3.8%    readable by construction
+distinct tokens (best ckpt)          78        226      -148  control
+```
+
+The direct-path control **memorises** at this length: 70.29% training accuracy while validation accuracy falls from 21.07% to
+**17.73%** and validation perplexity explodes **263 -> 54,751**. The readable arm improves monotonically and sets its held-out best
+at the *last* epoch. **83.4% of its predictions follow from its named concepts, against 3.8% for the control** - that is the whole
+point of the project, and at matched settings it now comes with 3.75 points *more* accuracy rather than less.
+
+The one deficit left is vocabulary: **78 distinct tokens against 226**. See
+[docs/MATCHED-18EP-READABLE-WINS.md](docs/MATCHED-18EP-READABLE-WINS.md).
+
+#### The Fashion-MNIST readable stack (image side)
+
 What moved it: **linear rules instead of sigmoid rules (+5.09 points)** and **deleting rules that were hurting borderline
 predictions (+4.48)**. Honest concept names cost **1.18 points** at this size, down from 3.68 for the sigmoid stack.
 
