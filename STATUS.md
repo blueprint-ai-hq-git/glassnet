@@ -3630,3 +3630,31 @@ the answer around the named layer while its own audit improves to 0.9754.
 **So "chat readability is not a scaling problem" is a two-metric finding: width makes the readable story weaker on both meaning and
 coverage.** Getting a bigger model will not fix it; the direct pathway has to be constrained by design, and every future width
 increase should carry this measurement.
+
+## What the direct pathway is worth: the concept layer alone keeps ~18% of the accuracy (2026-11-14)
+
+Evaluated each checkpoint with the direct pathway removed (`logits = h @ W + b`), 2,000 held-out next-token positions:
+
+```
+checkpoint      full acc   concept-only acc   loss        concept path keeps   agreement
+d512  e9 s0      28.25%          5.25%        -23.00 pts         18.58%          18.75%
+d1024 e9 s0      29.30%          5.25%        -24.05 pts         17.92%          19.70%
+```
+
+**The layer the audit rates 36/36 name-honest reproduces less than a fifth of the model's accuracy on the model's own task.**
+
+Four instruments now agree:
+
+```
+instrument                                  d512      d1024     direction
+own-label audit                             0.9097    0.9754    concepts look BETTER
+held-out synonyms                           0.6980    0.7178    meaning lags (gap widens)
+share of the predicted logit                18.00%     8.89%    coverage shrinks
+accuracy retained without the direct path   18.58%    17.92%    performance collapses
+```
+
+**Consequence: removing the direct pathway is not a cheap cleanup, it is a research bet** (P2 and P3 held; my prediction that full
+accuracy would be 15-25% FAILED at 28-29%). This is an upper bound on removal cost, since the checkpoint was trained with the path.
+
+Recommendation: **report both shares now** (truthful today, costs nothing) while a constrained-path arm runs as an experiment.
+`docs/DIRECT-PATH-COST.md`.
