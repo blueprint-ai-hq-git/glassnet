@@ -3909,3 +3909,23 @@ comparison. The matched 18-epoch control is the outstanding experiment, queued r
 
 Concept honesty narrows the trade-off found earlier but does not close it: own-label recovers 0.7193 -> 0.8384, held-out synonyms only
 0.5392 -> 0.5676 against the direct-path model's 0.6980. `docs/READABLE-CEILING-18EP.md`.
+
+### Follow-up: the 2x2 at matched epochs proves the trade-off is not a width artefact
+
+Matched 9-epoch audit, 22 concepts, 4,000 windows:
+
+```
+                    own-label median            held-out synonym median
+                 d512      d1024   change      d512      d1024   change
+direct path     0.9097    0.9754   +0.0657    0.6980    0.7178   +0.0198
+readable        0.7193    0.7256   +0.0063    0.5392    0.5436   +0.0044
+```
+
+- **Width helps the direct-path concepts and does almost nothing for the readable ones** - the same shape as every other width result
+  tonight, because the readable model's constraint sits *upstream* of the width.
+- **The readability cost to concept names is large at BOTH widths** (-0.18/-0.25 own labels, -0.16/-0.17 held-out), so it is not a
+  d512 artefact. **P1, P2 and P3 all held**; the falsifier did not trigger.
+
+**The single sentence: the 36-concept bottleneck caps the readable chat model on accuracy, vocabulary breadth AND the meaning of its
+own concept names simultaneously, and none of the three can be relieved with more width.** The only untested lever is widening the
+constraint itself.

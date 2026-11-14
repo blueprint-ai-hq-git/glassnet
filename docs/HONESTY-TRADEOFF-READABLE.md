@@ -53,3 +53,36 @@ been a half-truth; reporting only the concept scores would have missed that the 
 - **The honest test of the trade-off**: widen the concept layer. If concept quality recovers when there are 96-128 concepts to share
   the predictive load, the mechanism above is confirmed and both kinds of honesty can coexist. That is a definition change and waits
   on the owner.
+
+## Follow-up the same evening: the 2x2 at matched epochs - the trade-off is NOT a width artefact
+
+The earlier comparison was lopsided (the readable arm had been audited at d512/9ep and d1024/18ep, the direct-path arm at d512/9ep
+and d1024/9ep). The missing cell was measured to complete a clean 2x2 at matched epochs. Predictions
+`lens/runs/CONCEPT-HONESTY-2X2-PREDICTIONS.txt`, output `lens/runs/CONCEPT-HONESTY-2X2.txt`.
+
+```
+                    own-label median            held-out synonym median
+                 d512      d1024   change      d512      d1024   change
+direct path     0.9097    0.9754   +0.0657    0.6980    0.7178   +0.0198
+readable        0.7193    0.7256   +0.0063    0.5392    0.5436   +0.0044
+```
+
+**Three conclusions, all from one table:**
+
+1. **Width helps the direct-path concepts and does almost nothing for the readable ones** (+0.0657 vs +0.0063 on own labels; +0.0198
+   vs +0.0044 on unseen synonyms). This is the same shape as every other width result tonight: width buys the direct-path model
+   things it cannot buy the readable model, because the readable model's constraint sits *upstream* of the width.
+2. **The readability cost to concept names is large at both widths**: -0.18/-0.25 on own labels and -0.16/-0.17 on held-out synonyms.
+   So it is **not** a d512 artefact and cannot be dismissed as a small-model effect.
+3. **More training recovers part of it** (0.7193 -> 0.8384 own-label from 9 to 18 epochs at d1024) but not the meaning gap, which
+   stays near 0.57 against the direct-path model's 0.72.
+
+Predictions scored: **P1 HOLDS** (d1024 readable own-label 0.7256, inside the predicted 0.72-0.84 band, at its low end), **P2 HOLDS**
+(held-out 0.5436, inside 0.54-0.70), **P3 HOLDS** (at matched width and epochs the readable arm is worse on both metrics). The
+falsifier - readable meeting or beating the direct-path arm, which would have made this a d512 artefact - **did not trigger**.
+
+## The single sentence this all reduces to
+
+**The 36-concept bottleneck caps the readable chat model on all three dimensions at once - accuracy, vocabulary breadth, and the
+meaning of its own concept names - and none of those three caps can be relieved with more width, because the constraint sits upstream
+of the width.** The only untested lever left is the one that widens the constraint itself.
