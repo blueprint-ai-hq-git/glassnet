@@ -3364,3 +3364,25 @@ scaling statement: **the readable architecture falls further behind as it grows*
 Next: the same measurements computed **per image region**, so concepts keep spatial information while remaining nameable. Prediction
 rule pre-registered: closing more than 1 point of the 3.13-point gap means resolution was the constraint; otherwise ~3 points is the
 honest, irreducible price of a small readable middle layer. `docs/SET22-MORE-CONCEPTS.md`.
+
+## Per-region concepts: resolution is real but small - the readable penalty is ~2.4 points (2026-11-14)
+
+The pre-registered test ("if per-region concepts close more than 1 point of the gap, resolution was the constraint") **failed its own
+threshold**, and that is the result:
+
+```
+                                           params    accuracy (3 seeds)    gap vs matched plain
+14 whole-image concepts                    11,800    81.58% +/- 0.50       -2.79
+12 per-region concepts                     10,166    81.95% +/- 0.53       -2.42
+```
+
+Twelve new per-region concepts (`ink_TL`, `hedge_TR`, `vedge_BL`, ... - the same measurements computed separately on each 14x14
+quadrant) recovered **0.37 of the 2.79-point gap, about 13%**, far short of the 1-point bar. So **~2.4 points is close to the
+irreducible price of a small readable middle layer on this task.**
+
+They are still worth keeping as an efficiency win: **better accuracy with 14% fewer parameters**, and better coverage (**10 of 12
+concepts read by rules** against 8 of 14), at the cost of one mislabeled concept.
+
+**Best honest config: 12 per-region concepts -> 32 single-concept rules -> 10 classes, 81.95% +/- 0.53, 10,166 params, 1 of 12
+mislabeled, `explain()` verified causal.** Every lever on this line - concept count, concept kind, rule count, connections,
+sparsity, coverage, trimming, masking - has now been measured rather than assumed. `docs/REGIONAL-CONCEPTS.md`.
