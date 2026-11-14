@@ -2947,3 +2947,21 @@ model predicts <unk> on     21.73%         0.00%     -21.73
 All three pre-registered predictions held. The raw headline falls 1.51 points - necessarily, since `<unk>` targets were scoring
 56.41% and are now untrained - while accuracy on tokens that actually exist **rises 1.62 points** and `<unk>` emissions go to
 **exactly zero**. `docs/UNK-DROP-RESULT.md`.
+
+## Readability: readable model is 1.4-2.2 points behind plain at matched parameters (2026-11-14)
+
+8-arm sweep (4 configs x 2 seeds), every arm printing READABLE vs PLAIN at matched parameter counts in the same run:
+
+```
+arm                    gap (2 seeds)      concept honesty
+shipped  d64 patch 7   -2.06 / -1.54      100.0% / 92.3%
+wide     d96 patch 7   -2.23 / -1.91      100.0% / 100.0%
+softlam  lam 0.15      -1.63 / -1.36       84.6% / 92.3%
+fine     patch 5       crashed, no result
+```
+
+**This is NOT a smaller gap than the published 4.96.** That figure is post rule-pruning at 3 seeds; this sweep is unpruned,
+`--extra none`, 2 seeds. Different measurement, different configuration - not a before-and-after.
+
+Softer honesty pressure buys accuracy and costs honesty, as predicted (lam 0.15 gives the smallest gap with honesty below the
+85% bar). Wider concepts do **not** close the gap. `docs/READABILITY-SWEEP.md`.
