@@ -3855,3 +3855,32 @@ not. **P2 and P3 held.**
 Honest limits: the readable arm had **not converged** (still improving at epoch 9), one seed per arm, and the ordering is
 endpoint-dependent. "Readable is better at width" is **not** supported; "at double width the direct-path model overfits and the
 readable model catches it" is. `docs/WIDTH-PAIR-D1024-OVERFIT.md`.
+
+## Trade-off found: forcing the concepts to carry the answer makes explanations faithful but concept names WORSE (2026-11-14)
+
+Same instrument, same 22 concepts, same 4,000 windows as the published direct-path audit; only the checkpoint changed (both d512,
+9 epochs, seed 0):
+
+```
+checkpoint                         own-label median   held-out synonym median   gap     held-out below 0.60
+direct path                          0.9097               0.6980             0.2117       6 of 22
+READABLE (no-direct)                 0.7193               0.5392             0.1801      16 of 22
+```
+
+**The readable model's concepts are markedly worse at both jobs**: -0.19 against their own trained labels, -0.16 against unseen
+synonyms. **P1 and P2 both FAILED** (I predicted the readable arm would be MORE name-honest); the falsifier fired.
+
+So the project has two kinds of honesty that pull against each other:
+
+```
+                explanation faithfulness                        concept name semantics
+direct path     NOT exact (0 of 200, concepts carry 8.9-18%)     BETTER (0.9097 / 0.6980)
+readable        EXACT (100 of 100, concepts carry 99.999996%)    WORSE  (0.7193 / 0.5392)
+```
+
+Mechanism: 36 concepts must now encode everything needed to predict 12,002 tokens, so each neuron is pressed into service for
+information unrelated to its declared name - which is what a drop in own-label AUROC measures.
+
+**For the "100% honest" goal: the readable chat model is honest about the arithmetic of its own decision, and its concept names are
+less trustworthy than the direct-path model's.** Reporting only the exactness would be a half-truth.
+`docs/HONESTY-TRADEOFF-READABLE.md`.
