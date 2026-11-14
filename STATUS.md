@@ -3002,3 +3002,21 @@ honesty **97.4%** mean, with the plain control trained at a matched parameter co
 pre-registered predictions held. The honest headline for the readable image model is **1.53 +/- 0.44 points behind a plain MLP
 of the same size**, not 4.96 - the readable net still does not win, but the penalty is about a third of the quoted figure and
 now carries a standard deviation. `docs/READABILITY-GAP-CORRECTION.md`.
+
+**And now decomposed.** The missing half of that comparison - a plain net at the readable model's own size - has been measured
+by reusing the Phase-1 trainer itself with only the hidden width changed (10,345 params vs the readable 10,173, same 10 epochs,
+batch 128, lr 0.1, 3 seeds):
+
+```
+101,770-param plain (Phase-1 baseline)      86.69%
+ 10,345-param plain (matched control)       84.37% +/- 1.04    -2.32  <- CAPACITY
+  10,173-param readable, post-prune         81.73%             -2.64  <- READABILITY
+```
+
+**Of the published 4.96-point gap, 2.32 points (47%) is capacity and 2.64 points (53%) is readability itself.** The readable
+model still loses to a same-size plain net, so that part of the original claim stands - but half the quoted penalty was never
+readability's. `docs/READABILITY-GAP-DECOMPOSED.md`.
+
+Two related corrections, both mine: pruning is worth **+0.64**, not the +5.63 I inferred from the phase-2 document, so the
+"~76% unpruned readable model" I flagged as missing never existed - it was my own arithmetic error, withdrawn. And my
+prediction that the readable model would land within 2 points of the matched control **failed** (-2.64).
