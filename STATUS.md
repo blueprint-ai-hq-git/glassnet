@@ -3020,3 +3020,26 @@ readability's. `docs/READABILITY-GAP-DECOMPOSED.md`.
 Two related corrections, both mine: pruning is worth **+0.64**, not the +5.63 I inferred from the phase-2 document, so the
 "~76% unpruned readable model" I flagged as missing never existed - it was my own arithmetic error, withdrawn. And my
 prediction that the readable model would land within 2 points of the matched control **failed** (-2.64).
+
+## Phase-2 gate item 5 closed: the rule layer costs +4.09 points, and the concept names are taught (2026-11-14)
+
+The one open Phase-2 gate item - "remove one piece and show what changes" - is now measured, 3 seeds, 10 epochs, one schedule:
+
+```
+variant                        test acc (post-prune)     concept AUROC      conns/rule
+A0 full (supervisor+L1+prune)      79.04% +/- 1.97        79.75 +/- 1.61        3.00
+A1 no concept supervision          77.80% +/- 1.41        48.61 +/- 3.63        3.00
+A2 no sparsity (no L1, no prune)   81.71% +/- 0.76        77.36 +/- 1.01       14.00
+A3 no rule layer                   83.13% +/- 0.42        72.26 +/- 1.89          -
+```
+
+- **Rules removed: +4.09 points.** The rule layer is the single most expensive piece of the readable architecture.
+- **Sparsity removed: +2.67 points.** Forcing 3 connections per rule is not free in accuracy - my "sparsity only buys
+  readability" premise is refuted.
+- **Supervision removed: -1.24 accuracy AND -31.14 AUROC** of concept honesty (79.75 -> 48.61). The names are taught by the
+  supervisor, not decorative - that is the honesty check, with a number.
+- **Pruning is configuration-dependent**: -0.45 here, +0.64 in the published pipeline. Not assumable either way.
+
+With the matched control at 84.37% +/- 1.04, the price is now attributed piece by piece: ~1.2 points for the concept layer,
+2.7 more for the 3-connection constraint, 4.1 more for the rule layer in the strict configuration.
+`docs/PHASE2-ABLATION-CLOSED.md`.
