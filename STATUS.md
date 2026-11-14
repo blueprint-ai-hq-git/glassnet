@@ -3386,3 +3386,22 @@ concepts read by rules** against 8 of 14), at the cost of one mislabeled concept
 **Best honest config: 12 per-region concepts -> 32 single-concept rules -> 10 classes, 81.95% +/- 0.53, 10,166 params, 1 of 12
 mislabeled, `explain()` verified causal.** Every lever on this line - concept count, concept kind, rule count, connections,
 sparsity, coverage, trimming, masking - has now been measured rather than assumed. `docs/REGIONAL-CONCEPTS.md`.
+
+## The chat concepts are not redundant - the defect that cost the image model does not exist there (2026-11-14)
+
+Image side, the central defect was redundant labels (8 pairs above 0.80 correlation, 2 of 14 concepts mislabeled until they were
+de-duplicated). Chat concepts are token lists, so the same defect would show as **overlapping vocabulary**. Measured directly:
+
+```
+chat_concepts.py (12 concepts, the ones train_chat.py uses)
+  no two concepts share a single token - disjoint by construction
+chat_concepts_wide.py (43 concepts)
+  highest overlap anywhere: mentions_education ~ mentions_science at jaccard 0.08 (the word "study")
+  pairs above 0.50: 0     above 0.20: 0
+```
+
+**So de-duplication is not needed on the chat side**, and one hypothesis about its poor concept honesty is eliminated before
+spending GPU time. What is NOT established: uncorrelated labels *in practice* - two concepts can share no words and still co-occur
+constantly (greeting/farewell by position, food/request by topic). That check needs the 1.1 GB token file loaded, so it waits for a
+free machine. Prediction written in advance: no pair above 0.50, at most two above 0.30.
+`docs/CHAT-CONCEPT-OVERLAP.md`.
