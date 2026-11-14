@@ -3431,3 +3431,23 @@ manufactures the only meaningful co-occurrence in the whole set. Give "right" to
 **Conclusion: redundant labels are not why chat concept neurons fail to mean their names** - ruled out in both forms (vocabulary
 max jaccard 0.08, effect max phi 0.415), with numbers, so the remaining suspects are training pressure and the rule wiring, in that
 order. `docs/CHAT-CONCEPT-CORRELATION.md`.
+
+## Concept supervision sets chat concept honesty - 19 -> 31 of 36 concepts pass their own-name audit, at no accuracy cost (2026-11-14)
+
+Two label-based explanations for chat concept dishonesty were already eliminated (vocabulary jaccard 0.08; max pairwise phi 0.415,
+one shared token). That left training pressure. Swept `--lam-concept` on 2-epoch d512 arms over the full 294M-token corpus:
+
+```
+lam-concept   concepts passing own-name audit   VAL accuracy
+0.1                 19 of 36  (52.8%)              18.86%
+0.3  (default)      25 of 36  (69.4%)              18.88%
+0.6                 31 of 36  (86.1%)              18.89%
+```
+
+**+12 concepts become name-honest between the default and 0.6, and accuracy moves by +0.03 points - i.e. not at all.** P1 held
+strictly; P2's predicted direction was wrong (accuracy rose instead of falling); the falsifier (flat pass counts) did not trigger, so
+chat honesty **is** governed by supervision pressure, agreeing with the image line.
+
+**The default `--lam-concept 0.3` is leaving 6 concepts per run of honesty for nothing.** Not yet claimed for the shipped model: these
+are 2-epoch, single-seed, d512 arms, and the curve has not plateaued (31/36 at 0.6), so the next arm is lam 1.2 to find where
+honesty saturates and where accuracy finally pays. `docs/CHAT-LAMCONCEPT-SWEEP.md`.
