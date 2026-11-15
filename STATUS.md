@@ -4063,3 +4063,37 @@ killed the earlier width claim.**
 **Not established**: that widening fixes vocabulary breadth. It bought **+8 distinct tokens (78 -> 86)** for +47% more concepts - a
 sharply diminishing return. Named concepts are a route to accuracy, not to breadth. Concept-name honesty also remains the weakest
 property at **0.5884** on held-out synonyms, missing its 0.60 target by 0.0116. `docs/WIDENING-3SEED.md`.
+
+## Why the readable model talks narrowly: the rank explanation is dead, activation collapse is real (2026-11-15)
+
+The readable model uses 86-135 distinct tokens where its direct-path control uses 226, and widening the concept set 36 -> 53 bought only
++8 tokens. This measures why.
+
+**Hypothesis 1 - the answer map's rank is the ceiling - REFUTED.** The readable answer layer is (53, 12002), so all its logits lie in a
+53-dimensional family, and the control adds a rank-1024 direct term. That looked like the answer. Then I sampled the *same* 53-dim family
+at random:
+
+```
+observed predictions, 4,000 held-out windows :  135 distinct tokens
+random draws inside the same family          :  341 distinct tokens
+uniform inside the observed range            :  212 distinct tokens
+```
+
+**The same family reaches 341 tokens; the model uses 135.** So rank is not the ceiling, and the "rank per concept" surgery I was about to
+build was not built.
+
+**Hypothesis 2 - the activations collapse - SUPPORTED.**
+
+```
+model                     concept dims   effective dimensionality   variance in top-5 directions
+readable 53-concept            53             10.37 of 53 (20%)                 54%
+direct-path 36-concept         36              2.97 of 36  (8%)                 82%
+```
+
+**53 concept numbers move through about 10 effective directions, with 54% of their variance in five.** No dimension is dead, which is
+why the concept audits still pass - but collectively they describe far less than their count. That is why 17 more concepts bought 8 more
+tokens.
+
+**What this changes**: neither more concepts nor more rank per concept - both target a ceiling measured not to exist. The target is the
+*spread* of the concept activations. The supervision lever is config-only and runs first.
+`docs/ACTIVATION-COLLAPSE.md`.
