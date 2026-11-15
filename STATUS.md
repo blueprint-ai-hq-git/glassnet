@@ -4540,3 +4540,34 @@ comparison that does not use the withdrawn measure. What is NOT established is w
 unmeasured, so the next task is to reconcile the two instruments, because every future generation-quality claim depends on which one is
 right. This is the fourth correction I have made against my own work today, and the second where the fix was to withdraw a number rather
 than add one. `docs/NLL-WITHDRAWN.md`.
+
+## The instrument was broken: my hand-built forward differs from the real model by 131 logits (2026-11-15)
+
+Predictions were pre-registered with an inverted falsifier ("if the two paths agree, the withdrawal is withdrawn"). That is not what
+happened.
+
+```
+path                       accuracy   mean NLL
+hand-built numpy path       12.50%      35.433
+REAL model forward          29.17%       5.033
+max |logit difference| : 131.8675
+```
+
+**My hand-built path - `emb[window] @ concept.W + concept.b -> answer.W` - is not the model.** It differs by up to 131 logits, halves
+accuracy and inflates NLL sevenfold. The real model reads **29.17% / 5.03 nats**, matching the trainer's **23.47% / 5.35 nats**.
+
+**So every number produced by that hand-built path today is withdrawn**: all of `chat_generate_compare.py` (repetition, coverage, KL,
+every generated sample), both exposure-bias tools, `measure_activation_spread.py`, the 135/227/364/414/422 breadth curve and its ceiling,
+and the "944 vs 364 tokens" correction. **The conclusions they supported - looping, junk tokens, a breadth ceiling - are not supported**,
+because they were measured through a forward pass that is not the model.
+
+**Why it survived for hours**: the broken path uses the right parameter names and shapes and produces a valid distribution over the right
+vocabulary, so nothing crashed and every metric looked plausible. The only tell was a 4x disagreement with the trainer, and it surfaced
+only because a pre-registered falsifier forced a reconciliation. The library had already met this exact defect class - `lens.load()`'s
+own docstring records a loader bug that produced "max |logit difference| 24.96" - and the project's written lesson was to load through
+the library's loader. I built my own path anyway.
+
+**What stands**: everything the trainer measured - validation accuracy and perplexity, the three-seed widening win (+0.57 +/- 0.04),
+the shipped lam 1.0 configuration, concept-name honesty, explanation exactness. **What is withdrawn**: the entire generation-quality and
+argmax-breadth line, pending re-measurement through `lens.load()` + `net.forward()`. Until that runs, the honest statement about this
+model's generation quality is "unmeasured". `docs/INSTRUMENT-WAS-BROKEN.md`.
