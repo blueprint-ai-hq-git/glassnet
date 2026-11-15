@@ -4655,3 +4655,30 @@ that is **+3.50 points** with coverage up from 0.260 to 0.343.
 
 Looping at this configuration is **0.275 +/- 0.037**: real, repeatable, and untouched by data. It is the only defect left.
 `docs/GENERATION-REAL.md`.
+
+## The loop was the decoder: sampling eliminates it, and the cost is fidelity (2026-11-15)
+
+Three seeds of the best configuration, three decoders, all through `lens.load()` + `net.forward()`:
+
+```
+decoder                          repetition   coverage   KL(gen||targets)
+A greedy, no controls               0.275       0.343        17.21
+B sample T=0.8                      0.0013      0.217        19.51
+C sample + top-k 50 + rep 1.3       0.000       0.222        19.07
+```
+
+**D1 passed** (repetition 0.000-0.002, far below the 0.10 bar). **D2 failed** (coverage 0.217-0.222 vs the 0.30 bar). **D3 failed narrowly**
+(KL 19.07 vs 19.0). **Falsifier not triggered.**
+
+**The finding that closes the looping question: looping is a property of GREEDY decoding, not of the model.** The same weights that repeat
+themselves 27.5% of the time under argmax produce **0.13%** repetition under plain sampling. Every attempt today to fix looping by
+changing the model - data volume, context length, epochs, supervision, concept count, decorrelation, interface width - was aimed at a
+defect living in the decoder. The training-protocol arm is therefore **not required** for repetition, and its own falsifier says so.
+
+**The trade that remains**: greedy is faithful but loops; sampling escapes the loop by wandering into the long tail, which is why coverage
+falls 0.343 -> 0.217 and KL rises. The next arm is config-only - find the temperature/truncation knee that keeps looping near zero
+without giving up that 0.12 of coverage.
+
+**Correction to my own scorecard**: the "looping survived eight changes" line was measured under greedy decoding through a broken forward.
+It was wrong twice over. What is true: **under greedy the best configuration loops 0.275 +/- 0.037; under sampling it does not loop at
+all.** `docs/DECODING-CLOSES-LOOPING.md`.
