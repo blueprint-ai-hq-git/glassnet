@@ -4356,3 +4356,35 @@ Unchanged by this correction: the accuracy advantage, the shipped lam 1.0 config
 is that **generation quality is the real remaining gap for both models**, and that distinct-token counts are the wrong instrument -
 coverage, repetition and KL are the right ones, and both models score badly on all three.
 `docs/ARGMAX-IS-NOT-BREADTH.md`.
+
+## Generation measured properly: the readable model loops, but its words are MORE realistic than the control's (2026-11-15)
+
+Third correction of the day, and the first in the readable model's favour. My "junk breadth" reading an hour ago used 12 prompts; this
+grid uses 24 and reverses the emphasis. `lens/runs/DECODING-GRID.txt`.
+
+```
+checkpoint            decoder              repetition   self_repeat   realistic coverage   KL    stop_rate
+control               greedy                  0.040        0.091            0.123        22.05    0.000
+control               all controls            0.000        0.003            0.146        21.11    0.083
+readable lam 1.0      greedy                  0.555        0.518            0.351        18.11    0.292
+readable lam 1.0      all controls            0.000        0.159            0.229        19.99    0.250
+```
+
+1. **The readable model's generated words are MORE realistic than the control's on every decoder** - coverage 0.351 vs 0.123 at greedy,
+   0.229 vs 0.146 even at the most constrained decoder - and its unigram distribution is much closer to real text (**KL 18.11 vs
+   22.05**). So "junk breadth" was wrong in emphasis: the tail exists, but the body of what it generates is more text-like.
+2. **Its defect is LOOPING, and that is a decoder problem**: 0.555 repetition under greedy, **0.000** with controls, at a cost of
+   coverage 0.351 -> 0.229. The control barely loops (0.040).
+3. **Both are bad in absolute terms** - coverage 0.12-0.35 against the 0.5+ a working model should reach. Neither is usable text, and
+   generation quality, not vocabulary count, is where this stands.
+
+**Scorecard**: X1 passed (repetition to 0.000 both models), X2 failed narrowly (0.229 vs the 0.10-0.20 band), X3 held, falsifier not
+triggered (0.229 below the 0.30 threshold).
+
+**Method note**: the earlier "8-14% realistic" figure came from 12 prompts, this from 24, and coverage moved 0.141 -> 0.351 on the same
+checkpoint. Generation metrics here are prompt-count sensitive, so every generation claim now states its prompt count - the same lesson
+as the argmax correction, one level down: the instrument has to be specified, not just named.
+
+**Next**: the readable model is not vocabulary-poor and its words are not junk - it loops, and it is under-trained (the trainer prints
+"tokens per parameter: 1.31 (UNDER-TRAINED)"). So the next arm is more data at the same recipe.
+`docs/GENERATION-MEASURED.md`.
