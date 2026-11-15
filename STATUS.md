@@ -4119,3 +4119,36 @@ the neurons learned overlapping signals from disjoint words. **The +0.57 accurac
 bought with redundant concepts, and the self-check I reported as a clean pass was measuring the wrong property.** The check that catches
 this is activation correlation, and it should have run before the arm launched, not after.
 `docs/CONCEPT-ENTANGLEMENT.md`.
+
+## Breadth follows concept supervision, not activation spread - second explanation dead (2026-11-15)
+
+One change from the 53-concept readable arm: concept supervision weight 0.3 -> 0.6, 18 epochs, same seed and corpus. All checkpoints
+measured on one instrument, 4,000 held-out windows:
+
+```
+checkpoint                    effective dims   top-5 var   distinct tokens
+direct-path control (36c)      2.97 of 36 (8%)     0.80          539
+readable 53c, lam 0.3          10.37 of 53 (20%)   0.54          135
+readable 53c, lam 0.6           9.69 of 53 (18%)   0.53          227
+```
+
+- **Breadth rose 68% (135 -> 227)** and **concept names got more honest (0.5884 -> 0.6298)**, the first time held-out honesty crosses
+  the 0.60 target; trained-label fidelity rose 0.8058 -> 0.9257.
+- **Accuracy fell 0.36 points (22.04% -> 21.68%).**
+- **The activations did NOT spread: effective dimensionality FELL 10.37 -> 9.69.**
+
+**That kills my second explanation in a row.** `docs/ACTIVATION-COLLAPSE.md` argued breadth was capped by the concentration of the
+activation cloud; vocabulary nearly doubled while the cloud got *more* concentrated. The first explanation (the answer layer's rank)
+died earlier the same way - sampling the same 53-dim family at random reached 341 tokens where the model used 135.
+
+**What the data says**: the quantity that moved WITH breadth is **label fidelity** - stronger supervision makes each concept fire more
+selectively on its own trigger, and a more selective set of 53 numbers takes more distinct combinations, so more distinct tokens, even
+though the cloud concentrates. Breadth tracks how decisively concepts fire on their names.
+
+Predictions scored honestly: **L2 and L4 passed, L1 and L3 failed** - and L3 was the prediction that carried the theory. The falsifier
+did not trigger (it needed diversity <= 86; got 227), which is exactly what stopped me writing the "needs decorrelation" conclusion
+anyway.
+
+**A caveat now stated plainly**: the same control checkpoint gives **226** distinct tokens under `tools/diversity_diagnosis.py` and
+**539** under `measure_activation_spread.py`. Both real, not interchangeable - **every breadth claim must name its instrument.**
+`docs/BREADTH-IS-SUPERVISION.md`.
