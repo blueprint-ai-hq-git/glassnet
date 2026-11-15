@@ -4038,3 +4038,28 @@ here, to be fixed in a separate arm.
 
 This is **one seed**; a paired 3-seed check is running before the accuracy gain is treated as established.
 `docs/CONCEPT-WIDENING-53.md`.
+
+## The concept-widening gain is real: +0.57 VAL across three paired seeds (2026-11-15)
+
+The widened set beat the 36-concept baseline by +0.56 at seed 0. Because a width claim in this project had already reversed on a later
+seed, the pair was retrained at seeds 1 and 2 - four arms, 18 epochs each.
+
+```
+seed  base36 VAL   wide60 VAL   paired delta   base ppl   wide ppl
+ 0      21.48%       22.04%        +0.56        253.02     240.55
+ 1      21.37%       21.98%        +0.61        251.90     240.91
+ 2      21.46%       21.99%        +0.53        253.10     235.37
+
+final VAL      mean +0.5667, sd 0.0404, 3 of 3 seeds positive
+last-3 mean    +0.5378
+held-out best  +0.5733
+```
+
+**All three predictions held and the falsifier did not trigger** (S1 mean delta above zero, S2 wins on 3 of 3 seeds, S3 keeps 53
+concepts). The widened arm is also better on perplexity on every seed, and raises the share of decisions flowing through named concepts
+from 83.4% to 86.9%. **This is the first seed-robust accuracy win in the readable chat line, and it survived exactly the test that
+killed the earlier width claim.**
+
+**Not established**: that widening fixes vocabulary breadth. It bought **+8 distinct tokens (78 -> 86)** for +47% more concepts - a
+sharply diminishing return. Named concepts are a route to accuracy, not to breadth. Concept-name honesty also remains the weakest
+property at **0.5884** on held-out synonyms, missing its 0.60 target by 0.0116. `docs/WIDENING-3SEED.md`.
