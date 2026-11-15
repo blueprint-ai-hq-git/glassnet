@@ -90,3 +90,53 @@ answering to their names.
 That reframes the remaining work: it is no longer "can the readable model talk widely" but "**where on the curve is the best**
 **operating point, and what happens at equal breadth**". At roughly lam 1.5-2.0 the readable curve should cross the control's 539, and
 that is the fair fight: match breadth, then compare accuracy.
+
+
+## Three paired seeds: breadth is solid, the honesty claim is NOT (correction against my own single-seed claim)
+
+Predictions in `lens/runs/LAM06-3SEED-PREDICTIONS.txt`. lam 0.6 at seeds 1 and 2, against the lam 0.3 arms already trained at every
+seed.
+
+```
+seed   lam0.3 VAL   lam0.6 VAL   delta     lam0.3 tok   lam0.6 tok   delta
+  0      22.04%       21.68%     -0.36        135          227        +92
+  1      21.98%       21.67%     -0.31        131          238       +107
+  2      21.99%       21.61%     -0.38        131          207        +76
+
+accuracy delta : mean -0.350, sd 0.036   (loses on 3 of 3 seeds)
+breadth delta  : mean +91.7, sd 15.5     (gains on 3 of 3 seeds)
+```
+
+**Both of those are solid.** Breadth nearly doubles on every seed and the accuracy cost is nearly constant at 0.35 points.
+
+Now the part that has to be corrected. I published "held-out concept honesty 0.5884 -> 0.6298, first time above the 0.60 target" from
+one seed. Paired across three seeds:
+
+```
+seed   lam0.3 held-out   lam0.6 held-out   delta     lam0.3 trained   lam0.6 trained
+  0        0.5884            0.6298       +0.0414        0.8058           0.9257
+  1        0.6021            0.5977       -0.0044        0.7895           0.9290
+  2        0.5962            0.6148       +0.0186        0.7669           0.9192
+
+held-out  : mean +0.0185, sd 0.0229, positive on 2 of 3 seeds   <- WEAK, not established
+trained   : mean +0.137,  positive on 3 of 3 seeds              <- SOLID
+```
+
+**The held-out gain is not established**: +0.0185 with a standard deviation of 0.0229, and seed 1 is negative. The "first time above
+0.60" was my own single-seed reading and is withdrawn as a finding. What IS established is that stronger supervision makes concepts
+much better detectors of **their own trained keyword lists** (+0.137, all three seeds) while their transfer to **unseen synonyms**
+barely moves.
+
+That sharpens the project's central worry rather than resolving it: supervision buys fidelity to the words a concept was trained on,
+not fidelity to the concept's meaning. It also means the bulk of the breadth gain is being delivered by a mechanism that makes the
+neurons better keyword matchers, which is exactly the kind of thing a reader of `explain()` would be misled by if it were reported as
+"the concepts got more honest".
+
+## Scorecard
+
+- **P1 PASSED**: breadth above 180 on every seed (227, 238, 207).
+- **P2 PASSED**: the accuracy cost appears on 3 of 3 seeds, not 2.
+- **P3 PASSED only against the fixed threshold I wrote, and FAILS as a paired claim**: above 0.5884 on 3 of 3 seeds, but paired
+  deltas are +0.0414 / -0.0044 / +0.0186. I wrote the prediction against a single baseline value instead of against paired deltas,
+  which was a weaker test than the data allowed - noted so the next prediction is written as a paired delta.
+- **FALSIFIER NOT TRIGGERED**: breadth exceeded 180 on all three seeds.

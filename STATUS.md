@@ -4171,3 +4171,32 @@ names.
 The remaining question is no longer "can it talk widely" but **"what happens at equal breadth"** - at lam ~1.5-2.0 the readable curve
 should cross the control's 539, which makes the fair fight possible.
 `docs/BREADTH-IS-SUPERVISION.md`.
+
+### Three paired seeds: the breadth gain is solid, my honesty claim was not (correction, 2026-11-15)
+
+```
+seed   lam0.3 VAL   lam0.6 VAL   delta     lam0.3 tok   lam0.6 tok   delta
+  0      22.04%       21.68%     -0.36        135          227        +92
+  1      21.98%       21.67%     -0.31        131          238       +107
+  2      21.99%       21.61%     -0.38        131          207        +76
+
+accuracy delta : mean -0.350, sd 0.036  (3 of 3 seeds)
+breadth  delta : mean +91.7, sd 15.5    (3 of 3 seeds)
+```
+
+Both solid. But I published "held-out concept honesty 0.5884 -> 0.6298, first time above 0.60" from **one seed**, and paired across
+three seeds it does not hold up:
+
+```
+held-out honesty : mean delta +0.0185, sd 0.0229, positive on 2 of 3 seeds   <- WEAK, not established
+trained-label    : mean delta +0.137,  positive on 3 of 3 seeds               <- SOLID
+```
+
+**The "first time above 0.60" claim is withdrawn as a finding.** What is established is narrower and more useful: stronger supervision
+makes concepts much better detectors of **their own trained keyword lists** while their transfer to **unseen synonyms** barely moves -
+which sharpens the project's central worry rather than resolving it. Supervision buys fidelity to the words a concept was trained on,
+not to the concept's meaning, so a reader of `explain()` should not be told "the concepts got more honest" on the strength of the
+trained-label number.
+
+Also noted: I wrote P3 against a fixed baseline value instead of as a paired delta, which was a weaker test than the data allowed.
+`docs/BREADTH-IS-SUPERVISION.md`.
