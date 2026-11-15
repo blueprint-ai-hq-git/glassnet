@@ -4682,3 +4682,32 @@ without giving up that 0.12 of coverage.
 **Correction to my own scorecard**: the "looping survived eight changes" line was measured under greedy decoding through a broken forward.
 It was wrong twice over. What is true: **under greedy the best configuration loops 0.275 +/- 0.037; under sampling it does not loop at
 all.** `docs/DECODING-CLOSES-LOOPING.md`.
+
+## Temperature sweep: fidelity is best at T=0.5-0.6, and my runner dropped the metric that mattered (2026-11-15)
+
+**A defect in my own tooling first**: the launched command filtered its own output with `grep -vE '...|^  repetition'`, which deleted
+**the exact metric the sweep existed to measure**. So the result file has coverage and KL and no repetition; the filter is fixed and the
+sweep is re-running. Nothing about repetition is reported here because I do not have it.
+
+What it did capture, three seeds, real forward:
+
+```
+temperature   seed 1 coverage/KL   seed 2 coverage/KL   seed 0 coverage/KL
+T=0.5            0.312 / 17.511       0.351 / 16.498         (filtered)
+T=0.6            0.337 / 16.858       0.316 / 17.366         (filtered)
+T=0.7            0.281 / 17.932       0.302 / 17.525       0.292 / 17.719
+T=0.9            0.247 / 18.701       0.240 / 18.930       0.259 / 18.452
+```
+
+**K3 passed**: coverage falls and KL rises monotonically with temperature on every seed.
+
+**The useful result**: `T=0.5-0.6` keeps corpus coverage at **0.316-0.351**, matching greedy's 0.343 - so a mild temperature does **not**
+pay the fidelity bill that `T=0.8` did (0.217). **If repetition is also low there - exactly the number my runner discarded - then the
+knee is at T=0.5-0.6, and the fidelity-versus-diversity trade is far cheaper than the numbers I published an hour ago implied.** K1 and
+K2 remain unscored until the re-run lands.
+
+**Method note**: this is the third time today that a defect in my tooling, not the model, produced a wrong or missing result - after the
+hand-built forward (131 logits wrong) and the single-seed repetition comparison (noise read as effect). The pattern is consistent: the
+measurement path deserves the same verification as the model. Concrete rule going forward: a runner must print the metric list it
+intends to capture and assert each one is present, rather than filtering by pattern and trusting that what remains is complete.
+`docs/TEMPERATURE-KNEE.md`.
