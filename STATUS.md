@@ -4477,3 +4477,32 @@ the model its own generated prefix and measure the collapse against a true prefi
 22.92% with coverage 0.349 - matching the 600k arm's 0.351 while being 1.84 points more accurate. So most of the accuracy gain is
 available without giving up coverage; only the looping survives everything.
 `docs/EXPOSURE-BIAS.md`.
+
+### Exposure bias CONFIRMED - and it hurts the control MORE than the readable model (2026-11-15)
+
+Two branches over 24 prompts x 24 steps, scored against the same true target: `teacher` conditions on true text, `self` on the model's
+own output. No training.
+
+```
+checkpoint                  gap: self NLL vs teacher NLL, by step bucket
+2M/12ep (best accuracy)     1-2 +3.6%   3-4 +13.4%   5-8 +26.1%   9-16 +19.8%   17-24 +27.1%
+2M/18ep                     1-2 +5.1%   3-4 +11.1%   5-8 +25.8%   9-16 +16.2%   17-24 +21.3%
+direct-path control         1-2 +14.1%  3-4 +38.2%   5-8 +41.3%   9-16 +42.5%   17-24 +57.6%
+```
+
+**X1 and X2 PASSED** (gap above 15% at steps 9-16; gap grows with horizon on every checkpoint). **X3 failed on two of three** - self
+accuracy does collapse to 0-2% but by 3-4 points rather than the 5 predicted. **Falsifier not triggered.**
+
+**The result I did not expect: exposure bias is WORSE in the control (+38% to +58%) than in either readable model (+11% to +27%).** So
+it is a property of the training protocol, not of the concept bottleneck - and the readable architecture is the more robust of the two
+when fed its own text. First comparison today where the readable model wins on something other than accuracy and explanation.
+
+**Two defects in my instrument**: (1) FIXED - the column I called "perplexity" was mean negative log-likelihood in NATS, not
+perplexity; the tool now says NLL. (2) NOT YET FIXED - the model trains `--assistant-only` but this test scores every position including
+user turns, which inflates all absolute NLL values (validation perplexity is 211 while the test shows 23.4 nats). The **between-branch
+comparison is unaffected** since both branches score identical positions, so X1/X2/X3 stand, but no absolute NLL here may be quoted as
+the model's perplexity.
+
+**Seven levers fail to move repetition; the eighth - the training protocol - is now confirmed as a real and large effect.** Both models
+collapse on their own output, so the fix must change what the model sees during training: scheduled sampling, or an unlikelihood term
+against repeated tokens. `docs/EXPOSURE-BIAS.md`.
