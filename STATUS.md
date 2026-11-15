@@ -4008,3 +4008,33 @@ peaked instead. What the data supports, stated directly: **a 50% increase in tra
 
 **Two things this settles**: the widening question is now evidence-based rather than a hunch, and the useful epoch count is **15-19, not
 27** - future arms should spend their budget on architecture rather than epochs. `docs/DIVERSITY-CONVERGENCE.md`.
+
+## Widening the concept set to 53: best readable accuracy yet, vocabulary barely moved (2026-11-15)
+
+One change from the 36-concept arm: the concept table grows to **53 kept concepts** (17 measured additions, every added token disjoint
+from the 283 tokens already in use and from each other; no existing definition altered). 18 epochs.
+
+```
+endpoint                     36 concepts    53 concepts    change
+final VAL accuracy              21.48%        22.04%       +0.56
+held-out best                   23.67%        24.22%       +0.55
+final VAL perplexity            253.02        240.55       better
+concept path carries answer      83.4%         86.9%       +3.5
+distinct tokens                    78            86          +8 (+10%)
+```
+
+**Every accuracy endpoint improved, the best checkpoint again came at the LAST epoch, and the decision now flows through named concepts
+86.9% of the time.** Predictions scored honestly: W4 passed, **W1 failed** (>110 tokens predicted, 86 got), **W2 failed in the wrong
+direction** (firing rose to 19, which is what more concepts should do - the prediction was written without thinking that through),
+**W3 failed** (0.5884 vs the 0.60 target, though up 0.021), falsifier did not fire but missed by 0.0084.
+
+**The measured lesson: named concepts have sharply diminishing returns for vocabulary.** +47% concepts bought **+10%** breadth (+8
+tokens). Extrapolating, matching the control's 226 tokens would need hundreds of concepts - no longer a set a human can read. So more
+named concepts is a reliable route to **accuracy**, not to **breadth**.
+
+**Also found**: a no-shared-token self-check caught four **pre-existing** pairs sharing a token - `later`, `study`, `law`, `country` -
+the same defect class as the `right` collision, invisible to the phi audit because they do not co-fire above 0.30. Inherited unchanged
+here, to be fixed in a separate arm.
+
+This is **one seed**; a paired 3-seed check is running before the accuracy gain is treated as established.
+`docs/CONCEPT-WIDENING-53.md`.
