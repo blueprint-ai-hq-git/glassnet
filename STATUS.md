@@ -3985,3 +3985,26 @@ flattered the readable arm.
 neurons remain less name-aligned than the direct-path model's (held-out synonyms 0.5676 vs 0.7178). The open lever is diversity, and
 the measured widening design (36 -> 60 concepts) is ready and waiting on the owner.
 `docs/MATCHED-18EP-READABLE-WINS.md`.
+
+## The vocabulary deficit is capacity, not convergence (27-epoch arm, 2026-11-15)
+
+Diversity had climbed 49 -> 78 from 9 to 18 epochs, so the obvious question was whether 78 distinct tokens was simply under-training.
+It is not. Repeat at 27 epochs, same config:
+
+```
+epoch    ppl      VAL        epoch    ppl      VAL
+  1    663.45   10.02%         15    253.45   21.52%   <- VAL peak
+  9    273.94   20.72%         19    253.77   21.43%   <- held-out best 23.69%
+ 12    258.97   21.31%         27    273.68   20.91%   <- final
+```
+
+**The readable arm peaks at epoch 15 and then decays** (validation perplexity 253.08 -> 273.68 while training accuracy keeps climbing),
+and **50% more training bought +5 distinct tokens (78 -> 83, +6%) and cost 0.57 points of accuracy**. The direct-path control reaches
+**226** tokens. So breadth is not a function of training length.
+
+All three predictions failed honestly (D1 wanted >90, got 83; D2 wanted >21.48% final, got 20.91%; D3 wanted ppl <253.02, got 273.68),
+and the falsifier did **not** fire in its written form - it required diversity to plateau *while accuracy still rose*, and accuracy
+peaked instead. What the data supports, stated directly: **a 50% increase in training bought 6% more vocabulary and no accuracy.**
+
+**Two things this settles**: the widening question is now evidence-based rather than a hunch, and the useful epoch count is **15-19, not
+27** - future arms should spend their budget on architecture rather than epochs. `docs/DIVERSITY-CONVERGENCE.md`.
