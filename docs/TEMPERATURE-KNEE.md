@@ -34,3 +34,46 @@ forward (131 logits wrong) and the single-seed repetition comparison (noise read
 measurement path deserves the same verification as the model**, and a grep that silently drops a column is as damaging as a wrong matrix.
 Concrete rule from here: a runner must print the metric list it intends to capture and assert each one is present in its output, rather
 than filtering by pattern and trusting that what remains is complete.
+
+## The decoding knee is T=0.7: 10x less looping than greedy at 85% of its fidelity (2026-11-15)
+
+Predictions in `lens/runs/TEMPERATURE-KNEE-PREDICTIONS.txt`. Three seeds of the best configuration (4M/12ep), sampling at four
+temperatures, real forward. The earlier run's repetition column was destroyed by my own grep; these are the corrected numbers.
+
+```
+temp   mean repetition   mean coverage   mean KL       (reference points)
+0.5        0.050            0.340          16.79       greedy : rep 0.275, cov 0.343, KL 17.21
+0.6        0.065            0.311          17.49       T=0.8  : rep 0.001, cov 0.217, KL 19.51
+0.7        0.027            0.292          17.73
+0.9        0.002            0.249          18.69
+```
+
+- **K1 PASSED**: `T=0.7` delivers repetition **0.027** (below the 0.05 bar) with coverage **0.292** (above the 0.26 bar). `T=0.5` misses on
+  repetition by a hair (0.050, exactly at the boundary rather than below it).
+- **K2 PASSED under the tolerance I set (+/-0.02)**, with one honest caveat: the sequence 0.050 -> 0.065 -> 0.027 -> 0.002 is not strictly
+  monotone - `T=0.6` is slightly worse than `T=0.5` - so "monotone" is the wrong word for it. Repetition falls with temperature overall,
+  with one small inversion.
+- **K3 held** from the earlier run: coverage falls and KL rises as temperature rises.
+
+## The result that matters
+
+**`T=0.7` is the knee.** Against greedy it cuts repetition from **0.275 to 0.027** - ten times less looping - while keeping coverage at
+**0.292**, which is 85% of greedy's 0.343 and far above `T=0.8`'s 0.217. So the fidelity-versus-diversity trade I described yesterday was
+**the wrong framing**: at the right temperature there is no meaningful trade, only a slightly lower coverage for a tenfold reduction in
+looping.
+
+**This is the decoding configuration to ship for this model**: sampling at T=0.7, not greedy (loops) and not T=0.8+ (wanders into the
+tail).
+
+## What this closes
+
+The looping line, which consumed most of this day, ends as follows, all measured through the real forward on three seeds:
+
+```
+greedy  : 0.275 repetition, 0.343 coverage    the loop is the decoder's
+T=0.7   : 0.027 repetition, 0.292 coverage    10x less looping, 85% of the fidelity
+T=0.8   : 0.001 repetition, 0.217 coverage    escapes the loop into the tail
+```
+
+With **24.58% +/- 0.06 validation accuracy** at 4M/12ep, the shipped configuration is: 4M windows, 12 epochs, 53 concepts, lam 1.0, and
+**sampling at T=0.7**.

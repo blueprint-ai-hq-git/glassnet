@@ -4711,3 +4711,26 @@ hand-built forward (131 logits wrong) and the single-seed repetition comparison 
 measurement path deserves the same verification as the model. Concrete rule going forward: a runner must print the metric list it
 intends to capture and assert each one is present, rather than filtering by pattern and trusting that what remains is complete.
 `docs/TEMPERATURE-KNEE.md`.
+
+### The decoding knee is T=0.7: ten times less looping at 85% of greedy's fidelity (2026-11-15)
+
+Corrected numbers (the earlier run's repetition column was destroyed by my own grep), three seeds, real forward:
+
+```
+temp   mean repetition   mean coverage   mean KL
+0.5        0.050            0.340          16.79        greedy: rep 0.275, cov 0.343, KL 17.21
+0.6        0.065            0.311          17.49        T=0.8 : rep 0.001, cov 0.217, KL 19.51
+0.7        0.027            0.292          17.73
+0.9        0.002            0.249          18.69
+```
+
+- **K1 PASSED**: `T=0.7` gives repetition **0.027** with coverage **0.292**.
+- **K2 passed under my +/-0.02 tolerance with a caveat**: 0.050 -> 0.065 -> 0.027 -> 0.002 is not strictly monotone; T=0.6 is slightly
+  worse than T=0.5, so "monotone" is the wrong word. Repetition falls overall with one small inversion.
+
+**The result: `T=0.7` is the knee.** Against greedy it cuts repetition **0.275 -> 0.027** (ten times less looping) while keeping coverage at
+**0.292** - 85% of greedy's 0.343 and far above T=0.8's 0.217. **The fidelity-versus-diversity trade I described yesterday was the wrong
+framing**: at the right temperature there is no meaningful trade, just slightly lower coverage for a tenfold reduction in looping.
+
+**Shipped configuration**: 4M windows, 12 epochs, 53 concepts, lam 1.0, **sampling at T=0.7** - with 24.58% +/- 0.06 validation.
+`docs/TEMPERATURE-KNEE.md`.
