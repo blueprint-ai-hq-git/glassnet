@@ -140,3 +140,59 @@ neurons better keyword matchers, which is exactly the kind of thing a reader of 
   deltas are +0.0414 / -0.0044 / +0.0186. I wrote the prediction against a single baseline value instead of against paired deltas,
   which was a weaker test than the data allowed - noted so the next prediction is written as a paired delta.
 - **FALSIFIER NOT TRIGGERED**: breadth exceeded 180 on all three seeds.
+
+
+## The dial saturates: breadth has a ceiling at ~422 (FALSIFIER FIRED)
+
+Predictions in `lens/runs/EQUAL-BREADTH-PREDICTIONS.txt`. Two arms pushed the supervision weight past the operating range, to see whether
+the readable model could reach the direct-path control's 539 tokens.
+
+```
+arm                        distinct tokens   effective dims   final VAL   final ppl   concepts passing
+direct-path control             539           2.97 of 36        17.73%     54,751          --
+readable lam 0.3                135          10.37 of 53        22.04%     240.55        52/53
+readable lam 0.6                227           9.69 of 53        21.68%     252.31        53/53
+readable lam 1.0                364          10.09 of 53        21.08%     269.30        52/53
+readable lam 1.5                414          10.60 of 53        20.36%     286.65        50/53
+readable lam 2.0                422          11.02 of 53        19.93%     301.37        49/53
+```
+
+**Breadth rises steeply and then stops: +92, +45, +50, then only +8.** Doubling the supervision weight from 1.0 to 2.0 bought **8
+tokens** and cost **1.15 accuracy points**. The curve has flattened while accuracy is still falling, so the readable model's breadth on
+this lever is **capped at about 422 tokens, which is 78% of the control's 539.**
+
+**The falsifier fired as written**: lam 2.0 came in at **422 tokens** (predicted to exceed 500, falsifier threshold 450) with accuracy
+at **19.93%** (falsifier threshold 20.50%). Per the pre-registration, the honest conclusion is the one stated there: **the readable
+design trades breadth for accuracy inside a band it cannot leave by this lever alone.**
+
+Two things worth keeping in perspective on that band: even at its worst operating point (19.93%) the readable model is still **+2.20
+points more accurate** than its direct-path control (17.73%), and 49 of 53 concepts still answer to their names.
+
+## Why the readout is still not the ceiling - a third measurement
+
+The same reachability test that killed the rank hypothesis on the lam 0.3 checkpoint, repeated on every checkpoint:
+
+```
+checkpoint        tokens used   reachable by random draw in the same family
+lam 0.3               135                     341
+lam 0.6               227                     974
+lam 1.0               364                   1,583
+lam 1.5               414                   1,827
+lam 2.0               422                   1,859
+```
+
+**At lam 2.0 the answer layer can reach 1,859 distinct tokens; the model uses 422.** So on every checkpoint the readout has far more
+reach than the model uses, and the rank hypothesis stays dead. The constraint is upstream: how many distinct patterns the 53 concept
+numbers actually take across real text.
+
+The "activation collapse" observation also survives but not as an explanation of the ceiling: effective dimensionality stays between
+9.7 and 11.0 on **every** checkpoint while breadth varies 3x, so supervision raises breadth by making the concepts fire more sharply
+inside a cloud of roughly constant dimension. **A mechanism that raises the effective dimensionality of the concept cloud has not been
+tested, and it is the only remaining candidate with evidence behind it.**
+
+## Scorecard
+
+- **E1 FAILED**: predicted lam 1.5 above 430 tokens (got 414) and lam 2.0 above 500 (got 422).
+- **E2 PASSED**: both arms stayed above 18.50% validation accuracy (20.36%, 19.93%).
+- **E3 PASSED**: 50 and 49 of 53 concepts kept their names, above the 40 floor, so the explanations stay real at this pressure.
+- **FALSIFIER FIRED**: breadth below 450 at lam 2.0 with accuracy already below 20.50%.

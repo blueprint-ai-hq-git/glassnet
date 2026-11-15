@@ -4200,3 +4200,39 @@ trained-label number.
 
 Also noted: I wrote P3 against a fixed baseline value instead of as a paired delta, which was a weaker test than the data allowed.
 `docs/BREADTH-IS-SUPERVISION.md`.
+
+### The dial saturates: breadth caps at ~422, and the falsifier fired (2026-11-15)
+
+```
+arm                        tokens   effective dims   final VAL   concepts passing
+direct-path control          539       2.97 of 36       17.73%         --
+readable lam 0.3             135      10.37 of 53       22.04%       52/53
+readable lam 0.6             227       9.69 of 53       21.68%       53/53
+readable lam 1.0             364      10.09 of 53       21.08%       52/53
+readable lam 1.5             414      10.60 of 53       20.36%       50/53
+readable lam 2.0             422      11.02 of 53       19.93%        49/53
+```
+
+**Breadth rises steeply then stops: +92, +45, +50, then only +8.** Doubling supervision from 1.0 to 2.0 bought **8 tokens** and cost
+**1.15 accuracy points**. The readable model's breadth on this lever is **capped at ~422, which is 78% of the control's 539** - and
+**the falsifier I registered fired exactly as written** (below 450 tokens with accuracy below 20.50%). The honest conclusion is the
+pre-registered one: **the readable design trades breadth for accuracy inside a band it cannot leave by this lever alone.**
+
+Worth keeping in perspective: even at its worst point (19.93%) the readable model is still **+2.20 points more accurate** than its
+control, and 49 of 53 concepts still answer to their names.
+
+**Why the readout still is not the ceiling** - the reachability test repeated on every checkpoint:
+
+```
+checkpoint     tokens used   reachable in the same family
+lam 0.3             135                 341
+lam 1.0             364               1,583
+lam 2.0             422               1,859
+```
+
+**The answer layer can reach 1,859 tokens while the model uses 422**, so the rank explanation stays dead on every checkpoint. The
+constraint is upstream: how many distinct patterns the 53 concept numbers take across real text. Effective dimensionality stays between
+9.7 and 11.0 on every checkpoint while breadth varies 3x - so supervision raises breadth by making concepts fire more sharply inside a
+cloud of constant dimension. **A mechanism that raises that dimensionality has not been tested, and it is the only remaining candidate
+with evidence behind it.**
+`docs/BREADTH-IS-SUPERVISION.md`.
