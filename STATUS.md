@@ -4628,3 +4628,30 @@ looping lever**. Sample from this arm: `"thewaytodotheworldoftheworldoftheworldo
 Looping has now survived eight changes, so it needs the training-protocol work rather than more tokens. Before that, **24.57% is one
 seed** and this project has twice seen a verdict reverse on a later seed, so the seed check runs first.
 `docs/GENERATION-REAL.md`.
+
+### Three seeds at 4M: stable, and my "looping got worse" verdict was noise (2026-11-15)
+
+```
+seed   final VAL   final ppl   repetition   coverage   KL
+ 0      24.57%      181.83       0.318       0.339    17.385
+ 1      24.53%      181.21       0.252       0.373    16.423
+ 2      24.64%      180.08       0.256       0.316    17.825
+
+mean    24.58%      181.04       0.275       0.343    17.211
+sd       0.055       0.88        0.037       0.029     0.71
+```
+
+**S1, S2 and S3 all passed**; the falsifier did not trigger. Validation spread is **0.055 points** across three seeds.
+
+**The correction inside this result**: last wake I reported that repetition "rose to 0.318 instead of falling" and scored it as a failed
+prediction. Across three seeds the 4M repetition is **0.275 +/- 0.037** and seed 0's 0.318 is the outlier - against the 2M arm's
+single-seed 0.271 that is no difference at all. **So "more data made looping worse" was noise.** With this noise level, any single-seed
+repetition difference below about 0.08 is uninterpretable, and from here every repetition comparison is multi-seed or explicitly labelled
+provisional.
+
+**The configuration this establishes**: **4M windows / 12 epochs is the best measured configuration in the project** - 24.58% +/- 0.06
+validation, perplexity 181.04, coverage 0.343, KL 17.21, 50-52 of 53 concepts honest. Against the previously shipped 600k model at 21.08%
+that is **+3.50 points** with coverage up from 0.260 to 0.343.
+
+Looping at this configuration is **0.275 +/- 0.037**: real, repeatable, and untouched by data. It is the only defect left.
+`docs/GENERATION-REAL.md`.

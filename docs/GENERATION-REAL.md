@@ -98,3 +98,35 @@ The data lever is not exhausted (accuracy and fidelity are still climbing) but i
 that has survived eight changes now, so it needs the training-protocol work - scheduled sampling or an unlikelihood term against repeated
 tokens - rather than another token budget. Before that arm is built, the current best configuration needs the seed treatment every other
 claim got: **24.57% is one seed**, and this project has twice seen a verdict reverse on a later seed.
+
+## Three seeds at 4M: the configuration is stable, and my "looping got worse" verdict was seed noise
+
+Predictions in `lens/runs/DATA4M-3SEED-PREDICTIONS.txt`. Seeds 1 and 2 at 4M/12ep, generation measured through the real forward.
+
+```
+seed   final VAL   final ppl   concepts   repetition   coverage   KL
+ 0      24.57%      181.83       52/53       0.318       0.339    17.385
+ 1      24.53%      181.21       50/53       0.252       0.373    16.423
+ 2      24.64%      180.08       52/53       0.256       0.316    17.825
+
+mean    24.58%      181.04         --        0.275       0.343    17.211
+sd       0.055       0.88          --        0.037       0.029     0.71
+```
+
+- **S1 PASSED**: every seed inside the predicted 24.17-24.97% band, spread of only **0.055 points**.
+- **S2 PASSED**: all seeds far above the 21.50% floor.
+- **S3 PASSED**: coverage above 0.30 and KL below 19.0 on every seed.
+- **S4 deliberately made no prediction**; repetition came in at 0.318 / 0.252 / 0.256.
+- **FALSIFIER NOT TRIGGERED**: validation never fell below 24.17%.
+
+## The correction inside this result
+
+Last wake I reported that repetition at 4M "rose to 0.318 instead of falling" and scored that prediction as failed. **Across three seeds the 4M repetition is 0.275 +/- 0.037, and seed 0's 0.318 is the outlier.** Against the 2M arm's single-seed 0.271, that is no difference at all - so the claim that more data made looping worse was **noise**, and with this noise level any single-seed repetition difference below about 0.08 is uninterpretable.
+
+That is the same class of error as the hand-built forward, one level down: I compared two single measurements and treated the difference as a finding. **From here, every repetition comparison must be multi-seed or explicitly labelled single-seed and provisional.**
+
+## The configuration this establishes
+
+**4M windows / 12 epochs is the best measured configuration in the project**: 24.58% +/- 0.06 validation, perplexity 181.04, corpus coverage 0.343 +/- 0.03, KL 17.21, 50-52 of 53 concepts honest, and no accuracy regression across seeds. Against the previously shipped 600k/18-epoch model at 21.08% that is **+3.50 points**, with coverage up from 0.260 to 0.343.
+
+Looping at this configuration is **0.275 +/- 0.037** - real, repeatable, and untouched by data. It is now the only defect left.
