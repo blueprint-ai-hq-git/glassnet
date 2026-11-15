@@ -4286,3 +4286,43 @@ for the readable model against 1024 dimensions for the control.
 That is now testable **without new code** - the model already has a low-rank direct path that adds exactly r scalars - so the next arms
 measure how much breadth each added interface scalar buys. It is a diagnostic, not a ship candidate: a direct path costs explanation
 purity, and the measurement decides whether that price is worth paying at all. `docs/DECORRELATION-NEGATIVE.md`.
+
+## Correction: the narrow-vocabulary ceiling was partly my measuring instrument (2026-11-15)
+
+Two results in one block.
+
+**1. Interface width is dead too, and the direct path hurts.** Readable arm plus a low-rank direct path (53 interface scalars vs the
+control's 1024):
+
+```
+arm                        tokens   final VAL   final ppl
+readable, no direct path     364      21.08%      269.30
++ direct rank 8              359      18.75%      421.39
++ direct rank 32             297      18.79%      558.07
++ direct rank 128            347      19.50%      907.10
+direct-path control          539      17.73%     54,751
+```
+
+All three breadth predictions failed, accuracy fell 1.6-2.3 points, and **the falsifier fired** (347 tokens at rank 128, threshold 380).
+The explanation-cost step produced no output at all - the `explain_verified.py --ckpt` invocation I flagged as unverified does not take
+that argument, so that number is missing rather than assumed.
+
+**2. My breadth metric was measuring confidence, not vocabulary.** Every breadth number today used distinct **argmax** predictions.
+Sampling the same distributions on the same windows:
+
+```
+checkpoint          argmax   sampled T=1.0   sampled T=1.2   entropy (nats)
+direct-path control   395        1,543            1,961            5.02
+readable lam 1.0      364          944            1,120            2.05
+data itself           971 distinct target types occur in this sample
+```
+
+**The readable model produces 944 distinct tokens when sampled against 364 at argmax - close to the 971 types the data actually
+contains.** It is not short of words; it is unwilling to commit, because its distribution is far sharper than the control's (2.05 vs 5.02
+nats).
+
+**Withdrawn**: any claim that the readable model "cannot talk widely" or that its vocabulary is capped near 422 words.
+**Survives**: the accuracy advantage, the shipped lam 1.0 configuration, and the supervision trade-off - which must now be described as
+"willingness to commit to a rare token", not "how many words it knows".
+**Open**: whether that sampled output is actually good. Diverse tokens are not sensible text, and nothing here measured generation
+quality. `docs/ARGMAX-IS-NOT-BREADTH.md`.
