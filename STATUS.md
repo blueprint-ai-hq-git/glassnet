@@ -4388,3 +4388,30 @@ as the argmax correction, one level down: the instrument has to be specified, no
 **Next**: the readable model is not vocabulary-poor and its words are not junk - it loops, and it is under-trained (the trainer prints
 "tokens per parameter: 1.31 (UNDER-TRAINED)"). So the next arm is more data at the same recipe.
 `docs/GENERATION-MEASURED.md`.
+
+## More data improves prediction and DEGRADES generation - the objective is misaligned (2026-11-15)
+
+One change against the shipped arm: 600,000 -> 2,000,000 training windows (19.2M -> 64.0M tokens). The trainer's own warning moves from
+"1.31 tokens per parameter (UNDER-TRAINED)" to "4.36 (adequate)".
+
+```
+arm                    tokens/param   final VAL   final ppl   repetition   coverage   KL   
+shipped (600k)             1.31        21.08%      269.30       0.555       0.351    18.11
+more data (2M)             4.36        23.32%      209.74       0.659       0.243    20.86
+```
+
+**3.3x more data bought the largest accuracy gain of the day (+2.24 points, perplexity 269 -> 210) and made the generated text worse on
+every quality measure**: more looping, fewer realistic tokens (0.351 -> 0.243), further from the real distribution (KL 18.11 -> 20.86),
+narrower argmax set (364 -> 278).
+
+Predictions: **M3 passed** (23.32% vs the 21.50% floor), **M1, M2 and M4 failed** - I predicted generation would improve with data and it
+went the other way. The falsifier did not trigger: "more data buys nothing" is wrong. More data buys a great deal; it buys the wrong
+thing.
+
+**What this establishes, and it matters more than the numbers**: the metric this project has been optimising is not the metric the
+product needs. Next-token accuracy rose 2.24 points while every generation-quality measure fell - a clean demonstration at fixed seed,
+fixed recipe, one changed variable. Any arm that reports only VAL accuracy is now assumed to be optimising the wrong thing until it also
+reports repetition, coverage and KL on a stated prompt count.
+
+**Next**: context length, config-only, because a model that is more accurate yet more loopy is plausibly leaning on a locally repetitive
+solution inside a 32-token window. `docs/ACCURACY-VS-GENERATION.md`.
