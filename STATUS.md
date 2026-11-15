@@ -4152,3 +4152,22 @@ anyway.
 **A caveat now stated plainly**: the same control checkpoint gives **226** distinct tokens under `tools/diversity_diagnosis.py` and
 **539** under `measure_activation_spread.py`. Both real, not interchangeable - **every breadth claim must name its instrument.**
 `docs/BREADTH-IS-SUPERVISION.md`.
+
+### Breadth is now a dial: lam 0.3 -> 0.6 -> 1.0 gives 135 -> 227 -> 364 tokens (2026-11-15)
+
+```
+arm                            distinct tokens   effective dims   final VAL   final ppl
+direct-path control (36c)            539           2.97 of 36        17.73%     54,751
+readable 53c, lam 0.3                135          10.37 of 53        22.04%     240.55
+readable 53c, lam 0.6                227           9.69 of 53        21.68%     252.31
+readable 53c, lam 1.0                364          10.09 of 53        21.08%     269.30
+```
+
+**Breadth is monotonically controlled by the supervision weight** - it is a dial, not a mystery - costing roughly half an accuracy
+point per step. **The readable model stays ahead of its matched control on accuracy at every point**, including lam 1.0 where it has
+68% of the control's breadth and is **+3.35 points more accurate** (21.08% vs 17.73%) with 52 of 53 concepts still answering to their
+names.
+
+The remaining question is no longer "can it talk widely" but **"what happens at equal breadth"** - at lam ~1.5-2.0 the readable curve
+should cross the control's 539, which makes the fair fight possible.
+`docs/BREADTH-IS-SUPERVISION.md`.

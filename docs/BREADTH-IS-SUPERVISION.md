@@ -68,3 +68,25 @@ are not interchangeable. **Every breadth claim in this project must name its ins
 `--lam-concept 1.0` is running as the second point on this curve, and the useful question it answers is the **trade-off rate**: how
 much accuracy per unit of breadth. If 1.0 buys more breadth at a similar cost, the next arm should find the knee between 0.3 and 0.6
 rather than push further right.
+
+
+## Second point: lam 1.0, and the trade-off is now a curve
+
+```
+arm                                   distinct tokens   effective dims   final VAL   final ppl   concepts
+direct-path control (36c)                   539           2.97 of 36        17.73%     54,751       --
+readable 53c, lam 0.3 (baseline)            135          10.37 of 53        22.04%     240.55     52/53
+readable 53c, lam 0.6                       227           9.69 of 53        21.68%     252.31     53/53
+readable 53c, lam 1.0                       364          10.09 of 53        21.08%     269.30     52/53
+```
+
+**Breadth is monotonically controlled by the supervision weight, and it is now a dial rather than a mystery**: 135 -> 227 -> 364 as
+`--lam-concept` goes 0.3 -> 0.6 -> 1.0, at a cost of roughly half an accuracy point per step (22.04 -> 21.68 -> 21.08).
+
+**The readable model is still ahead of its matched control on accuracy at every point on the curve** - including at lam 1.0, where it
+has 68% of the control's breadth (364 of 539) and is **+3.35 points more accurate** (21.08% vs 17.73%), with 52 of 53 concepts still
+answering to their names.
+
+That reframes the remaining work: it is no longer "can the readable model talk widely" but "**where on the curve is the best**
+**operating point, and what happens at equal breadth**". At roughly lam 1.5-2.0 the readable curve should cross the control's 539, and
+that is the fair fight: match breadth, then compare accuracy.
