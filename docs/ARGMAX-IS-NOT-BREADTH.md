@@ -56,3 +56,40 @@ property of the **argmax metric**, not a hard limit on what the model can say. T
   basis it reaches 944 of the 971 token types the held-out data uses.
 - **Open**: whether the sampled output is *good* - diverse tokens are not automatically sensible text, and nothing here measured quality
   of generated text. That is the next experiment, and it is the honest one to run because it tests the thing a user would actually see.
+
+
+## CORRECTION, an hour later: the 944 tokens were junk breadth
+
+I published "the readable model samples 944 distinct tokens, close to the 971 target types the data contains" as evidence that it is
+not short of vocabulary. Then I measured what those tokens actually are, with `tools/chat_generate_compare.py` - generation from
+held-out prompts, scored on objective properties:
+
+```
+checkpoint / mode        repetition   self_repeat   coverage(top-571 real)   KL(gen||targets)   stop_rate
+readable lam 1.0 greedy      0.339        0.229             0.141                  22.5             0.417
+readable lam 1.0 sample      0.321        0.260             0.083                  24.0             0.250
+direct control  greedy       0.006        0.062             0.042                  24.2             0.000
+direct control  sample       0.000        0.021             0.047                  24.2             0.000
+```
+
+`coverage` is the share of generated tokens that fall inside the 571-token set covering 90% of real targets. **The readable model's
+sampled tokens are 8-14% realistic**, and its text degenerates into symbol runs and repeated turn-end tokens:
+
+```
+readable, sample : "<|im_end|><|im_end|>youwantyouransweranswer:########"
+readable, greedy : "################"
+readable, sample : "oilyflycostlyofeaglesisshelters,soheautomationofx-2}"
+control,  sample : "moretooandknowledgeabout1peoplebecauseanalyzinganalyzingbefactory.then"
+```
+
+**So the 944-token figure was long-tail junk, not vocabulary.** The argmax set was narrow partly because argmax avoids that junk. The
+honest statement is the opposite of what I published an hour ago: on a sampled basis the readable model's extra "vocabulary" is
+mostly tokens real text never uses, and its degeneration mode is loops and premature turn-end, while the control degenerates into
+repetitive word salad.
+
+What that correction does NOT change: the accuracy comparison, the shipped lam 1.0 configuration, and the explanation exactness all
+stand. What it does establish is that **generation quality is the real remaining gap for BOTH models**, and that distinct-token counts
+are the wrong instrument for it - coverage, repetition and KL are the right ones, and both models score badly on all three.
+
+The next experiment is therefore about decoding and generation quality, not vocabulary size:
+`lens/runs/DECODING-FIX-PREDICTIONS.txt`.

@@ -4326,3 +4326,33 @@ nats).
 "willingness to commit to a rare token", not "how many words it knows".
 **Open**: whether that sampled output is actually good. Diverse tokens are not sensible text, and nothing here measured generation
 quality. `docs/ARGMAX-IS-NOT-BREADTH.md`.
+
+### Correction, an hour later: the 944 tokens were junk breadth (2026-11-15)
+
+I published that the readable model "samples 944 distinct tokens, close to the 971 target types the data contains" as evidence it is
+not short of vocabulary. Then I measured what those tokens ARE, by generating from held-out prompts:
+
+```
+checkpoint / mode        repetition   self_repeat   coverage(top-571 real)   KL(gen||targets)   stop_rate
+readable lam 1.0 greedy      0.339        0.229             0.141                  22.5             0.417
+readable lam 1.0 sample      0.321        0.260             0.083                  24.0             0.250
+direct control  greedy       0.006        0.062             0.042                  24.2             0.000
+direct control  sample       0.000        0.021             0.047                  24.2             0.000
+```
+
+**The readable model's sampled tokens are 8-14% realistic**, and its text degenerates into symbol runs and repeated turn-end tokens:
+
+```
+readable sample : "<|im_end|><|im_end|>youwantyouransweranswer:########"
+readable greedy : "################"
+control  sample : "moretooandknowledgeabout1peoplebecauseanalyzinganalyzingbefactory.then"
+```
+
+**So the 944-token figure was long-tail junk, not vocabulary** - the argmax set was narrow partly because argmax avoids that junk. The
+honest statement is the reverse of what I published an hour ago. Both models generate badly, in different ways: the readable one loops
+symbols and stops early, the control produces repetitive word salad.
+
+Unchanged by this correction: the accuracy advantage, the shipped lam 1.0 configuration, and explanation exactness. What it establishes
+is that **generation quality is the real remaining gap for both models**, and that distinct-token counts are the wrong instrument -
+coverage, repetition and KL are the right ones, and both models score badly on all three.
+`docs/ARGMAX-IS-NOT-BREADTH.md`.
