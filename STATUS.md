@@ -4441,3 +4441,39 @@ the numbers above were produced after both fixes.
 good on both axes, and the best accuracy arm is the worst on generation.** The consistent reading is that this recipe buys accuracy with
 confidence, and confidence is what makes the text loop - so the next lever attacks confidence directly, with a training-time signal
 against repeated tokens. `docs/ACCURACY-VS-GENERATION.md`.
+
+## Repetition is invariant to every knob - the diagnosis is exposure bias (2026-11-15)
+
+The more-data recipe at 12 and 9 epochs:
+
+```
+arm              final VAL   final ppl   greedy repetition   greedy coverage
+2M, 18 epochs      23.32%      209.74          0.659              0.243
+2M, 12 epochs      23.47%      211.49          0.614              0.247
+2M,  9 epochs      22.92%      222.87          0.653              0.349
+```
+
+Predictions: **E3 passed** (23.47%, the best accuracy of any arm today), **E1, E2 and E4 failed**, falsifier not triggered (0.614 vs the
+0.65 bar).
+
+**The finding that matters: repetition does not respond to any knob we have.**
+
+```
+lever                          effect on looping
+concept supervision 0.3 -> 2.0       none at any setting
+training data 600k -> 2M             worse (0.555 -> 0.659)
+context length 32 -> 64              0.659 -> 0.532, cost 1.32 accuracy points
+epochs 18 -> 12 -> 9                 0.659 -> 0.614 -> 0.653, flat
+concept widening 36 -> 53            none
+decorrelation term                   none
+```
+
+**Six independent changes, none of which moves it.** That is strong evidence the cause is not any of them - and the one thing all six
+share is that they preserve **teacher forcing**. The model trains on true text and generates from its own output, drifting into contexts
+it never saw and falling back on local repetition. That is the exposure-bias signature, and it is testable with no training at all: feed
+the model its own generated prefix and measure the collapse against a true prefix of the same length.
+
+**Also useful**: 12 epochs at 2M is the best accuracy point found today (**23.47%**, +2.39 over the shipped arm), and 9 epochs gives
+22.92% with coverage 0.349 - matching the 600k arm's 0.351 while being 1.84 points more accurate. So most of the accuracy gain is
+available without giving up coverage; only the looping survives everything.
+`docs/EXPOSURE-BIAS.md`.
