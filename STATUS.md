@@ -4097,3 +4097,25 @@ tokens.
 **What this changes**: neither more concepts nor more rank per concept - both target a ceiling measured not to exist. The target is the
 *spread* of the concept activations. The supervision lever is config-only and runs first.
 `docs/ACTIVATION-COLLAPSE.md`.
+
+## Naming the collapse, and a redundancy in my own widening (2026-11-15)
+
+53 concept numbers move through about **10.4 effective directions**; this names which ones. Measured with
+`tools/chat_concept_entanglement.py` on 4,000 held-out windows.
+
+```
+direction 1: 26.6% of variance | mentions_self 0.50, mentions_the_user 0.31, cp_thinking 0.26, is_a_question 0.24
+direction 2: 10.1% of variance | mentions_a_number 0.40, is_a_question 0.36, mentions_self 0.27
+effective dimensionality: 10.03 of 53 (19%)
+```
+
+**A quarter of all concept variance is a single axis: who is speaking and whether it is a question.** Topic concepts barely move. So
+the concept vector is mostly a **register detector**, which is why changing the concept list does not change how much the layer tracks.
+
+**The correction**: `cp_certainty` (r = +0.671 with `cp_emotion_pos`) and `cp_thinking` (r = +0.61 with `mentions_self` and
+`mentions_the_user`) are concepts **I added** in the widening arm. Both pass my "no shared token with anything already in use" rule -
+but **token disjointness is not non-redundancy**: `sure/certain/probably` and `love/like/enjoy` co-occur in hedged emotional chat, so
+the neurons learned overlapping signals from disjoint words. **The +0.57 accuracy win is solid and seed-robust, but part of it was
+bought with redundant concepts, and the self-check I reported as a clean pass was measuring the wrong property.** The check that catches
+this is activation correlation, and it should have run before the arm launched, not after.
+`docs/CONCEPT-ENTANGLEMENT.md`.
