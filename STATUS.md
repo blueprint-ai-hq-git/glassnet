@@ -4236,3 +4236,27 @@ constraint is upstream: how many distinct patterns the 53 concept numbers take a
 cloud of constant dimension. **A mechanism that raises that dimensionality has not been tested, and it is the only remaining candidate
 with evidence behind it.**
 `docs/BREADTH-IS-SUPERVISION.md`.
+
+## The shipped readable configuration: lam 1.0, stable across three seeds (2026-11-15)
+
+```
+seed   final VAL   final ppl   concepts passing   distinct tokens   effective dims
+  0      21.08%      269.30         52/53               364           10.09 of 53
+  1      21.15%      267.04         51/53               352           10.64 of 53
+  2      21.17%      262.88         52/53               326           10.14 of 53
+
+final VAL : mean 21.13%, sd 0.05        breadth : mean 347 tokens, sd 19
+```
+
+**P1 and P2 passed** (every seed inside the predicted band, spread only 0.09 points; breadth above 300 on all three). **P3 failed
+because I wrote it wrong** - it named the paired lam 0.3 arm while claiming to test the direct-path control, and lam 0.3 is the
+higher-accuracy readable arm, so the prediction as written required lam 1.0 to beat something it cannot. That is my second
+prediction-writing error today; the intended comparison is stated separately instead of retro-fitted.
+
+**The comparison that matters**: readable lam 1.0 is **21.13% +/- 0.05** across three seeds against the matched direct-path control's
+**17.73%** - **+3.40 points while being fully explainable**. Deliberate caveat: the control side is a single seed, so the honest form is
+"the readable model's three seeds all sit 3.2 to 3.4 points above the one matched control run".
+
+**Shipped point**: lam 1.0 - the widest stable readable configuration that keeps accuracy above 21% with 51+ concepts honest. lam 1.5
+and 2.0 reach 414 and 422 tokens but lose 0.8-1.2 points and drop concepts below the name audit, so the ~422 breadth ceiling stands as
+documented. `docs/READABLE-SHIPPED-CONFIG.md`.
