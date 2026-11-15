@@ -4606,3 +4606,25 @@ trade-off** - that conclusion is withdrawn as a measurement artefact.
 **What is real**: the readable model loops more than the control (0.271 vs 0.030) but its distribution is much closer to the corpus
 (coverage 0.316 vs 0.240, KL 17.85 vs 19.05) and it is +5.74 points more accurate. The honest trade is **looping versus corpus fidelity**,
 not accuracy versus quality. `docs/GENERATION-REAL.md`.
+
+### Four million windows: accuracy and fidelity keep climbing, looping does not follow (2026-11-15)
+
+```
+arm                  tokens/param   final VAL   final ppl   repetition   coverage   KL
+600k windows, 18 ep      1.31        21.08%      269.30       0.475       0.260    19.748
+2M windows, 12 ep        4.36        23.47%      211.49       0.271       0.316    17.845
+4M windows, 12 ep        8.72        24.57%      181.83       0.318       0.339    17.385
+```
+
+- **M1 PASSED**: **24.57%** validation, the best accuracy measured all day.
+- **M2 FAILED**: repetition rose to **0.318** instead of falling.
+- **M3 PASSED**: coverage 0.339 and KL 17.385, both better than the 2M arm.
+- **Falsifier not triggered**: it needed repetition >=0.30 (yes, 0.318) **and** accuracy <=23.47% (no, 24.57%).
+
+**Three of four axes improve monotonically with data - accuracy +3.49 points in total, coverage 0.260 -> 0.339, KL 19.748 -> 17.385 -
+while looping does not (0.475 -> 0.271 -> 0.318).** So the data lever is not exhausted for prediction and fidelity, but it is **not a
+looping lever**. Sample from this arm: `"thewaytodotheworldoftheworldoftheworldoftheworld"` - real words, still a loop.
+
+Looping has now survived eight changes, so it needs the training-protocol work rather than more tokens. Before that, **24.57% is one
+seed** and this project has twice seen a verdict reverse on a later seed, so the seed check runs first.
+`docs/GENERATION-REAL.md`.

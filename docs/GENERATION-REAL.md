@@ -57,3 +57,44 @@ model.
 - **Real**: more data is the lever that moved both axes at once.
 - **Open**: whether more data keeps helping - which is the cheapest experiment available and the next item in the queue.
 - **Withdrawn earlier and still withdrawn**: everything measured through the hand-built path, including the breadth curve and its ceiling.
+
+## Four million windows: accuracy and corpus fidelity keep improving, looping does not follow
+
+Predictions in `lens/runs/MORE-DATA-2-PREDICTIONS.txt`. One change against the 2M/12-epoch arm: 4,000,000 training windows.
+
+```
+arm                    tokens/param   final VAL   final ppl   repetition   coverage   KL(gen||targets)   concepts
+600k windows, 18 ep        1.31        21.08%      269.30       0.475       0.260         19.748         52/53
+2M windows, 12 ep          4.36        23.47%      211.49       0.271       0.316         17.845         52/53
+4M windows, 12 ep          8.72        24.57%      181.83       0.318       0.339         17.385         52/53
+```
+
+- **M1 PASSED**: final validation **24.57%**, above the 23.47% bar and the best accuracy measured all day.
+- **M2 FAILED**: repetition rose to **0.318** instead of falling below 0.271.
+- **M3 PASSED**: coverage **0.339** and KL **17.385**, both better than the 2M arm.
+- **FALSIFIER NOT TRIGGERED**: it required repetition at or above 0.30 - which happened, 0.318 - **and** accuracy at or below 23.47%,
+  which did not (24.57%). So the data lever has not saturated on accuracy, but it has stopped helping the looping.
+
+## The shape of it, across three data points
+
+```
+                       600k      2M       4M
+accuracy               21.08%   23.47%   24.57%     monotone, +3.49 in total
+corpus coverage         0.260    0.316    0.339     monotone
+KL to real text        19.748   17.845   17.385     monotone
+repetition              0.475    0.271    0.318     NON-monotone
+```
+
+**Three of four axes improve monotonically with data; looping does not.** That is a cleaner statement of the real situation than anything
+measured before the instrument was fixed: more data reliably improves prediction and corpus fidelity, and it moves looping around
+(0.475 -> 0.271 -> 0.318) without controlling it.
+
+Sample text from this arm, verbatim: `"thewaytodotheworldoftheworldoftheworldoftheworldoftheworldoftheworldofth"` - real words, still a
+loop.
+
+## What this implies for the next step
+
+The data lever is not exhausted (accuracy and fidelity are still climbing) but it is **not a looping lever**. Looping is the one property
+that has survived eight changes now, so it needs the training-protocol work - scheduled sampling or an unlikelihood term against repeated
+tokens - rather than another token budget. Before that arm is built, the current best configuration needs the seed treatment every other
+claim got: **24.57% is one seed**, and this project has twice seen a verdict reverse on a later seed.
