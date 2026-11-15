@@ -51,3 +51,53 @@ wrong thing until it also reports repetition, coverage and KL on a stated prompt
 The dissociation needs a cause, and the cheapest one to test is **context length**: the model sees 32 tokens and, being more accurate
 yet more loopy with more data, is plausibly leaning on a locally-repetitive solution. Window 64 is a config-only change and is running
 next (`lens/runs/WINDOW64-PREDICTIONS.txt`).
+
+## Context length 64: generation improves a little, accuracy falls, all four predictions miss
+
+Predictions in `lens/runs/WINDOW64-PREDICTIONS.txt`. One change against the more-data arm: window 32 -> 64 (2M windows, lam 1.0,
+18 epochs, seed 0, same split).
+
+```
+arm                              tokens/param   final VAL   final ppl   greedy repetition   greedy coverage   greedy KL   controlled coverage
+2M windows, window 32                 4.36        23.32%      209.74          0.659              0.243          20.86            0.212
+2M windows, window 64                 7.69        22.00%      241.26          0.532              0.290          19.42            0.208
+```
+
+- **W1 FAILED**: predicted repetition below 0.40; got **0.532**.
+- **W2 FAILED**: predicted coverage above 0.35; got **0.290**.
+- **W3 FAILED**: predicted validation at or above 23.00%; got **22.00%**.
+- **W4 FAILED**: predicted KL below 19.0; got **19.417**.
+- **FALSIFIER NOT TRIGGERED, but only just**: it required repetition at or above 0.55 **and** coverage at or below 0.28. Repetition came
+  in at 0.532 (below the bar) and coverage at 0.290 (above it). Both missed by tiny margins, so per the rule I wrote I am reporting the
+  numbers rather than claiming either conclusion.
+
+**Directionally, longer context helps generation and costs accuracy**: repetition 0.659 -> 0.532, coverage 0.243 -> 0.290, KL 20.86 ->
+19.42, at a cost of 1.32 accuracy points. That is the same trade the supervision dial made, in the opposite direction - and it means the
+dissociation from `docs/history/ACCURACY-VS-GENERATION.md` is not an artefact of one arm.
+
+## A defect found and fixed in the measurement tool, and a false COMPLETE
+
+The generation tool hardcoded a 32-token window, so both measurement calls died on the window-64 checkpoint
+(`matmul: size 65536 is different from 32768`) - and the runner still printed `WINDOW64 COMPLETE`. That is the false-completion defect
+this project has already hit twice. Both were fixed:
+
+1. `tools/chat_generate_compare.py` now derives the context length from the checkpoint itself
+   (`concept.W.shape[0] // emb.shape[1]`) and the run prints it, so a window mismatch cannot recur silently.
+2. `lens/scripts/run_window64.sh` now checks each measurement's exit code via `PIPESTATUS` and prints `MEASUREMENT FAILED` instead of
+   `COMPLETE` when either fails.
+
+The numbers above were produced after both fixes, with the tool reporting "context length from the checkpoint: 64 tokens".
+
+## Where the three arms leave the trade-off
+
+```
+arm                                VAL accuracy   greedy repetition   greedy coverage
+600k windows, window 32, lam 1.0      21.08%           0.555              0.351
+2M windows,   window 32, lam 1.0      23.32%           0.659              0.243
+2M windows,   window 64, lam 1.0      22.00%           0.532              0.290
+```
+
+No arm is good on both axes, and the best accuracy arm is the worst on generation. The consistent reading across all three: **this recipe
+buys accuracy with confidence, and confidence is what makes the text loop.** The next lever must therefore attack confidence directly,
+not the architecture - a training-time signal against repeated tokens (unlikelihood), which is the candidate the window-64 falsifier
+named.

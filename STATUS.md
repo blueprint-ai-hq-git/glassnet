@@ -4415,3 +4415,29 @@ reports repetition, coverage and KL on a stated prompt count.
 
 **Next**: context length, config-only, because a model that is more accurate yet more loopy is plausibly leaning on a locally repetitive
 solution inside a 32-token window. `docs/ACCURACY-VS-GENERATION.md`.
+
+### Context 64: generation improves slightly, accuracy falls, all four predictions miss (2026-11-15)
+
+```
+arm                              final VAL   final ppl   greedy repetition   greedy coverage   greedy KL
+2M windows, window 32              23.32%      209.74          0.659              0.243          20.86
+2M windows, window 64              22.00%      241.26          0.532              0.290          19.42
+```
+
+- **W1, W2, W3 and W4 all FAILED** (predicted repetition <0.40 got 0.532; coverage >0.35 got 0.290; VAL >=23.00% got 22.00%; KL <19.0
+  got 19.417).
+- **Falsifier not triggered, but only just**: it needed repetition >=0.55 **and** coverage <=0.28; got 0.532 and 0.290, both missing by
+  tiny margins. Reported as numbers rather than as either conclusion.
+
+**Directionally, longer context helps generation and costs accuracy** - the same trade the supervision dial made, in the opposite
+direction, which confirms the accuracy/generation dissociation is not a one-arm artefact.
+
+**A defect found and fixed**: the generation tool hardcoded a 32-token window, so both measurement calls crashed on the window-64
+checkpoint - and the runner still printed COMPLETE. That is the false-completion defect this project has hit twice before. The tool now
+derives context length from the checkpoint, the runner checks every measurement's exit code and prints MEASUREMENT FAILED instead, and
+the numbers above were produced after both fixes.
+
+**Across three arms**: 21.08% accuracy / 0.555 repetition / 0.351 coverage; 23.32% / 0.659 / 0.243; 22.00% / 0.532 / 0.290. **No arm is
+good on both axes, and the best accuracy arm is the worst on generation.** The consistent reading is that this recipe buys accuracy with
+confidence, and confidence is what makes the text loop - so the next lever attacks confidence directly, with a training-time signal
+against repeated tokens. `docs/ACCURACY-VS-GENERATION.md`.
