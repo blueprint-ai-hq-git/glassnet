@@ -4506,3 +4506,37 @@ the model's perplexity.
 **Seven levers fail to move repetition; the eighth - the training protocol - is now confirmed as a real and large effect.** Both models
 collapse on their own output, so the fix must change what the model sees during training: scheduled sampling, or an unlikelihood term
 against repeated tokens. `docs/EXPOSURE-BIAS.md`.
+
+## Withdrawal: my per-token NLL is not a sound measurement (falsifier fired, 2026-11-15)
+
+The reconciliation was pre-registered with a falsifier: if the two instruments still disagree by more than 2x with no cause found, the
+per-token NLL is withdrawn. They do.
+
+```
+checkpoint                        instrument          accuracy   mean NLL
+2M/12ep (assistant-only)          my exposure tool     6.25%     20.38-22.07 nats
+2M/12ep (trainer's own VAL)       train.py            23.47%     5.35 nats (= ppl 211.49)
+```
+
+**R1 passed** (assistant masking moved NLL only -5.7%, so masking was not the explanation). **R2 failed** - same checkpoint, my tool reads
+21 nats where the trainer reads 5.35, and 6.25% accuracy where the trainer reads 23.47%. **R3 not satisfied** - I have candidate causes
+but no identified one. **Falsifier fired at 4x disagreement.**
+
+**So the per-token NLL from both exposure-bias tools is WITHDRAWN, and the quantitative claim that the control suffers exposure bias more
+severely (+38-58% vs +11-27%) is withdrawn with it**, because that comparison was NLL-based.
+
+**What survives, re-derived from the same-instrument comparison that does not depend on the withdrawn number:**
+
+```
+checkpoint   teacher accuracy (5 buckets)          self accuracy (5 buckets)
+2M/12ep      6.25 / 6.25 / 6.25 / 6.25 / 6.25%     8.33 / 0.00 / 0.00 / 1.04 / 2.08%
+control      8.33 / 2.08 / 5.21 / 7.81 / 5.73%     2.08 / 0.00 / 1.04 / 2.08 / 0.00%
+```
+
+**Self-conditioned accuracy collapses to 0-2% in both models while teacher-forced accuracy stays flat.** Exposure bias is confirmed on a
+comparison that does not use the withdrawn measure. What is NOT established is which architecture suffers more - that claim is gone.
+
+**Next action is not another model arm.** Seven levers fail to move repetition and the training-protocol explanation is supported but
+unmeasured, so the next task is to reconcile the two instruments, because every future generation-quality claim depends on which one is
+right. This is the fourth correction I have made against my own work today, and the second where the fix was to withdraw a number rather
+than add one. `docs/NLL-WITHDRAWN.md`.
