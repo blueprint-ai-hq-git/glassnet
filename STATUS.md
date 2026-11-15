@@ -4260,3 +4260,29 @@ prediction-writing error today; the intended comparison is stated separately ins
 **Shipped point**: lam 1.0 - the widest stable readable configuration that keeps accuracy above 21% with 51+ concepts honest. lam 1.5
 and 2.0 reach 414 and 422 tokens but lose 0.8-1.2 points and drop concepts below the name audit, so the ~422 breadth ceiling stands as
 documented. `docs/READABLE-SHIPPED-CONFIG.md`.
+
+## Decorrelation works and buys no breadth - the fourth explanation is dead (2026-11-15)
+
+The term was verified before launch: analytic gradient checked against finite differences (max abs error **1.3e-10**), registered,
+smoke-tested for a full epoch, and proven to enter the loss only at non-zero weight.
+
+```
+arm (53 concepts, lam 1.0)   effective dims   pairs |r|>0.50   tokens   final VAL   concepts
+baseline                        10.09 of 53          4           364      21.08%      52/53
++ decorrelation 0.05            11.13 of 53          1           366      21.13%      52/53
++ decorrelation 0.20            12.72 of 53          1           366      21.19%      52/53
+```
+
+**The term does exactly what it was built for**: dimensionality **+26%** (10.09 -> 12.72) and concept pairs above |r| = 0.50 fall
+**4 -> 1**, with the targeted `cp_certainty`/`cp_emotion_pos` redundancy leaving the top list. Accuracy unchanged, 52/53 concepts honest.
+
+**And breadth does not move: 364 -> 366.** A 26% increase in the dimensionality of the concept cloud bought **two tokens**.
+
+**Four explanations for the ~422-token ceiling are now all dead**: answer-layer rank (the same family reaches 1,859 tokens at random),
+activation spread via supervision (breadth 3x while dims stayed 9.7-11.0), concept count (36 -> 53 bought +8), and effective
+dimensionality (+26% dims bought +2). The remaining structural difference is the **width of the interface to the answer**: 53 scalars
+for the readable model against 1024 dimensions for the control.
+
+That is now testable **without new code** - the model already has a low-rank direct path that adds exactly r scalars - so the next arms
+measure how much breadth each added interface scalar buys. It is a diagnostic, not a ship candidate: a direct path costs explanation
+purity, and the measurement decides whether that price is worth paying at all. `docs/DECORRELATION-NEGATIVE.md`.
