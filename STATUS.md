@@ -4571,3 +4571,38 @@ the library's loader. I built my own path anyway.
 the shipped lam 1.0 configuration, concept-name honesty, explanation exactness. **What is withdrawn**: the entire generation-quality and
 argmax-breadth line, pending re-measurement through `lens.load()` + `net.forward()`. Until that runs, the honest statement about this
 model's generation quality is "unmeasured". `docs/INSTRUMENT-WAS-BROKEN.md`.
+
+## Generation re-measured through the real forward: more data helps everything (2026-11-15)
+
+All numbers here come from `lens.load()` + `net.forward()` after the hand-built path was shown to differ by 131 logits. 24 prompts x 24
+tokens, greedy.
+
+```
+arm                                   repetition   coverage   KL(gen||targets)   VAL accuracy
+2M windows, 12 epochs (best accuracy)     0.271       0.316         17.845          23.47%
+600k windows, 18 epochs (shipped)         0.475       0.260         19.748          21.08%
+direct-path control                       0.030       0.240         19.049          17.73%
+```
+
+Samples are made of **real words on every arm** - e.g. "thenumberofthenumberofthenumberofthenumberis" - so the withdrawn "junk token"
+narrative was entirely an artefact of the broken forward.
+
+Predictions: **R1, R2 and R3 failed** (repetition 0.271 vs <0.20; coverage 0.316 vs >0.50; KL 17.845 vs <10), **R4 passed**, falsifier not
+triggered.
+
+**The important result - it reverses a published finding.** `docs/ACCURACY-VS-GENERATION.md` claimed 3.3x more data improved accuracy
+while degrading generation. Through the real forward it is backwards:
+
+```
+                              accuracy    repetition   coverage    KL
+600k windows, 18 epochs        21.08%       0.475       0.260     19.748
+2M windows, 12 epochs          23.47%       0.271       0.316     17.845
+change                        +2.39 pts    -0.204      +0.056     -1.903
+```
+
+**More data improved accuracy AND generation on every measure at once. There is no dissociation and no accuracy-versus-quality
+trade-off** - that conclusion is withdrawn as a measurement artefact.
+
+**What is real**: the readable model loops more than the control (0.271 vs 0.030) but its distribution is much closer to the corpus
+(coverage 0.316 vs 0.240, KL 17.85 vs 19.05) and it is +5.74 points more accurate. The honest trade is **looping versus corpus fidelity**,
+not accuracy versus quality. `docs/GENERATION-REAL.md`.
