@@ -4917,3 +4917,34 @@ direction "predicts the next token" in the geometry this model happened to learn
 answer row is a structural term from the concept's own word embeddings plus a learned low-rank correction, letting the embeddings
 reorganise so the structural direction becomes predictive. That is the next arm, and these three curves are why.
 `docs/MEANING-BRACKET.md`.
+
+## 8M windows: +1.07 accuracy, better perplexity, and the meaning gap does not narrow (2026-11-16)
+
+One change from the shipped 4M arm: twice the training windows. Numbers from `lens/runs/DATA8M.txt`.
+
+```
+                              4M (shipped)      8M        change
+final VAL accuracy               24.58%        25.65%      +1.07
+final VAL perplexity             181.04        157.89      better
+greedy repetition                 0.275         0.208       better
+greedy coverage                   0.343         0.356       +0.013
+T=0.7 repetition                  0.027         0.053       within noise
+T=0.7 coverage                    0.292         0.271       -0.021
+trained-label AUROC               0.9990        0.9996      saturated
+held-out synonym AUROC            0.6398        0.6336      unchanged
+explain() max |residual|         2.9e-06       2.4e-06      exact
+concept share                    1.000000      1.000000     exact
+```
+
+**D1 passed** (25.65% against a 24.58% bar). **D2 failed** (T=0.7 coverage 0.271, not above 0.292). **D3 failed narrowly** (0.053 against a
+0.05 bar) - and under this project's own noise rule a 0.026 difference is uninterpretable, so that is not evidence data made looping
+worse, only that it did not make it better. **D4 passed, and it was the prediction I expected to fail: the meaning gap did not narrow** -
+held-out synonym transfer **0.6336** against trained-label **0.9996**, a gap of **0.366**, essentially unchanged from 4M's 0.359.
+Falsifier not triggered.
+
+**Twice the data buys about one point of accuracy and better perplexity, and buys nothing for meaning.** Held-out concept honesty moved
+0.6398 -> 0.6336 across a doubling of training text - noise, not progress. That is consistent with the measured mechanism: answer rows are
+diffuse directions learned from next-token prediction, and more text sharpens the same machinery rather than changing what it does.
+
+**Best model in the project is now 8M/12ep: 25.65% validation (single seed), perplexity 157.89, explanation exact to 2.4e-06 with concept
+share 1.000000, concept naming about 0.63 honest on unseen wording.** `docs/DATA8M.md`.
