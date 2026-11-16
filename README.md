@@ -151,7 +151,7 @@ claim the model is smart.
 | [`docs/`](docs) | 195 findings - architecture, ablations, failures |
 | [`docs/RESULTS.md`](docs/RESULTS.md) | the results table without the narrative |
 | [`docs/README-FULL.md`](docs/README-FULL.md) | the long-form README this page summarises |
-| [`ROADMAP.md`](ROADMAP.md) | what is next, and what is deliberately not |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | what is next, and what is deliberately not |
 
 ---
 
@@ -163,7 +163,7 @@ welcome as a fix. Bug reports, corrections and replications are all useful; ever
 
 ## Licence
 
-MIT. Datasets are licensed individually and listed with their provenance in [`DATA_LICENSES.md`](DATA_LICENSES.md). No pretrained weights are
-included or used. Built and measured on a 6 GB GTX 1660 SUPER.
+MIT. Datasets are licensed individually and listed with their provenance in [`docs/DATA_LICENSES.md`](docs/DATA_LICENSES.md). No pretrained weights are
+included or used. Built and measured on a single consumer GPU with 6 GB of memory.
 
 <p align="center"><i>This repository is updated continuously. <code>STATUS.md</code> is the current state; this page is the summary.</i></p>
