@@ -4734,3 +4734,30 @@ framing**: at the right temperature there is no meaningful trade, just slightly 
 
 **Shipped configuration**: 4M windows, 12 epochs, 53 concepts, lam 1.0, **sampling at T=0.7** - with 24.58% +/- 0.06 validation.
 `docs/TEMPERATURE-KNEE.md`.
+
+## Shipped-model verification: the explanation is exact, the names are keyword detectors (2026-11-16)
+
+All three shipped checkpoints (4M windows, 12 epochs, 53 concepts), through `lens.load()` and the library's own `explain()`:
+
+```
+seed   max |residual|   concept share    trained-label AUROC   held-out synonym AUROC   concepts passing
+ 0       2.027e-06       1.000000              0.9990                 0.6398                 52/53
+ 1       2.354e-06       1.000000              0.9992                 0.6184                 50/53
+ 2       2.921e-06       1.000000              0.9994                 0.5930                 52/53
+```
+
+**V1, V2, V3 and V4 all PASSED; falsifier not triggered.** Worst residual across 300 windows is **2.9e-06**, three orders of magnitude
+inside the bar, and **concept share is 1.000000 on every window** - the named concepts account for the prediction to within rounding. **So
+`explain()` is not a story: the arithmetic it prints is the model's arithmetic, to six figures.**
+
+**But the hardest number in the project is now measured cleanly.** Trained-label fidelity is **0.999**, transfer to unseen synonyms is
+**0.59-0.64** - a gap of **0.36 to 0.41**, the largest yet, and it grew as the model got better data. **The concepts have become
+near-perfect detectors of the specific words they were trained on and only modest detectors of the idea those words stand for.**
+
+**Two claims that must never be conflated again**: (1) *the explanation is exact* - verified, may be claimed without qualification;
+(2) *the names mean what they say* - about 60% true, not 99.9%. Anyone reading `explain()` output has to be told that, or the
+transparency promise becomes a different opacity.
+
+Shipped model, documented end to end: 24.58% +/- 0.06 validation, perplexity 181.04, greedy coverage 0.343, T=0.7 knee at 0.292
+coverage with 0.027 repetition, explanation exact to 2.9e-06, naming 0.59-0.64 honest.
+`docs/SHIPPED-VERIFY.md`.
