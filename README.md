@@ -36,7 +36,7 @@ can check to six decimal places. This repository is the honest record of what th
 | Named concepts | **53** chat, **18** image | `docs/CONCEPT-WIDENING-53.md` |
 | `explain()` exactness | residual **2.4e-06**, concept share **1.000000** | `docs/CAUSAL-EXPLAIN.md` |
 | Image classification (readable net, 3 seeds) | **81.71% +/- 0.76** | `docs/REGIONAL-CONCEPTS.md` |
-| Cost of the concept term, chat (measured 2026-11-16) | **+0.86 points** to remove it entirely (26.98% vs 26.12%), breadth 0.173 -> 0.150 | `docs/SUPERVISION-FAMILY.md` |
+| Cost of the concept term, chat (3 seeds) | **+0.89 points paired** to remove it entirely: 27.01% +/- 0.03 with no supervision vs 26.12% +/- 0.14 with full, 3 of 3 seeds positive | `docs/LAM0-3SEED.md` |
 | Price of readability at matched budget | **-1.53 +/- 0.44 points** vs a plain net | `docs/READABILITY-GAP-DECOMPOSED.md` |
 | Repetition at shipped decoding (T=0.7) | **0.027** (greedy: 0.275) | `docs/TEMPERATURE-KNEE.md` |
 | Vocabulary coverage | **0.292** | same |
