@@ -1,5 +1,13 @@
 # GlassNet
 
+> A tiny language model you can read: every middle neuron has a name, `explain()` returns the exact arithmetic behind each answer, and none of it uses PyTorch or autograd.
+>
+> 14M parameters, 24.58% +/- 0.055 next-token accuracy over three seeds. Its named neurons do NOT mean what their names say - and this repo publishes the ten pre-registered tests that prove it. Read `ANNOUNCE.md` for the short version and `STATUS.md` for every number.
+
+---
+
+# GlassNet
+
 **A neural network you can look inside.** Written from scratch - own tensors, own backward pass, own
 optimiser, own KV cache. No PyTorch, no autograd library, no pretrained weights, no borrowed training code.
 
