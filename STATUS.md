@@ -4761,3 +4761,39 @@ transparency promise becomes a different opacity.
 Shipped model, documented end to end: 24.58% +/- 0.06 validation, perplexity 181.04, greedy coverage 0.343, T=0.7 knee at 0.292
 coverage with 0.027 repetition, explanation exact to 2.9e-06, naming 0.59-0.64 honest.
 `docs/SHIPPED-VERIFY.md`.
+
+## What the concept neurons actually promote: 51 of 53 are partly code detectors (2026-11-16)
+
+A concept's effect on the logits is its own row of `answer.W`, so this needs no ablation and no reconstruction - the matrix is the model's
+own numbers. For each of the 53 concepts, the 12 tokens it promotes most, classified with a fixed stated heuristic:
+
+```
+is_a_request     promotes: 'sqrt' 'be' 'solve' 'frac' 'pi' 'get' '*' '^'      own token: help
+is_a_question    promotes: 'python' 'so' '00' 'import' 'in' '?'               own token: ?
+is_an_agreement  promotes: ']' 'right' ',' '^' '$' 'left' '\\' '!'           own token: right
+mentions_self    promotes: 'i' 'j' 'my' '#' 'me' '[' 'print' 'arr'           own: i, me, my
+mentions_a_person promotes: 'she' 'he' 'her' 'frac' 'his' 'people'            own: he, her, him, people, she
+```
+
+```
+concepts promoting at least one of their OWN trained tokens : 23 of 53
+concepts with at least one code/math token in the top 12    : 51 of 53
+median code/math share of a concept's top 12                : 0.417
+```
+
+**C1 failed** (23 vs the 25 predicted), **C2 passed** (51 vs 20 predicted), **C3 passed** (0.417, inside the 0.08-0.50 band), falsifier not
+triggered.
+
+**This explains the whole honesty picture.** The model's vocabulary mixes conversation, Python and LaTeX; a concept layer that is one
+linear map over a shared window embedding cannot separate "this is a request" from "this is maths", so each neuron carries a code-or-math
+co-factor beside its name. That fits every number already published: **trained-label fidelity 0.999** (the listed words really are
+present), **held-out synonym transfer 0.59-0.64** (the mass is on code tokens, not semantic neighbours), and **`explain()` exact to
+2.9e-06** (the arithmetic is right; what it is arithmetic about is partly something else).
+
+**So `explain()` can truthfully report "I answered because `is_a_request` fired 0.8" while `is_a_request` is in large part pushing
+`sqrt`, `frac` and `pi`.** That is exactly the failure this project exists to catch, and it is now measured and public rather than hidden
+behind a passing audit.
+
+**More data cannot fix this** - it is a property of how the concept layer is supervised against a mixed corpus. The three fixes with
+evidence behind them: supervise concepts on paraphrases rather than listed tokens; penalise the code/math co-factor contrastively; or
+supervise on a code-free corpus slice and test on the full one. `docs/CONCEPT-CONTENT.md`.
