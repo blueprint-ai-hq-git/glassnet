@@ -4859,3 +4859,30 @@ together.**
 demote the nuisance set - `-log softmax(answer.W[c] . onehot(own words))` averaged over concepts. Built verify-first like the
 decorrelation term: analytic gradient, finite-difference check, `OPS` registration, smoke test, and proof it enters the loss only at
 non-zero weight. `docs/LOOK-INSIDE-INOUT.md`.
+
+## The meaning penalty is retired by a 60-second measurement (2026-11-16)
+
+Before spending ~70 GPU-minutes on the fix arm, its central question was asked directly: **if a concept's answer row is forced to prefer
+its own words, how much prediction does it lose?** Only the answer matrix is optimised - trained rows, the model's own activations, 400
+steps - measured on **20,000 held-out windows the optimisation never saw**.
+
+```
+baseline: own-word mass 0.0014 | held-out next-token accuracy 0.1565
+weight   own-word mass   held-out acc   cost (points)
+2.0         0.0014          0.1559          0.06
+8.0         0.0016          0.1537          0.28
+30.0        0.0041          0.1266          2.99
+```
+
+**P2 passed; P1 and P3 failed; the falsifier fired in the exact form written.** A weight of 30 buys own-word mass **0.0041 for 2.99
+points** - about 700 points of accuracy per unit of meaning, so the target 0.05 can never be afforded. **The penalty approach is
+retired.**
+
+**Why**: the row is asked to do two opposing jobs. Its training signal says "produce the next-token distribution", which needs mass spread
+over thousands of continuations; this term says "concentrate it on a handful of words". The second is nearly orthogonal to the first.
+
+**What replaces it**: the falsifier named the alternative before the numbers arrived - **make meaning structural instead of penalised**, by
+**deriving each concept's answer row from the embeddings of its own words**. Nothing to pay for, nothing to drift. That is an architecture
+change and it must pass the same verify-first gate. The queued penalty arm is not launched; the term, its verified gradient (3.7e-10) and
+this curve stay in the tree as the record of why the cheap-looking fix was wrong.
+`docs/ROW-COST-NEGATIVE.md`.
