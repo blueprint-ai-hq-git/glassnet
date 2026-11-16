@@ -5120,3 +5120,45 @@ side barely contains the name (decoupled at rank correlation **-0.307**).
 **The accurate sentence is**: the model's answer is provably a weighted sum of 53 named handles, and each handle is a diffuse
 vocabulary-wide direction rather than a concentrated detector of its name. **Not** "the concepts mean what they say".
 `docs/THE-LIMIT.md`.
+
+## The share WAS fixed and meaning still did not appear: hard cap flips 0.9999 -> 0.2087, own-word mass stays 0.0016 (2026-11-16)
+
+Predictions written before the run (`lens/runs/HARD-CAP-PREDICTIONS.txt`); numbers from `lens/runs/HARD-CAP.txt`. This is the decisive version of
+the experiment because the intervention **worked exactly as designed on the quantity it targeted**.
+
+```
+final VAL accuracy        14.48%     (unpriced structural arm: 24.33%, shipped 4M: 24.58%)
+final VAL perplexity     373.25
+concepts passing          49/53
+median correction share   0.2087     (unpriced: 0.9999)   -> H1 PASSED, the share flipped
+median ||structural||     4.4949     (unpriced: 1.5466)
+median ||A_c B||          2.6950     (unpriced: 87.42; capped)
+rows with correction >50% : 10 of 53  (unpriced: 53 of 53)
+median own-word mass      0.0016     (H2 predicted above 0.05)   -> FAILED
+explain() max |residual| 1.048e-06   | concept share 1.000000     -> PASSED
+```
+
+**H1 passed for the first time in this family**: the correction's energy share fell from **0.9999 to 0.2087**, the structural term became the
+dominant carrier (norm 4.49 against a capped 2.70), and rows where the correction carries more than half the energy fell **53 of 53 -> 10 of
+53**. **And meaning still did not appear: own-word mass 0.0016**, three orders of magnitude below the 0.10 bar. Cost: **10 accuracy points**.
+
+**This refines the earlier conclusion.** I had said "the share is a ratio and cannot be won by acting on the correction". Too weak: **the share
+CAN be won - this arm won it decisively - and winning it does not produce meaning.**
+
+```
+arm                                   corr share   own-word mass   VAL
+free answer matrix (shipped 4M)          --           0.0008       24.58%
+structural + correction (unpriced)      0.9999        0.0008       24.33%
+structural + priced correction          0.9968        0.0013       23.66%
+structural + structural scale 10        0.9877        0.0012       23.58%
+structural + HARD CAP (share flipped)   0.2087        0.0016       14.48%
+pure structural, no correction          0.0000        0.0019       13.74%
+row-content supervision at 13% of CE      --           0.0008       23.73%
+```
+
+Six row-level mechanisms spanning the **entire** range of correction share from 0.0000 to 0.9999, and own-word mass stays inside
+**0.0008-0.0019** in all of them. The mass does not track the share, the magnitude, the scale, or the support of the row.
+
+**Established, as narrowly as the evidence allows**: in this architecture at 16M parameters a concept's answer row can be made structurally
+dominant without becoming meaningful, and every knob that changes what the row *does* leaves what it *contains* untouched. **Meaning is not a
+control on this quantity.** `docs/HARD-CAP.md`.
