@@ -4978,3 +4978,42 @@ epoch 1. A zero-initialised low-rank correction is an **escape hatch**: nothing 
 30 and 1.0, both far too large; the measured stable weight is ~2e-4) and a third is running. If no stable price works, the next step is a
 hard per-row normalisation; if that fails too, the honest conclusion is that at 16M parameters a free low-rank correction is load-bearing
 and meaning cannot be forced into the rows. `docs/STRUCTURAL-ARM.md`.
+
+## Pure structural rows: falsifier fired at 13.74%, and the meaning is missing even with nothing to blame (2026-11-16)
+
+One change from the structural arm: no learned correction at all, so the answer row is exactly its own vocabulary's geometry.
+
+```
+final VAL accuracy        13.74%     (predicted 20.0-23.5%, falsifier 18.0%)  -> FALSIFIER FIRED
+final VAL perplexity     392.84
+concepts passing          46/53
+median own-word mass      0.0019     (S1 predicted above 0.10)               -> FAILED
+explain() max |residual| 2.089e-06   | concept share 1.000000                -> PASSED
+```
+
+**Removing the correction costs 10.6 points** (24.33% -> 13.74%), so it is load-bearing. **And removing it does not buy meaning**: own-word
+mass is 0.0019 against a 0.10 bar.
+
+**The uncomfortable part.** This arm has the most coherent own-word embedding geometry of any model here:
+
+```
+checkpoint                       alignment   coherence
+shipped 4M (free answer.W)         0.3822      0.0034
+structural, correction carried     0.3826      0.0064
+pure structural, no correction     0.4893      0.0969
+```
+
+25% better alignment and **28x more pairwise coherence** than the shipped model - because its structural rows were the only answer path - and
+its trained rows still put only **0.19%** of their mass on the concepts' own words.
+
+**So the correction was never the villain.** With no correction to occupy the row, next-token training still produces rows that do not favour
+their own vocabulary: the objective rewards evidence spread across thousands of plausible continuations, and a concept's handful of words
+is not where that evidence goes.
+
+**Ruled out as routes to concept meaning**: embedding geometry (present and better, worth nothing), row magnitude (destroys accuracy), row
+support restriction (meaning 0.63, accuracy 0.0022), removing the free correction (costs 10.6 points, buys 0.0011 mass). **What remains** is
+supervising the row directly against its own words at a measured weight - the term this morning was retired at 2000% of the CE gradient,
+and the fair test is queued at 13%.
+
+If that fails, the honest conclusion is that this project's guarantee is **exact attribution** (delivered to 2.4e-06 with concept share
+1.000000) and **not concept content** - and the public documentation will say exactly that. `docs/PURE-STRUCTURAL.md`.
