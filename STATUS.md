@@ -4948,3 +4948,33 @@ diffuse directions learned from next-token prediction, and more text sharpens th
 
 **Best model in the project is now 8M/12ep: 25.65% validation (single seed), perplexity 157.89, explanation exact to 2.4e-06 with concept
 share 1.000000, concept naming about 0.63 honest on unseen wording.** `docs/DATA8M.md`.
+
+## Structural answer rows: accuracy survives at 24.33%, meaning does not arrive (own-word mass 0.0008) (2026-11-16)
+
+One change from the shipped arm: `row_c = (mean E over concept c's own words) @ E^T + A_c B`, correction rank 32, zero-initialised, so
+`answer.W` is not a parameter. Numbers from `lens/runs/STRUCTURAL-ANSWER.txt`.
+
+```
+final VAL accuracy        24.33%    (shipped 4M: 24.58%, so -0.25)
+final VAL perplexity     167.38     (shipped 181.04, better)
+concepts passing          53/53
+explain() max |residual| 1.927e-06  | concept share 1.000000
+trained-label AUROC       0.9991    | held-out synonym 0.6423
+own-word mass             0.0008    | 0 of 53 concepts at or above 0.05
+```
+
+**R1 failed** - the one that mattered. Own-word mass is **0.0008**, identical to the free answer matrix, against a 0.10 bar.
+**R2 passed** (24.33% against a 20.58% bar: the structural architecture costs **0.25 points**, not four). **R3 passed** (explanation exact
+to 1.9e-06, concept share 1.000000). **R4 passed** (input honesty unchanged at 0.6423). Falsifier not triggered.
+
+**Settled: the architecture is not the obstacle.** Replacing the free answer matrix with rows built from the concepts' own word embeddings
+costs a quarter of a point. If meaning were going to be cheap anywhere, it would be here.
+
+**Measured twice now: the correction eats it.** Own-vocabulary mass stays at 0.0008 because the learned correction grows to dominate -
+median norm **87.42** against the structural term's **1.06** at epoch 6, carrying **0.9999** of every row's energy, up from 46.89 at
+epoch 1. A zero-initialised low-rank correction is an **escape hatch**: nothing stops it growing until it supplies the entire answer.
+
+**One question remains**: can the correction be restrained without destroying accuracy? Two soft-price attempts diverged to NaN (weights
+30 and 1.0, both far too large; the measured stable weight is ~2e-4) and a third is running. If no stable price works, the next step is a
+hard per-row normalisation; if that fails too, the honest conclusion is that at 16M parameters a free low-rank correction is load-bearing
+and meaning cannot be forced into the rows. `docs/STRUCTURAL-ARM.md`.
