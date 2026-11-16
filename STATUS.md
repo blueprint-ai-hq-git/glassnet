@@ -4797,3 +4797,31 @@ behind a passing audit.
 **More data cannot fix this** - it is a property of how the concept layer is supervised against a mixed corpus. The three fixes with
 evidence behind them: supervise concepts on paraphrases rather than listed tokens; penalise the code/math co-factor contrastively; or
 supervise on a code-free corpus slice and test on the full one. `docs/CONCEPT-CONTENT.md`.
+
+## Data-driven check: the code co-factor is 0.204, not 0.417 - and own-word mass is 0.2% (2026-11-16)
+
+The earlier co-factor number used a **hand-written** keyword list; this run derives the nuisance set from the corpus (top 2,000 tokens by
+code-versus-prose frequency ratio across 184,041 code-quarter and 186,834 prose-quarter conversations).
+
+```
+hand list tokens present in vocab               : 51
+those inside the data-driven nuisance set       : 47  (92%)
+median share of a concept's promoted mass on
+  the DATA-DRIVEN nuisance set                  : 0.204
+median share on the concept's OWN trained words : 0.002
+```
+
+**C4 passed** (92% agreement - my hand list was not idiosyncratic). **C5 failed** (predicted >0.30, got **0.204**). Falsifier not
+triggered.
+
+**Correction**: the **0.417** figure was the hand list applied to each concept's *top-12 promoted tokens*; the whole-row figure - the
+honest one for "how much of this neuron's push is code" - is **0.204**. Both are now stated with their definitions.
+
+**The sharper fact**: **a concept's promoted mass on its own trained words is 0.002.** Across all 53 concepts, the words a concept was
+trained to detect are a rounding error of the force it exerts. About 20% of its mass is code-flavoured; the other ~80% is spread over the
+whole vocabulary.
+
+**So the honest description of the shipped model is**: the answer is provably a weighted sum of 53 named directions, and each named
+direction is **a diffuse vocabulary-wide push rather than a concentrated detector of its name**. The name is a **handle, not a
+description of the direction's content**. "A concept detects questions" is over-claiming; "the answer is exactly attributable to 53 named
+handles whose content is diffuse" is what the measurements support. `docs/NUISANCE-DATA-DRIVEN.md`.
