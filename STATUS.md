@@ -4825,3 +4825,37 @@ whole vocabulary.
 direction is **a diffuse vocabulary-wide push rather than a concentrated detector of its name**. The name is a **handle, not a
 description of the direction's content**. "A concept detects questions" is over-claiming; "the answer is exactly attributable to 53 named
 handles whose content is diffuse" is what the measurements support. `docs/NUISANCE-DATA-DRIVEN.md`.
+
+## LOOK INSIDE: the concept name describes what the neuron DETECTS, not what it PUSHES - and the two are decoupled (2026-11-16)
+
+Read-only measurement, predictions written first (`lens/runs/INOUT-PREDICTIONS.txt`). For each concept: input quality = trained-label
+AUROC; output content = share of its absolute `answer.W` row landing on its own trained word ids.
+
+```
+concepts                                             : 53
+median output own-word mass                          : 0.0008
+concepts at or above 0.05 output own-word mass        : 0 of 53
+rank correlation (input quality, output content)      : -0.307   over 22 audited concepts
+input range 0.914-1.000   |   output range 0.0002-0.0024
+
+mentions_law      input 0.9999   output 0.0010
+mentions_weather  input 0.9998   output 0.0008
+is_a_question     input 0.9997   output 0.0002
+```
+
+**M1, M2 and M3 all passed; falsifier not triggered.**
+
+**The mechanism, plainly: a concept neuron is a near-perfect detector on the way in and a diffuse, almost contentless knob on the way out,
+and nothing in the training ever required the two to agree.** `lam_concept` supervises the concept *activations* (the input side), which
+is why AUROC reaches 0.9997-0.9999. The *answer matrix* is never supervised against the concept's own words - its rows are learned only by
+next-token prediction - so each row becomes a broad, mildly code-flavoured direction holding 0.08% of its own words at the median.
+`explain()` then attributes the answer to those rows, so it is **exact about the arithmetic and empty about the content**: it correctly
+reports which handle was turned, on a knob whose label was never attached to what the knob does.
+
+**This single mechanism explains the 0.999/0.59 honesty gap, the 0.002 own-word mass, the 0.204 code co-factor and the 2.9e-06 exactness
+together.**
+
+**The fix is not more data.** Supervise the **output side**: require concept `c`'s row of the answer matrix to prefer its own words and
+demote the nuisance set - `-log softmax(answer.W[c] . onehot(own words))` averaged over concepts. Built verify-first like the
+decorrelation term: analytic gradient, finite-difference check, `OPS` registration, smoke test, and proof it enters the loss only at
+non-zero weight. `docs/LOOK-INSIDE-INOUT.md`.
