@@ -1,0 +1,203 @@
+{
+ "meta": {
+  "checkpoint": "nodirect1024_wide60_lam1.0_data4m_e12_s0_best.npz",
+  "windows": 6,
+  "note": "Real explain() output from the shipped checkpoint on held-out windows. No mockups.",
+  "accuracy": "24.58% +/- 0.055 next-token accuracy, three seeds",
+  "known_limit": "Concept names detect their concept in the INPUT (AUROC 0.9997) but their answer rows hold only 0.08% of their own words' probability. The explanation is exact; the names are not yet meaningful."
+ },
+ "rows": [
+  {
+   "text": "",
+   "concepts": [
+    {
+     "name": "is_imperative",
+     "weight": 1.9928327798843384
+    },
+    {
+     "name": "cp_thinking",
+     "weight": 1.495118260383606
+    },
+    {
+     "name": "is_a_question",
+     "weight": 1.0113134384155273
+    },
+    {
+     "name": "cp_certainty",
+     "weight": -0.9574935436248779
+    },
+    {
+     "name": "mentions_education",
+     "weight": 0.8332055807113647
+    },
+    {
+     "name": "mentions_family",
+     "weight": 0.7182047963142395
+    }
+   ],
+   "concept_share": 0.9999999895558959,
+   "residual": 1.1920928955078125e-07,
+   "prediction": ""
+  },
+  {
+   "text": "",
+   "concepts": [
+    {
+     "name": "mentions_law",
+     "weight": 1.9363888502120972
+    },
+    {
+     "name": "mentions_work",
+     "weight": 1.8586875200271606
+    },
+    {
+     "name": "mentions_body",
+     "weight": 1.5474896430969238
+    },
+    {
+     "name": "mentions_travel",
+     "weight": 0.9988821744918823
+    },
+    {
+     "name": "is_explanatory",
+     "weight": 0.7290476560592651
+    },
+    {
+     "name": "cp_commands",
+     "weight": -0.6357868313789368
+    }
+   ],
+   "concept_share": 0.9999999817310959,
+   "residual": 2.384185791015625e-07,
+   "prediction": ""
+  },
+  {
+   "text": "",
+   "concepts": [
+    {
+     "name": "cp_emotion_pos",
+     "weight": 2.3766348361968994
+    },
+    {
+     "name": "is_a_request",
+     "weight": 1.7260193824768066
+    },
+    {
+     "name": "cp_numbers_word",
+     "weight": 1.6226816177368164
+    },
+    {
+     "name": "mentions_the_user",
+     "weight": -0.7396594285964966
+    },
+    {
+     "name": "cp_thinking",
+     "weight": 0.6735871434211731
+    },
+    {
+     "name": "is_imperative",
+     "weight": 0.5991835594177246
+    }
+   ],
+   "concept_share": 0.9999999792474378,
+   "residual": 2.384185791015625e-07,
+   "prediction": ""
+  },
+  {
+   "text": "",
+   "concepts": [
+    {
+     "name": "mentions_law",
+     "weight": 0.715456485748291
+    },
+    {
+     "name": "mentions_travel",
+     "weight": 0.6075183153152466
+    },
+    {
+     "name": "mentions_a_colour",
+     "weight": 0.5968292951583862
+    },
+    {
+     "name": "mentions_science",
+     "weight": -0.5897321701049805
+    },
+    {
+     "name": "mentions_body",
+     "weight": 0.42783355712890625
+    },
+    {
+     "name": "cp_emotion_pos",
+     "weight": -0.3593612313270569
+    }
+   ],
+   "concept_share": 0.9999999402121024,
+   "residual": 3.5762786865234375e-07,
+   "prediction": ""
+  },
+  {
+   "text": "",
+   "concepts": [
+    {
+     "name": "mentions_place",
+     "weight": 2.4746623039245605
+    },
+    {
+     "name": "cp_senses",
+     "weight": 2.3914084434509277
+    },
+    {
+     "name": "is_a_question",
+     "weight": 1.172702670097351
+    },
+    {
+     "name": "cp_shape",
+     "weight": 1.1320905685424805
+    },
+    {
+     "name": "cp_emotion_pos",
+     "weight": 0.9726628065109253
+    },
+    {
+     "name": "is_imperative",
+     "weight": 0.8658089637756348
+    }
+   ],
+   "concept_share": 0.9999999775465832,
+   "residual": 3.5762786865234375e-07,
+   "prediction": ""
+  },
+  {
+   "text": "",
+   "concepts": [
+    {
+     "name": "mentions_self",
+     "weight": 4.0146870613098145
+    },
+    {
+     "name": "is_an_agreement",
+     "weight": 0.7349636554718018
+    },
+    {
+     "name": "mentions_a_colour",
+     "weight": 0.7149143218994141
+    },
+    {
+     "name": "is_a_denial",
+     "weight": 0.6347299814224243
+    },
+    {
+     "name": "mentions_law",
+     "weight": 0.5349499583244324
+    },
+    {
+     "name": "mentions_the_user",
+     "weight": 0.48298484086990356
+    }
+   ],
+   "concept_share": 0.9999998778513189,
+   "residual": 1.4007091522216797e-06,
+   "prediction": ""
+  }
+ ]
+}
