@@ -5085,3 +5085,38 @@ content term at 13% of the CE gradient             0.0006 at ep3
 Four interventions, each moving its own quantity, none moving meaning above 0.002. **The pattern is the finding**: in this architecture a
 concept's answer row is whatever predicts best, and any pressure aimed at the row is absorbed by the other side of the ratio.
 `docs/SCALE10.md`.
+
+## The limit, measured: five mechanisms fail to give concept rows their meaning; exact attribution is what this project delivers (2026-11-16)
+
+The row-content term ran twelve epochs at a measured weight (~13% of the cross-entropy gradient, after being retired that morning at 2000%
+of it and given a fair re-test). Numbers from `lens/runs/CONTENT-ARM.txt`:
+
+```
+final VAL accuracy        23.73%     (shipped 4M: 24.58%, so -0.85)
+median own-word mass      0.0008     (Z1 predicted above 0.002)   -> FAILED, falsifier fired
+explain() max |residual| 2.980e-06   | concept share 1.000000     -> PASSED
+```
+
+**The term verified correct (3.749e-10), ran at a sane weight, and changed the quantity it directly optimises by zero.** It cost 0.85
+accuracy points for nothing.
+
+```
+mechanism                                        own-word mass   VAL      verdict
+free answer matrix (shipped 4M)                      0.0008       24.58%   baseline
+structural rows + correction (unpriced)              0.0008       24.33%   no change
+structural rows + priced correction                  0.0013       23.66%   +0.0005 for 0.67 pts
+structural rows + structural scale 10                0.0012       23.58%   no change
+pure structural rows, no correction                  0.0019       13.74%   +0.0011 for 10.6 pts
+row-content supervision at 13% of the CE gradient    0.0008       23.73%   nothing
+```
+
+**Five mechanisms, six measurements, none moves own-word mass above 0.002 without destroying accuracy.**
+
+**So the honest statement of what this project delivers**: **exact attribution** - `explain()` residual 2.4e-06 to 2.98e-06, concept share
+**1.000000**, no hidden path, verified on the shipped model - and **not concept content**. A concept's answer row puts **0.08%** of its mass
+on the words that name it; it is a diffuse, mildly code-flavoured direction whose input-side detection is 0.9997-0.9999 while its output
+side barely contains the name (decoupled at rank correlation **-0.307**).
+
+**The accurate sentence is**: the model's answer is provably a weighted sum of 53 named handles, and each handle is a diffuse
+vocabulary-wide direction rather than a concentrated detector of its name. **Not** "the concepts mean what they say".
+`docs/THE-LIMIT.md`.
