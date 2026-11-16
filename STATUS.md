@@ -4886,3 +4886,34 @@ over thousands of continuations; this term says "concentrate it on a handful of 
 change and it must pass the same verify-first gate. The queued penalty arm is not launched; the term, its verified gradient (3.7e-10) and
 this curve stay in the tree as the record of why the cheap-looking fix was wrong.
 `docs/ROW-COST-NEGATIVE.md`.
+
+## Meaning is free if it is structural, and prediction is dead if it is not: three measurements (2026-11-16)
+
+All on the shipped 4M/12ep checkpoint, the model's own activations, 20,000 held-out windows. Predictions written before each run.
+
+```
+1. PENALTY (retired)      weight 30: own-word mass 0.0014 -> 0.0041 for 2.99 points   (~700 points per unit of meaning)
+2. STRUCTURAL ROWS        row = mean(E[own words]) @ E^T, norm-matched:
+                          median own-word mass 0.9200, held-out accuracy 0.0073  (baseline 0.1565, -14.92 points)
+3. POST-HOC BLEND         row = a*structural + (1-a)*trained:
+     a      own mass   accuracy   cost
+    0.0      0.0014     0.1565     0.00
+    0.1      0.0030     0.1500     0.65
+    0.2      0.0079     0.1326     2.39
+    0.3      0.0189     0.1009     5.56
+    0.5      0.1082     0.0309    12.55
+    1.0      0.9200     0.0073    14.92
+```
+
+**S1 and S2 passed, and pure tying is dead** (0.0073 is below the 0.03 the falsifier set). **B1 failed, B2 passed, falsifier not
+triggered** at a=0.1, which is nearly free but buys almost no meaning.
+
+**What the three say together**: paying for meaning costs ~700 points per unit; getting it free from the embedding geometry costs the whole
+output path (0.92 mass, 0.7% accuracy); blending after training does not rescue it, because the useful-meaning region (mass above 0.10)
+begins where accuracy has already been destroyed. **The direction "built from this concept's own words" is almost orthogonal to the
+direction "predicts the next token" in the geometry this model happened to learn** - and nothing ever pressured the two to agree.
+
+**So meaning cannot be added after training by any means.** The one remaining option is to **train the constraint in from the start**: the
+answer row is a structural term from the concept's own word embeddings plus a learned low-rank correction, letting the embeddings
+reorganise so the structural direction becomes predictive. That is the next arm, and these three curves are why.
+`docs/MEANING-BRACKET.md`.
