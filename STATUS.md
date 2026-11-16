@@ -5017,3 +5017,38 @@ and the fair test is queued at 13%.
 
 If that fails, the honest conclusion is that this project's guarantee is **exact attribution** (delivered to 2.4e-06 with concept share
 1.000000) and **not concept content** - and the public documentation will say exactly that. `docs/PURE-STRUCTURAL.md`.
+
+## Priced correction: the price works, it is not enough, and its falsifier fired at share 0.9968 (2026-11-16)
+
+Third attempt at restraining the learned correction; the first two diverged to NaN at weights 30 and 1.0, and this weight was **measured**
+(about 11% of the cross-entropy gradient) rather than guessed. Numbers from `lens/runs/CORR-NORM.txt`.
+
+```
+final VAL accuracy        23.66%     (unpriced structural arm: 24.33%, shipped 4M: 24.58%)
+final VAL perplexity     172.06
+concepts passing          53/53
+median correction share   0.9968     (N2 predicted 0.50-0.99)     -> FAILED, narrowly
+median ||A_c B||         27.1553     (unpriced at its end: 87.42) -> the price cut growth 3.2x
+median own-word mass      0.0013     (N3 predicted above 0.002)   -> FAILED
+explain() max |residual| 1.697e-06   | concept share 1.000000      -> PASSED
+no NaN in any epoch                                             -> PASSED
+```
+
+**It bought real restraint**: the correction's median norm ended at **27.16** instead of **87.42**, a **3.2x** reduction in growth, for
+**0.67 accuracy points**.
+
+**It did not buy meaning, and the falsifier fired in its written form**: the correction still carries **0.9968** of every row's energy,
+above the 0.99 bar set in advance. Own-word mass is **0.0013** - barely above the free matrix's 0.0008 and below the 0.002 N3 required.
+
+```
+arm                                  corr norm   corr share   own-word mass   VAL
+unpriced                             87.42       0.9999       0.0008          24.33%
+priced at 11% of the CE gradient     27.16       0.9968       0.0013          23.66%
+```
+
+Each intervention moves its own quantity and none of them moves meaning. **Pricing cuts the correction 3.2x and the meaning share by
+0.003** - the third independent confirmation that the share cannot be bought down by acting on the correction, because what is missing is
+the structural term's own mass.
+
+**What the falsifier demands next**: a HARD per-row normalisation instead of a soft price - renormalise the correction after each optimiser
+step so `||A_c B||` cannot exceed a fixed multiple of `||structural_c||`. A projection has no weight to fail at. `docs/CORR-NORM.md`.
