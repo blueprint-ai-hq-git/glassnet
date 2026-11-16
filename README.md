@@ -163,7 +163,7 @@ welcome as a fix. Bug reports, corrections and replications are all useful; ever
 
 ## Licence
 
-MIT. Datasets are licensed individually and listed with their provenance in [`docs/DATA_LICENSES.md`](docs/DATA_LICENSES.md). No pretrained weights are
+MIT. Datasets are licensed individually and listed with their provenance in [`LICENSING.md`](LICENSING.md). No pretrained weights are
 included or used. Built and measured on a single consumer GPU with 6 GB of memory.
 
 <p align="center"><i>This repository is updated continuously. <code>STATUS.md</code> is the current state; this page is the summary.</i></p>
