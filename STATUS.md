@@ -5730,3 +5730,16 @@ Source: `lens/runs/WARMSTART-EXTEND.txt`, `lens/runs/WARMSTART-PASSES.txt`, `too
 **Method note:** all paired numbers use per-window differences against a baseline re-measured in the same run. Per-window losses have sd 3.3764; per-window
 differences have sd 0.11696, so pairing removes a factor of 29 of the noise. Earlier arms in this project compared arm means, which is adequate for large
 effects and inadequate for small ones.
+
+## Step speed: 8.55x from one keyword, bit-identical (2026-11-17)
+
+All four `np.einsum` calls in `lens/scan_direct_batched.py` were made without `optimize=True`, so NumPy used its generic looping contraction instead of a BLAS path.
+Measured on the real training step, same inputs and seed:
+
+```
+BEFORE  loss 9.9041865856  gnorm 1.1704698742  step 32.47s
+AFTER   loss 9.9041865856  gnorm 1.1704698742  step  3.80s     (8.55x faster)
+```
+
+Loss and gradient norm identical to ten decimals; no arithmetic changed. A predicted matmul rewrite turned out to be exactly this same fix, at 1.09x against it.
+Source: `tools/einsum_opt_test.py`, `tools/ab_step.py`, `docs/history/EINSUM-OPTIMIZE.md`.
