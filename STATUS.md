@@ -5827,3 +5827,15 @@ chance 0.0083%
 ```
 
 The model is **slightly under-confident, not saturated**: right 16.70% of the time, mean top-1 probability 0.1256 (a calibrated model at that accuracy would sit near 0.167). The trained readout is **47x sharper** than a noise readout at the same scale and actually predicts, where noise never does. The looping generation is therefore **not** a calibration or saturation defect. Source: `tools/calibration_final.py`, `docs/history/CALIBRATION-FINAL.md`.
+
+### Why generation loops: exposure bias, measured (2026-11-17)
+
+Same model, same starting context, 40 steps, only the input differs:
+
+```
+teacher-forced accuracy   22.19%   (fed the true next token, as in training)
+free-running accuracy      4.06%   (fed its own argmax, as in generation)
+free-running repetition    0.93     (1 - unique/40; 1.0 = same token every step)
+```
+
+Accuracy **collapses 5.5x** purely from consuming its own output, and it emits roughly **3 distinct tokens in 40 steps**. That is the loop, quantified: one wrong token moves the recurrent state somewhere training never took it. **Every scan run 1-9 was scored teacher-forced** - the one condition where this defect is invisible. Source: `tools/decode_path.py`, `docs/history/EXPOSURE-BIAS.md`.
