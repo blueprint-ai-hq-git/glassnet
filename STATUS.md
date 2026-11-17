@@ -5773,3 +5773,14 @@ chance            0.0083%      ratio 859x
 ```
 
 **The trained readout is doing real work.** The earlier conclusion that it was indistinguishable from noise is withdrawn, and the inference that the failure sits between state and answer layer is withdrawn with it. Source: `tools/f4_instrument_check.py`, `docs/history/F4-CORRECTION.md`.
+
+### The run-9 readout is saturated, and G2 is not reproducible (2026-11-17)
+
+```
+held-out real text (5,120 tokens):  entropy 0.007 nats = 0.1% of uniform  |  accuracy 16.78%
+six one-word probes:               entropy 0.148 nats = 1.6% of uniform
+uniform reference:                 9.393 nats
+```
+
+The softmax is effectively one-hot: the model commits to one word and is **wrong 83% of the time**. That also explains the looping generation seen at the end of every scan run.
+The probes are saturated too, so "little context" does not explain the earlier figure - and **G2's reported 8.835 nats cannot be reproduced from either slice**, so that metric is not usable until `tools/eval_run9.py`'s entropy path is audited (the second metric defect in that script, after F4). Source: `tools/g2_entropy_check.py`, `docs/history/SATURATION.md`.
