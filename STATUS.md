@@ -5743,3 +5743,8 @@ AFTER   loss 9.9041865856  gnorm 1.1704698742  step  3.80s     (8.55x faster)
 
 Loss and gradient norm identical to ten decimals; no arithmetic changed. A predicted matmul rewrite turned out to be exactly this same fix, at 1.09x against it.
 Source: `tools/einsum_opt_test.py`, `tools/ab_step.py`, `docs/history/EINSUM-OPTIMIZE.md`.
+
+### Confirmed on a real training arm
+
+Run 9 restarted on the fixed code reproduces the old run's loss **exactly** (step 25: 9.4038 both, step 50: 8.5875 both, step 75: 8.7967 both) while 25 steps drop from
+**222 s to 45 s - 4.96x** - and the new run uses **4 cores instead of 12**, with Roblox running. Source: `lens/runs/SCAN-RUN9.txt`, `docs/history/OPTIMIZE-ON-ARM.md`.
