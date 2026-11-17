@@ -5784,3 +5784,13 @@ uniform reference:                 9.393 nats
 
 The softmax is effectively one-hot: the model commits to one word and is **wrong 83% of the time**. That also explains the looping generation seen at the end of every scan run.
 The probes are saturated too, so "little context" does not explain the earlier figure - and **G2's reported 8.835 nats cannot be reproduced from either slice**, so that metric is not usable until `tools/eval_run9.py`'s entropy path is audited (the second metric defect in that script, after F4). Source: `tools/g2_entropy_check.py`, `docs/history/SATURATION.md`.
+
+### Saturation is present from the first checkpoint (2026-11-17)
+
+```
+ckpt     logit_rng   entropy   %unif    acc%
+ep250         11.6    0.0108    0.12%    7.10
+ep1500        12.1    0.0079    0.08%   17.97
+```
+
+Logit spread moves **11.6 -> 12.1 (1.05x)** across 1,250 steps while accuracy climbs 7.10% -> 17.97%. The readout is **born one-hot**; training never softens a single distribution, it only improves *which* word it is certain about. The failure is **calibration, not capacity** - states decorrelate, the readout beats noise 859x. Source: `tools/saturation_trajectory.py`, `docs/history/SATURATION-FROM-START.md`.
