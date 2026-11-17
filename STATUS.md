@@ -5709,3 +5709,24 @@ window, double                  23.23%     0.156
 not**: its maximum is a single point, at the shipped setting, and every neighbour loses roughly half of it.
 
 Nothing in this table beats the shipped model on both. The shipped model stays the shipped model, and the reason is now measured rather than argued.
+
+## Depth: one certified block on the shipped model (2026-11-17)
+
+Paired over 200 held-out windows, bootstrap 95% intervals, five checkpoints:
+
+```
+resume point      -0.02623 nats   CI [-0.04997, -0.00305]
++1 pass           -0.03502 nats   CI [-0.06437, -0.00782]
++2 passes         -0.04021 nats   CI [-0.07520, -0.00575]
++3 passes         -0.03989 nats   CI [-0.07505, -0.00318]
++4 passes         -0.04127 nats   CI [-0.07931, -0.00271]  <- endpoint
+```
+
+Adding one certified 15.2M-parameter block to the shipped model improves held-out loss by **0.041 nats**, resolvable, and the gain **plateaus after two passes**.
+That is **0.67% of the 6.0379 baseline loss for 51% of the parameter budget** - a real effect and a poor trade, reported as both.
+
+Source: `lens/runs/WARMSTART-EXTEND.txt`, `lens/runs/WARMSTART-PASSES.txt`, `tools/eval_resolution.py`, `docs/history/DEPTH-PLATEAU.md`.
+
+**Method note:** all paired numbers use per-window differences against a baseline re-measured in the same run. Per-window losses have sd 3.3764; per-window
+differences have sd 0.11696, so pairing removes a factor of 29 of the noise. Earlier arms in this project compared arm means, which is adequate for large
+effects and inadequate for small ones.
