@@ -5869,9 +5869,9 @@ Free-running accuracy is 4.38-5.00% across a **32x** range of context, and the s
 
 ```
 arm            acc%     entropy    sum(pr)     top1
-full         16.70%      6.6505   1.000000   0.1951
+full         16.70%      6.6505   1.000000   0.1256
 zero          0.02%      9.3894   1.000000   0.0001
-shuffled      5.66%      6.7721   1.000000   0.1317
+shuffled      5.66%      6.7721   1.000000   0.1056
 
 cost of zeroing the state   : 16.68 points
 cost of destroying the order: 11.04 points
@@ -5879,4 +5879,4 @@ cost of destroying the order: 11.04 points
 
 **The recurrence is not decorative.** Zeroing the carried state collapses accuracy to 0.02% (chance 0.008%), and destroying token order costs 11.04 points - so it reads a sequence, not a bag. Combined with the flat context-length sweep: the model has a **short but real effective horizon**, extracting a great deal from the first handful of tokens and then saturating. Source: `tools/state_ablation.py`, `docs/history/STATE-IS-LOAD-BEARING.md`.
 
-**Flagged, not quoted:** absolute top-1 confidence disagrees between two of my scripts (0.1951 here vs 0.1256 in `calibration_final.py`) at identical accuracy; must be reconciled before use.
+**Reconciled 2026-11-17:** the earlier 0.1951 was one chunk leaking out of a loop; accumulated over all 5,120 tokens it is 0.1256, matching `calibration_final.py` exactly. See docs/TOP1-RECONCILED.md.
