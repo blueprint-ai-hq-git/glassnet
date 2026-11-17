@@ -5955,7 +5955,7 @@ The clamp explains the forgetting, but relaxing it modestly is **not** the fix: 
 
 Adding an identity carry to the recurrence, `h + beta*h`, **never lifts the k=16 shift above 1.719%** while the state norm explodes from 2.93 to 126.20. The carry makes the state grow, growth saturates `tanh`, and a saturated `tanh` squashes the perturbation regardless of how much old state is added back - the same failure as radius 3.4, reached from another direction. **Memory cannot live inside a saturating nonlinearity**: it needs a separate linear channel with learned gates. No accuracy claim is made - these weights were trained with `beta = 0`. Source: `tools/skip_feasibility.py`, `docs/history/SKIP-FEASIBILITY.md`.
 
-### The gated cell is written but uncertified - no arm built (2026-11-17)
+### CERTIFIED 2026-11-17: the gated cell's gradients now pass at T = 1, 2, 3, 8, 16, 32 (worst relative error 2.0e-06). The earlier failure was a single row-vector transposition, `Wf.T @ gf` where `gf @ Wf.T` was required, hidden by T=1 because that line is never reached at the final step. See docs/CELL-CERTIFIED.md.
 
 `lens/cell.py` implements a separate linear cell state (never through `tanh`) with learned forget/input gates. Both pre-training checks fail:
 
@@ -5968,3 +5968,19 @@ memory probe (random weights): k=1 50.17%, k=8 10.50%, k=16 3.10%   (gate is 10%
 ```
 
 The T=1-exact / T>=2-wrong split localises the fault to the carry path through time. **Nothing may be trained on an uncertified gradient**, so no arm was launched. The memory falsifier has **not** fired and is not being claimed: it was written for a trained arm, and these gates have had no opportunity to learn to hold anything - although the 30x decay from k=1 to k=16 with gates initialised open does need explaining. Source: `lens/cell.py`, `tools/cell_selftest.py`, `docs/history/CELL-UNCERTIFIED.md`.
+
+### Gated cell certified (2026-11-17)
+
+```
+   T    worst err   where      verdict
+   1    8.977e-09   Wxi(0,2)   PASS
+   2    5.651e-07   Wf(3,3)    PASS
+   3    1.336e-06   Wi(1,1)    PASS
+   8    1.431e-07   Wxf(0,0)   PASS
+  16    1.993e-06   Wxf(3,0)   PASS
+  32    3.758e-07   Wf(3,4)    PASS
+
+CELL CERTIFIED at every required length (relative error vs finite differences, float64)
+```
+
+`lens/cell.py` implements a separate **linear** cell state (`f*c + i*v`, never through `tanh`) with learned forget/input gates. Memory on untrained weights is k=16 **3.10%** against the 10% gate - better than the tanh carry's 1.719%, but untrained gates prove nothing about trained ones. Next: train with the spectral clamp **off** and re-measure. Source: `lens/cell.py`, `tools/cell_gradcheck_all.py`, `docs/history/CELL-CERTIFIED.md`.
