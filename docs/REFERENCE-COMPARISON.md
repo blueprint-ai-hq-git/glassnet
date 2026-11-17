@@ -1,6 +1,6 @@
 # Reference comparison: our shipped model against a normal 0.5B transformer
 
-Started 2026-11-17 at Yahya's instruction: take an original model that exists in the world, compare it with ours **feature by feature, each one tested**, and
+Started 2026-11-17 at the project owner's instruction: take an original model that exists in the world, compare it with ours **feature by feature, each one tested**, and
 work out exactly what we are missing so our own custom model can be transparent *and* have everything a normal model has.
 
 **Reference model**: Qwen2.5-0.5B-Instruct. Apache 2.0 licence (verified: the model card licence field; 0.5B class is Apache 2.0). Two forms are on this
