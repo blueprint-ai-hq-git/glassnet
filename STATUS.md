@@ -5954,3 +5954,17 @@ The clamp explains the forgetting, but relaxing it modestly is **not** the fix: 
 ```
 
 Adding an identity carry to the recurrence, `h + beta*h`, **never lifts the k=16 shift above 1.719%** while the state norm explodes from 2.93 to 126.20. The carry makes the state grow, growth saturates `tanh`, and a saturated `tanh` squashes the perturbation regardless of how much old state is added back - the same failure as radius 3.4, reached from another direction. **Memory cannot live inside a saturating nonlinearity**: it needs a separate linear channel with learned gates. No accuracy claim is made - these weights were trained with `beta = 0`. Source: `tools/skip_feasibility.py`, `docs/history/SKIP-FEASIBILITY.md`.
+
+### The gated cell is written but uncertified - no arm built (2026-11-17)
+
+`lens/cell.py` implements a separate linear cell state (never through `tanh`) with learned forget/input gates. Both pre-training checks fail:
+
+```
+T=1  worst abs diff 2.429e-12   <- exact, per-gate derivatives correct
+T=2  worst abs diff 2.903e-02   <- carry-through-time path is wrong
+T=3  worst abs diff 1.004e-01
+
+memory probe (random weights): k=1 50.17%, k=8 10.50%, k=16 3.10%   (gate is 10%)
+```
+
+The T=1-exact / T>=2-wrong split localises the fault to the carry path through time. **Nothing may be trained on an uncertified gradient**, so no arm was launched. The memory falsifier has **not** fired and is not being claimed: it was written for a trained arm, and these gates have had no opportunity to learn to hold anything - although the 30x decay from k=1 to k=16 with gates initialised open does need explaining. Source: `lens/cell.py`, `tools/cell_selftest.py`, `docs/history/CELL-UNCERTIFIED.md`.
