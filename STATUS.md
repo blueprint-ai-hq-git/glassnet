@@ -5899,3 +5899,20 @@ state norm stable ~2.96 | cosine(h_t, h_t+1) 0.5711
 A token **eight steps back moves the state by 3.5%**; sixteen back by **0.9%**. The influence decays with a half-life of ~1.5 tokens, so the **effective memory is single-digit tokens** despite a 256-dim state and 128-token windows. That settles four separate puzzles at once: flat accuracy past 16 tokens, why rollout training could not help (nothing older to recover), why generation loops (near-n-gram behaviour, repetition 0.89-0.93), and why the readout and concept instruments looked healthy (they measure instantaneous prediction only). Source: `tools/state_memory.py`, `docs/history/STATE-FORGETS.md`.
 
 **Gate for the fix:** perturbation shift at k=16 must exceed **10%** (today 0.885%) while held-out accuracy holds ≥16%. **Falsifier:** if k=16 passes 10% and free-running accuracy is still under 6%, memory length was not the binding constraint either.
+
+### Training destroyed the memory the initialisation already had (2026-11-17)
+
+```
+   k        init      trained
+   1     48.662%      48.530%
+   2     46.023%      31.116%
+   4     40.622%      13.093%
+   8     28.917%       3.231%
+  16     17.812%       0.858%    <- the gate was 10%
+  32      5.711%       0.091%
+
+Wh largest singular value: init 1.9753 -> trained 1.3188
+Wh Frobenius norm        : init 15.996 -> trained 10.497
+```
+
+**At initialisation the k=16 perturbation shift is 17.81%, above the 10% gate; after 1,500 steps it is 0.858% - a 20.8x loss of memory.** `Wh`'s spectral norm moves 1.98 -> 1.32, so the transition went from expansive to contractive while `Wx` and the embeddings were essentially untouched. So the fix is **not** a better initialisation: gradient descent had no reason to keep memory and a cheaper short-horizon solution available. Source: `tools/memory_init_vs_trained.py`, `docs/history/MEMORY-KILLED-BY-TRAINING.md`.
