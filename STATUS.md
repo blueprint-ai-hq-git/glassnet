@@ -5760,4 +5760,16 @@ G1  readout gain bounds                  0.978 .. 1.119   bounded, not saturatin
 G2  mean predictive entropy              8.835 = 94.1% of uniform   no collapse
 ```
 
-**F4 fails, and it matters:** the trained readout is *indistinguishable from noise* at separating inputs (1.0036x against a required 2x). F1 therefore passes for a reason that has nothing to do with training - the noise control clears the same bar - which is exactly what F4 was added to detect. Guards rule out gain saturation and entropy collapse, so this is a clean negative: our readout normalisation is not the lever. Source: `tools/eval_run9.py`, `lens/runs/chat/scan9_ep1500.npz`, `docs/history/RUN9-SCORED.md`.
+**CORRECTION 2026-11-17: F4 was blind - see below. The trained readout is NOT noise (16.78% vs 0.0000% next-token accuracy, 859x).** Original text follows: the trained readout is *indistinguishable from noise* at separating inputs (1.0036x against a required 2x). F1 therefore passes for a reason that has nothing to do with training - the noise control clears the same bar - which is exactly what F4 was added to detect. Guards rule out gain saturation and entropy collapse, so this is a clean negative: our readout normalisation is not the lever. Source: `tools/eval_run9.py`, `lens/runs/chat/scan9_ep1500.npz`, `docs/history/RUN9-SCORED.md`.
+
+### Correction: F4's metric was blind, the readout works (2026-11-17)
+
+F4 compared KL across six one-word prompts (trained 1.1702, noise 1.1660). That measures how much a projection's *response varies* with input - which a random projection does by construction - not whether it predicts anything. Measured directly on next-token accuracy over 5,120 held-out tokens:
+
+```
+TRAINED readout  16.7773%
+NOISE   readout   0.0000%
+chance            0.0083%      ratio 859x
+```
+
+**The trained readout is doing real work.** The earlier conclusion that it was indistinguishable from noise is withdrawn, and the inference that the failure sits between state and answer layer is withdrawn with it. Source: `tools/f4_instrument_check.py`, `docs/history/F4-CORRECTION.md`.
