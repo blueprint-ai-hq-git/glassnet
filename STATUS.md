@@ -5803,3 +5803,15 @@ T=4   entropy 9.353526 nats = 99.6% of uniform  top-1 prob 0.000608
 ```
 
 The earlier one-hot reading (0.0079 nats) was a bug in my own entropy expression; the corrected value is an ordinary moderately-peaked distribution, consistent with 17.97% accuracy. Temperature scaling raises entropy with accuracy unchanged, as it must. Source: `tools/temp_debug.py`, `docs/history/SATURATION-RETRACTED.md`.
+
+### G2 is correct; my disagreeing figures were the broken ones (2026-11-17)
+
+```
+six-probe mean entropy  direct=False  8.838
+six-probe mean entropy  direct=True   8.835   <- reproduces the eval's G2 exactly
+sum(probs) = 1.000000 in every case
+```
+
+My earlier 0.148 nats came from encoding probes **without masking `<unk>`**; my 0.0079 nats came from a broken entropy expression (retracted). The eval script was right; I was wrong three times in a row for three different reasons - a blind proxy (F4), a missing mask, and a broken expression. G2's 8.835 nats on context-free probes means the model is near-agnostic with no context, which is expected and is the opposite of the saturation G2 was written to detect. Source: `tools/path_reconcile.py`, `docs/history/G2-IS-CORRECT.md`.
+
+**Still not established:** held-out entropy under the full forward path (direct term + UNK masked) has not been measured correctly yet.
