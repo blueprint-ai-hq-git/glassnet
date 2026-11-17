@@ -5815,3 +5815,15 @@ sum(probs) = 1.000000 in every case
 My earlier 0.148 nats came from encoding probes **without masking `<unk>`**; my 0.0079 nats came from a broken entropy expression (retracted). The eval script was right; I was wrong three times in a row for three different reasons - a blind proxy (F4), a missing mask, and a broken expression. G2's 8.835 nats on context-free probes means the model is near-agnostic with no context, which is expected and is the opposite of the saturation G2 was written to detect. Source: `tools/path_reconcile.py`, `docs/history/G2-IS-CORRECT.md`.
 
 **Still not established:** held-out entropy under the full forward path (direct term + UNK masked) has not been measured correctly yet.
+
+### Definitive calibration of the run-9 readout (2026-11-17, 5,120 held-out tokens)
+
+Forward path `readout(state) @ Wa + ba + relu(emb[last] @ Wd) @ emb.T`, `<unk>` masked, `sum(probs)` verified:
+
+```
+TRAINED (full path)    entropy 6.6505 nats (70.80% unif)  top1 0.1256  acc 16.70%  sum(pr)=1.000000000000
+NOISE READOUT control  entropy 8.8683 nats (94.42% unif)  top1 0.0027  acc  0.00%  sum(pr)=1.000000000000
+chance 0.0083%
+```
+
+The model is **slightly under-confident, not saturated**: right 16.70% of the time, mean top-1 probability 0.1256 (a calibrated model at that accuracy would sit near 0.167). The trained readout is **47x sharper** than a noise readout at the same scale and actually predicts, where noise never does. The looping generation is therefore **not** a calibration or saturation defect. Source: `tools/calibration_final.py`, `docs/history/CALIBRATION-FINAL.md`.
