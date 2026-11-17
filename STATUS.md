@@ -5929,4 +5929,16 @@ radius     k=16 shift        acc%    entropy
    3.4        15.380%        1.50%     8.6826     <- memory gate passed, accuracy destroyed
 ```
 
-**Radius 1.0 gives 18.68% vs 17.84% at the shipped 0.9** - a nearly-free point from one scalar rescale, pending confirmation on more tokens and a trained arm. And **the memory gate cannot be reached by radius alone**: at 3.4 the k=16 shift passes 10% (15.380%) but accuracy collapses to 1.50% and entropy rises to 8.68 nats, which is the tanh saturation this function's docstring already documented. Memory without saturation needs a mechanism that separates *keeping* information from *amplifying* everything - which a gate does and a global rescale cannot. Source: `tools/radius_sweep.py`, `docs/history/RADIUS-CLAMP.md`.
+**Radius 1.0: confirmed on 5,120 tokens it is NOT an accuracy win** (+0.53 points against SE 1.28 - within noise; the earlier +0.84 was a 1,536-token slice and is withdrawn). It does give a **resolvable free-running gain: 5.00% -> 6.75%, paired CI [+0.44, +3.38]**, with repetition unchanged (0.915 vs 0.917) and the k=16 memory shift still only 1.864% against the 10% gate. See docs/RADIUS-1-CONFIRMED.md. And **the memory gate cannot be reached by radius alone**: at 3.4 the k=16 shift passes 10% (15.380%) but accuracy collapses to 1.50% and entropy rises to 8.68 nats, which is the tanh saturation this function's docstring already documented. Memory without saturation needs a mechanism that separates *keeping* information from *amplifying* everything - which a gate does and a global rescale cannot. Source: `tools/radius_sweep.py`, `docs/history/RADIUS-CLAMP.md`.
+
+### Radius 1.0 confirmed: small real generation gain, fails the memory gate (2026-11-17)
+
+```
+r      acc%    entropy      top1   free-run acc%      rep
+0.9   16.70%     6.6505    0.1256          5.00%     0.915
+1.0   17.23%     6.7473    0.1138          6.75%     0.917
+
+accuracy: +0.53 pts (SE 1.28) WITHIN NOISE   |   free-run: +1.75 pts, paired CI [+0.44, +3.38] RESOLVABLE
+```
+
+The clamp explains the forgetting, but relaxing it modestly is **not** the fix: 0.9 -> 1.0 buys 1.75 points of free-running accuracy and nothing on repetition, while 3.4 (where the memory gate passes) destroys accuracy to 1.50%. A mechanism that keeps information **selectively** is what the evidence points at. Source: `tools/radius_confirm.py`, `tools/freerun_confirm.py`, `docs/history/RADIUS-1-CONFIRMED.md`.
