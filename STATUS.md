@@ -5851,7 +5851,7 @@ free-running repetition    0.93          0.93
 
 Training on the model's own rollouts **halved** free-running accuracy and left repetition untouched. **The pre-registered falsifier fired:** free-running stays under 6%, so exposure bias is not the binding constraint. The detectors were clean (D1 0.9743 of rolled positions genuinely changed, D3 never fired), so this is a real negative result, not a void arm. Source: `lens/runs/ROLLOUT1.txt`, `tools/train_rollout.py`, `docs/history/ROLLOUT-LEVER-FAILED.md`.
 
-### Context length is not the mechanism; the state carries almost no information (2026-11-17)
+### CORRECTED 2026-11-17: the state IS load-bearing (ablation: -16.68 points). The "carries almost no information" reading below was wrong - extra context past ~16 tokens adds nothing, but the state itself does the work. See docs/STATE-IS-LOAD-BEARING.md.
 
 ```
   ctx   teacher-forced   free-running   repetition
@@ -5864,3 +5864,19 @@ Training on the model's own rollouts **halved** free-running accuracy and left r
 ```
 
 Free-running accuracy is 4.38-5.00% across a **32x** range of context, and the shortest context is marginally best - so the generation loop is not a context-window mismatch. The sharper result: **teacher-forced accuracy is flat at 15.62% from 16 to 128 tokens**, i.e. 8x more context buys **0.00 points**. A model that gains nothing from more context is not using its context. That one fact is consistent with the loops (repetition 0.92), with why rollout training could not help (nothing to teach), and with a readout that predicts frequent continuations while being unable to generate. Source: `tools/context_length_sweep.py`, `docs/history/CONTEXT-LENGTH-REFUTED.md`.
+
+### State ablation: the recurrence is load-bearing and order-sensitive (2026-11-17)
+
+```
+arm            acc%     entropy    sum(pr)     top1
+full         16.70%      6.6505   1.000000   0.1951
+zero          0.02%      9.3894   1.000000   0.0001
+shuffled      5.66%      6.7721   1.000000   0.1317
+
+cost of zeroing the state   : 16.68 points
+cost of destroying the order: 11.04 points
+```
+
+**The recurrence is not decorative.** Zeroing the carried state collapses accuracy to 0.02% (chance 0.008%), and destroying token order costs 11.04 points - so it reads a sequence, not a bag. Combined with the flat context-length sweep: the model has a **short but real effective horizon**, extracting a great deal from the first handful of tokens and then saturating. Source: `tools/state_ablation.py`, `docs/history/STATE-IS-LOAD-BEARING.md`.
+
+**Flagged, not quoted:** absolute top-1 confidence disagrees between two of my scripts (0.1951 here vs 0.1256 in `calibration_final.py`) at identical accuracy; must be reconciled before use.
