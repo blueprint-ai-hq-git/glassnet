@@ -5839,3 +5839,14 @@ free-running repetition    0.93     (1 - unique/40; 1.0 = same token every step)
 ```
 
 Accuracy **collapses 5.5x** purely from consuming its own output, and it emits roughly **3 distinct tokens in 40 steps**. That is the loop, quantified: one wrong token moves the recurrent state somewhere training never took it. **Every scan run 1-9 was scored teacher-forced** - the one condition where this defect is invisible. Source: `tools/decode_path.py`, `docs/history/EXPOSURE-BIAS.md`.
+
+### The exposure-bias lever failed (2026-11-17, pre-registered)
+
+```
+                        baseline   rollout arm (300 steps)
+teacher-forced accuracy   22.19%        21.25%
+free-running accuracy      4.06%         2.19%
+free-running repetition    0.93          0.93
+```
+
+Training on the model's own rollouts **halved** free-running accuracy and left repetition untouched. **The pre-registered falsifier fired:** free-running stays under 6%, so exposure bias is not the binding constraint. The detectors were clean (D1 0.9743 of rolled positions genuinely changed, D3 never fired), so this is a real negative result, not a void arm. Source: `lens/runs/ROLLOUT1.txt`, `tools/train_rollout.py`, `docs/history/ROLLOUT-LEVER-FAILED.md`.
