@@ -5942,3 +5942,15 @@ accuracy: +0.53 pts (SE 1.28) WITHIN NOISE   |   free-run: +1.75 pts, paired CI 
 ```
 
 The clamp explains the forgetting, but relaxing it modestly is **not** the fix: 0.9 -> 1.0 buys 1.75 points of free-running accuracy and nothing on repetition, while 3.4 (where the memory gate passes) destroys accuracy to 1.50%. A mechanism that keeps information **selectively** is what the evidence points at. Source: `tools/radius_confirm.py`, `tools/freerun_confirm.py`, `docs/history/RADIUS-1-CONFIRMED.md`.
+
+### A naive carry path cannot buy memory (2026-11-17, feasibility probe)
+
+```
+  beta     k=16 shift       acc%    entropy state norm
+   0.0         0.788%     14.69%     6.6466       2.93
+   0.2         1.719%     10.86%     7.9453       6.12
+   0.4         0.948%      3.24%     8.0835      14.06
+   0.9         0.443%      4.26%     8.1123     126.20
+```
+
+Adding an identity carry to the recurrence, `h + beta*h`, **never lifts the k=16 shift above 1.719%** while the state norm explodes from 2.93 to 126.20. The carry makes the state grow, growth saturates `tanh`, and a saturated `tanh` squashes the perturbation regardless of how much old state is added back - the same failure as radius 3.4, reached from another direction. **Memory cannot live inside a saturating nonlinearity**: it needs a separate linear channel with learned gates. No accuracy claim is made - these weights were trained with `beta = 0`. Source: `tools/skip_feasibility.py`, `docs/history/SKIP-FEASIBILITY.md`.
