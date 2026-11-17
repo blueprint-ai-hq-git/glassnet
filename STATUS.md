@@ -6015,3 +6015,13 @@ step 60 loss 9.230 ||c|| 2.1931   cosine            0.9650   logit sd 0.4498
 ```
 
 The state's norm is healthy (~2.2, no collapse) but **consecutive states barely differ: cosine 0.9414, rising to 0.9650 during training.** The readout therefore sees virtually the same vector at every position and emits the marginal distribution - uniform by construction - which is exactly why the loss stuck at `ln(12002)`. **Training makes it more constant, not less.** A high consecutive-state cosine with a healthy norm means the carry is a slowly drifting running average: memory of the *average*, not response to the *present* - the mirror image of the earlier ~8-token decay finding. Design implication: the readout must see the current input alongside the state. Source: `tools/cell_state_probe.py`, `docs/history/STATE-TOO-CONSTANT.md`.
+
+### Cell harness abandoned by its own pre-registered rule (2026-11-17)
+
+```
+HELD-OUT at start  loss 9.4722  acc 0.00%  cosine 0.9575
+step 200           loss 9.3625  acc 0.00%  cosine 0.9701
+GATE (>5% acc AND cosine <0.90): FAIL
+```
+
+The readout was given the current token embedding as well as the state (`logits = [c_t ; x_t] @ Wc + bc`) - the pre-registered change. **Accuracy stayed at 0.00%**, so the falsifier fired and the harness is **abandoned rather than re-scaled**, as the pre-registration required. The loss does fall monotonically (9.4722 -> 9.3625, `ln(12002)` = 9.3936), so this is slow learning, not a dead pipeline - but three attempts have now failed to reach non-zero accuracy and a falsifier obeyed only when it agrees is not a falsifier. `lens/cell.py` remains certified and reusable. Next: train the real scan model with `TARGET_RADIUS=1.0` from the start, the one mechanism this week with a confirmed cause. Source: `tools/cell_input_readout.py`, `docs/history/CELL-HARNESS-ABANDONED.md`.
