@@ -5984,3 +5984,15 @@ CELL CERTIFIED at every required length (relative error vs finite differences, f
 ```
 
 `lens/cell.py` implements a separate **linear** cell state (`f*c + i*v`, never through `tanh`) with learned forget/input gates. Memory on untrained weights is k=16 **3.10%** against the 10% gate - better than the tanh carry's 1.719%, but untrained gates prove nothing about trained ones. Next: train with the spectral clamp **off** and re-measure. Source: `lens/cell.py`, `tools/cell_gradcheck_all.py`, `docs/history/CELL-CERTIFIED.md`.
+
+### The trained-gate question is not answered: the harness does not learn (2026-11-17)
+
+```
+attempt 1 (readout 0.02, lr 3e-3, 100 steps): loss 9.4054 -> 9.3936, acc 0.27% -> 0.00%
+attempt 2 (readout 0.2,  lr 1e-2,  60 steps): loss 10.0356 -> 9.3083, acc 0.00%
+ln(12002) = 9.3936 - the loss sits at uniform, so nothing is being learned
+
+memory after those steps: k=16 4.40% (untrained 3.10%, gate 10%)
+```
+
+A model that predicts nothing cannot have its trained gates judged, so **the pre-registered question stays open and the falsifier has not fired.** The lesson is recorded: the pre-registration called for an end-to-end composition check before training, and skipping it produced a harness that runs, yields numbers, and measures nothing. Next work is that single finite-difference test of the whole cell+readout+loss stack - not another training run. Source: `tools/cell_train.py`, `docs/history/CELL-HARNESS-DOES-NOT-LEARN.md`.
