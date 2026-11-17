@@ -37,11 +37,15 @@ candidate is **the shipped weights plus one certified block**:
 
 ```
 embedding  12,290,048
-block      15,096,672   (q,k,v,o with GQA 16/4 at head_dim 64, SwiGLU 1024->4096, two RMSNorms)
-concept     1,736,704
+block      15,206,400   (q 1024x1024, k and v 1024x256 each with GQA 16/4 at head_dim 64, o 1024x1024,
+                         SwiGLU gate/up 1024x4096 and down 4096x1024, two RMSNorms of 1024)
+concept     1,736,757   (32768 x 53 + 53 - the concatenated window still feeds the same shape)
 answer        636,106 + 12,002
-total      29,771,585   (29.8M, inside the 50M limit)
+total      29,881,313   (29.9M, inside the 50M limit)
 ```
+*Corrected 2026-11-17 after publication: the first version of this table said 29,771,585 with a concept layer of 1,736,704. That was wrong twice - the block
+figure omitted the 1024x1024 `o` projection's share and the concept layer omitted its bias - so the corrected total is 29,881,313. A parameter count on a public
+page is a claim, so it is corrected here rather than left standing.*
 
 Training starts from a model that already reaches 24.58% +/- 0.055 instead of from noise, with the block adding exactly nothing on step 0. If depth is what the
 diagnosis says it is - the ability to compute relations rather than interpolate a bag of positions - this is the cheapest possible test of that claim, and its
