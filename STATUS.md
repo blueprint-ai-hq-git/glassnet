@@ -5774,7 +5774,7 @@ chance            0.0083%      ratio 859x
 
 **The trained readout is doing real work.** The earlier conclusion that it was indistinguishable from noise is withdrawn, and the inference that the failure sits between state and answer layer is withdrawn with it. Source: `tools/f4_instrument_check.py`, `docs/history/F4-CORRECTION.md`.
 
-### The run-9 readout is saturated, and G2 is not reproducible (2026-11-17)
+### RETRACTED 2026-11-17: the readout is NOT saturated (entropy is 6.954 nats, 74% of uniform, top-1 prob 0.1106). See docs/SATURATION-RETRACTED.md. Original text kept below.
 
 ```
 held-out real text (5,120 tokens):  entropy 0.007 nats = 0.1% of uniform  |  accuracy 16.78%
@@ -5785,7 +5785,7 @@ uniform reference:                 9.393 nats
 The softmax is effectively one-hot: the model commits to one word and is **wrong 83% of the time**. That also explains the looping generation seen at the end of every scan run.
 The probes are saturated too, so "little context" does not explain the earlier figure - and **G2's reported 8.835 nats cannot be reproduced from either slice**, so that metric is not usable until `tools/eval_run9.py`'s entropy path is audited (the second metric defect in that script, after F4). Source: `tools/g2_entropy_check.py`, `docs/history/SATURATION.md`.
 
-### Saturation is present from the first checkpoint (2026-11-17)
+### RETRACTED 2026-11-17: saturation was never shown (it rested on a bad entropy figure). Logit-range 11.6->12.1 stands; the conclusion does not. See docs/SATURATION-RETRACTED.md.
 
 ```
 ckpt     logit_rng   entropy   %unif    acc%
@@ -5794,3 +5794,12 @@ ep1500        12.1    0.0079    0.08%   17.97
 ```
 
 Logit spread moves **11.6 -> 12.1 (1.05x)** across 1,250 steps while accuracy climbs 7.10% -> 17.97%. The readout is **born one-hot**; training never softens a single distribution, it only improves *which* word it is certain about. The failure is **calibration, not capacity** - states decorrelate, the readout beats noise 859x. Source: `tools/saturation_trajectory.py`, `docs/history/SATURATION-FROM-START.md`.
+
+### Corrected entropy of the run-9 readout (2026-11-17, verified with sum(probs) = 1.0)
+
+```
+T=1   entropy 6.954274 nats = 74% of uniform   top-1 prob 0.110566
+T=4   entropy 9.353526 nats = 99.6% of uniform  top-1 prob 0.000608
+```
+
+The earlier one-hot reading (0.0079 nats) was a bug in my own entropy expression; the corrected value is an ordinary moderately-peaked distribution, consistent with 17.97% accuracy. Temperature scaling raises entropy with accuracy unchanged, as it must. Source: `tools/temp_debug.py`, `docs/history/SATURATION-RETRACTED.md`.
