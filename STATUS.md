@@ -6006,3 +6006,12 @@ ALL PASS - 11 of 11 parameters, whole stack
 ```
 
 The check that was skipped before the last training attempt is now done: every cell parameter **and** the readout agree with finite differences through the composed loss. So the harness's failure to learn is **not** an unverified gradient. What is left is the cell state's magnitude - with the loss pinned at exactly `ln(12002)` (uniform), the readout's input is near zero or near constant. Next measurement: `||c_t||` and consecutive-state cosine **during** training, before another run. Source: `tools/cell_compose_check.py`, `docs/history/COMPOSITION-CERTIFIED.md`.
+
+### Why the cell harness sat at uniform: the state is nearly constant, not collapsed (2026-11-17)
+
+```
+step 0             ||c|| 2.5140   cosine(c_t,c_t+1) 0.9414   logit sd 0.5937
+step 60 loss 9.230 ||c|| 2.1931   cosine            0.9650   logit sd 0.4498
+```
+
+The state's norm is healthy (~2.2, no collapse) but **consecutive states barely differ: cosine 0.9414, rising to 0.9650 during training.** The readout therefore sees virtually the same vector at every position and emits the marginal distribution - uniform by construction - which is exactly why the loss stuck at `ln(12002)`. **Training makes it more constant, not less.** A high consecutive-state cosine with a healthy norm means the carry is a slowly drifting running average: memory of the *average*, not response to the *present* - the mirror image of the earlier ~8-token decay finding. Design implication: the readout must see the current input alongside the state. Source: `tools/cell_state_probe.py`, `docs/history/STATE-TOO-CONSTANT.md`.
