@@ -5996,3 +5996,13 @@ memory after those steps: k=16 4.40% (untrained 3.10%, gate 10%)
 ```
 
 A model that predicts nothing cannot have its trained gates judged, so **the pre-registered question stays open and the falsifier has not fired.** The lesson is recorded: the pre-registration called for an end-to-end composition check before training, and skipping it produced a harness that runs, yields numbers, and measures nothing. Next work is that single finite-difference test of the whole cell+readout+loss stack - not another training run. Source: `tools/cell_train.py`, `docs/history/CELL-HARNESS-DOES-NOT-LEARN.md`.
+
+### Composition certified: cell + readout + loss agree with finite differences (2026-11-17)
+
+```
+Wf 1.972e-07  Wi 2.417e-07  Wv 2.078e-08  Wxf 6.284e-08  Wxi 3.857e-08
+Wxv 1.964e-09  bf 1.360e-08  bi 1.119e-08  bv 7.643e-10  Wc 6.765e-09  bc 5.738e-10
+ALL PASS - 11 of 11 parameters, whole stack
+```
+
+The check that was skipped before the last training attempt is now done: every cell parameter **and** the readout agree with finite differences through the composed loss. So the harness's failure to learn is **not** an unverified gradient. What is left is the cell state's magnitude - with the loss pinned at exactly `ln(12002)` (uniform), the readout's input is near zero or near constant. Next measurement: `||c_t||` and consecutive-state cosine **during** training, before another run. Source: `tools/cell_compose_check.py`, `docs/history/COMPOSITION-CERTIFIED.md`.
