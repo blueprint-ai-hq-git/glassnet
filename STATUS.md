@@ -5748,3 +5748,16 @@ Source: `tools/einsum_opt_test.py`, `tools/ab_step.py`, `docs/history/EINSUM-OPT
 
 Run 9 restarted on the fixed code reproduces the old run's loss **exactly** (step 25: 9.4038 both, step 50: 8.5875 both, step 75: 8.7967 both) while 25 steps drop from
 **222 s to 45 s - 4.96x** - and the new run uses **4 cores instead of 12**, with Roblox running. Source: `lens/runs/SCAN-RUN9.txt`, `docs/history/OPTIMIZE-ON-ARM.md`.
+
+## Run 9 scored against its pre-registration (2026-11-17)
+
+```
+F1  KL across six prefix-free words     1.1702   bar >0.05                       PASS
+F2  state cosine                         0.1736   bar <0.50                       PASS
+F3  held-out accuracy                   16.93%    bar 5.34%                       PASS
+F4  trained vs random-noise readout      ratio 1.0036x  (trained 1.1702, noise 1.1660)  FAIL
+G1  readout gain bounds                  0.978 .. 1.119   bounded, not saturating
+G2  mean predictive entropy              8.835 = 94.1% of uniform   no collapse
+```
+
+**F4 fails, and it matters:** the trained readout is *indistinguishable from noise* at separating inputs (1.0036x against a required 2x). F1 therefore passes for a reason that has nothing to do with training - the noise control clears the same bar - which is exactly what F4 was added to detect. Guards rule out gain saturation and entropy collapse, so this is a clean negative: our readout normalisation is not the lever. Source: `tools/eval_run9.py`, `lens/runs/chat/scan9_ep1500.npz`, `docs/history/RUN9-SCORED.md`.
