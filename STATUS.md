@@ -5900,7 +5900,7 @@ A token **eight steps back moves the state by 3.5%**; sixteen back by **0.9%**. 
 
 **Gate for the fix:** perturbation shift at k=16 must exceed **10%** (today 0.885%) while held-out accuracy holds ≥16%. **Falsifier:** if k=16 passes 10% and free-running accuracy is still under 6%, memory length was not the binding constraint either.
 
-### Training destroyed the memory the initialisation already had (2026-11-17)
+### CORRECTED 2026-11-17: the memory is CLAMPED by the trainer, not spent by the gradient. `renorm_recurrent(p, 0.9)` runs after every step and forces Wh to spectral radius 0.9, which contracts perturbations by construction. The measurement below stands; the causal explanation does not. See docs/RADIUS-CLAMP.md.
 
 ```
    k        init      trained
@@ -5916,3 +5916,17 @@ Wh Frobenius norm        : init 15.996 -> trained 10.497
 ```
 
 **At initialisation the k=16 perturbation shift is 17.81%, above the 10% gate; after 1,500 steps it is 0.858% - a 20.8x loss of memory.** `Wh`'s spectral norm moves 1.98 -> 1.32, so the transition went from expansive to contractive while `Wx` and the embeddings were essentially untouched. So the fix is **not** a better initialisation: gradient descent had no reason to keep memory and a cheaper short-horizon solution available. Source: `tools/memory_init_vs_trained.py`, `docs/history/MEMORY-KILLED-BY-TRAINING.md`.
+
+### Spectral-radius sweep on the existing checkpoint (2026-11-17, no training)
+
+```
+radius     k=16 shift        acc%    entropy
+   0.9         0.703%       17.84%     6.6152
+   1.0         1.864%       18.68%     6.7658     <- best accuracy
+   1.2         1.241%       11.26%     8.1006
+   1.5         0.759%        4.88%     8.1733
+   2.5         3.185%        2.73%     8.4368
+   3.4        15.380%        1.50%     8.6826     <- memory gate passed, accuracy destroyed
+```
+
+**Radius 1.0 gives 18.68% vs 17.84% at the shipped 0.9** - a nearly-free point from one scalar rescale, pending confirmation on more tokens and a trained arm. And **the memory gate cannot be reached by radius alone**: at 3.4 the k=16 shift passes 10% (15.380%) but accuracy collapses to 1.50% and entropy rises to 8.68 nats, which is the tanh saturation this function's docstring already documented. Memory without saturation needs a mechanism that separates *keeping* information from *amplifying* everything - which a gate does and a global rescale cannot. Source: `tools/radius_sweep.py`, `docs/history/RADIUS-CLAMP.md`.
