@@ -5880,3 +5880,22 @@ cost of destroying the order: 11.04 points
 **The recurrence is not decorative.** Zeroing the carried state collapses accuracy to 0.02% (chance 0.008%), and destroying token order costs 11.04 points - so it reads a sequence, not a bag. Combined with the flat context-length sweep: the model has a **short but real effective horizon**, extracting a great deal from the first handful of tokens and then saturating. Source: `tools/state_ablation.py`, `docs/history/STATE-IS-LOAD-BEARING.md`.
 
 **Reconciled 2026-11-17:** the earlier 0.1951 was one chunk leaking out of a loop; accumulated over all 5,120 tokens it is 0.1256, matching `calibration_final.py` exactly. See docs/TOP1-RECONCILED.md.
+
+### The state forgets exponentially: effective memory is single-digit tokens (2026-11-17)
+
+```
+   k    state shift        (perturb the token at t-k, measure ||dh_t|| / ||h_t||)
+   1       47.97%
+   2       29.98%
+   4       12.05%
+   8        3.485%
+  16        0.885%
+  32        0.081%
+  48        0.010%
+
+state norm stable ~2.96 | cosine(h_t, h_t+1) 0.5711
+```
+
+A token **eight steps back moves the state by 3.5%**; sixteen back by **0.9%**. The influence decays with a half-life of ~1.5 tokens, so the **effective memory is single-digit tokens** despite a 256-dim state and 128-token windows. That settles four separate puzzles at once: flat accuracy past 16 tokens, why rollout training could not help (nothing older to recover), why generation loops (near-n-gram behaviour, repetition 0.89-0.93), and why the readout and concept instruments looked healthy (they measure instantaneous prediction only). Source: `tools/state_memory.py`, `docs/history/STATE-FORGETS.md`.
+
+**Gate for the fix:** perturbation shift at k=16 must exceed **10%** (today 0.885%) while held-out accuracy holds ≥16%. **Falsifier:** if k=16 passes 10% and free-running accuracy is still under 6%, memory length was not the binding constraint either.
