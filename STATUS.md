@@ -6369,3 +6369,18 @@ seed   READABLE   PLAIN    delta        concepts    centre_heavier AUROC   fire 
 **21 of 21 concepts label-honest on all three seeds, 0 failing** - the first time this project has measured that. `centre_heavier` had scored **AUROC 0.3196 (below chance)** because its formula fired on **96.8%** of images; moving its threshold 0.05 -> **0.40** (support 96.9% -> 22.9%) took it to a **mean 0.9472** and made its firing track its support (28-38% vs 22.9%). The defect was in the *definition*, not the model.
 
 **And the readable-vs-plain gap is NOT resolvable:** gaps -0.14 / -1.75 / +2.26 give **mean +0.12 points, sd 2.02, 95% interval [-3.11, +3.36]**, which includes zero. This puts the earlier single-seed claims in context: **-1.47 (width21), -1.46 (parity49) and -1.53 all sit inside this arm's seed spread.** A single-seed gap of -1.5 is an ordinary draw from a distribution averaging +0.12, so the readable model is **not demonstrably worse - and not demonstrably better**, and the mechanism questions asked about the "gap" were asked about a quantity with no resolvable sign. Settling it needs 8-12 seeds, where the SE of the mean falls to 0.6-0.7 points. Source: `lens/runs/FIX-CENTRE.txt`, `docs/history/ALL-CONCEPTS-HONEST.md`.
+
+### Shift augmentation removes the 27-point collapse, at a measured cost of 4.4 points of clean accuracy (2026-11-18)
+
+```
+input                           no augmentation   2px shift aug    difference
+clean                             84.47%            80.03%          -4.44
+brightness +0.20                  77.63%            71.60%          -6.03
+gaussian noise sd 0.10            83.63%            79.50%          -4.13
+blur 3-tap binomial               83.20%            80.10%          -3.10
+shift 1 px right                  76.93%            79.80%          +2.87
+shift 1 px down                   78.33%            79.60%          +1.27
+shift 2 px right                  57.00%            78.10%         +21.10
+```
+
+Matched control: **same parity config, same seed, no augmentation** (`fixc3_s0_ep24`, 15,977 params) against the augmented model (`shiftaug_s0_ep24`). **Bought:** under a 2-pixel shift the augmented model scores **78.10%** against the control's **57.00%** - a **+21.10-point** improvement, and the shift penalty falls from **-27.47 to -1.93 (14x)**. **Cost:** **4.44 points of clean accuracy**, and every other perturbation moves down 3.1-6.0 points. That is the honest shape of the trade: augmentation does not add robustness on top of accuracy, it **moves accuracy from pristine inputs to realistic ones**. One asymmetry: brightness +0.20 got **1.60 points worse**, because training on shifted copies teaches nothing about global intensity. The arm's own readable-vs-plain delta of **-1.01 at one seed** is **inside the sd 2.02 spread** the fixcentre arm just measured, so it is recorded and not interpreted. Source: `lens/runs/SHIFT-AUG.txt`, `lens/runs/vision_robustness.py` on `fixc3_s0_ep24.npz`, `docs/history/SHIFT-AUG-MATCHED.md`.
