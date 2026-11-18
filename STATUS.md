@@ -6117,3 +6117,19 @@ tanh saturation: 0.00% of units beyond |preactivation| 2.0   <- not happening at
 ```
 
 Sphere radius 1.0 still forgets, and this says why: the memory operator's **average singular value is 0.7618**, so the average direction is multiplied by 0.76 every step and sixteen steps of that is 1.29% predicted retention (4.73% measured). **Tanh saturation is 0.00%** - the activations are tiny (mean 0.269), so the saturating-nonlinearity premise that motivated the gated-cell detour was wrong. `renorm_recurrent` constrained the one number that does not govern memory. New `ortho_recurrent()` projects `Wh` onto an orthogonal matrix (every singular value exactly 1.000000, verified), with two arms running: **P1 k=16 above the 10% gate at scale 1.0**, P2 1.0 trains worse than 0.98, P3 operator mean singular value above 0.90; falsifier k=16 below 6% means the decay is in the embedding or readout path instead. Source: `tools/saturation_probe.py`, `lens/runs/EVAL-R10.txt`, `docs/history/SPECTRAL-RADIUS-WRONG-DIAL.md`.
+
+### explain() now exists for the vision model, and it is exact (2026-11-18)
+
+The readable architecture's promise is that its middle layer is human-readable. That promise needs the model to be able to say **which named concepts produced an answer**, and the text, audio and speech models each had an `explain()` while the vision model had none. `lens/vision_explain.py` adds it, and it is not an attribution approximation - the model computes `logits = h @ answer.W + answer.b`, so each term `h_k * W[k, class]` **is** one named concept's exact contribution.
+
+```
+I answer Dress (score 4.453).
+  vertical_edges_dominate  fires 1.00 x weight +2.895 = +2.887   formula: mean|dI/dx| > 1.15 * mean|dI/dy|
+  bottom_half_heavier      fires 0.85 x weight +1.963 = +1.659   formula: mean(bottom 14) - mean(top 14) > 0.05
+  AGAINST: left_right_symmetric 0.85 x -1.548 = -1.313
+bias +0.227 + all 21 concept contributions +4.226052 = 4.453275 | measured 4.453275 | residual 6.99e-07
+
+identity verified on 500 images: max |bias + all contributions - logit| = 1.689e-06, 0 of 500 fail
+```
+
+`examples/explain_image.py` in the public tree reproduces it from the published weights in plain numpy, including the per-concept formulas, so a reader can recompute every concept by hand. Source: `lens/vision_explain.py`, `tools/vision_explain_check.py`, `examples/explain_image.py`.
