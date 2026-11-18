@@ -6478,3 +6478,17 @@ failing in readable only      mentions_body,      none
 The dial had stalled at 34/36 and raising it further (lam-act 2.0) started failing *common* concepts, so this arm aimed the pressure at the two failures only - `TALK_BOOST="mentions_body:3,mentions_sport:3"` at the best uniform point. **P1 MET** (36/36, zero failing), **P2 MET** (failing set shrank to empty, mean AUROC 0.7573 -> 0.7703), **P3 MET in direction** (the two now fire on 62.3% and 47.5% of windows), **falsifier did not fire** - so per-concept positive weighting **is** the mechanism and the doctrine's 'drop the concept' fallback was not needed. **This is the first time zero concepts fail.**
 
 **What it does not say:** the gate is AUROC >= 0.55 AND firing >= 2% - a minimum firing floor with **no precision requirement**. A **calibration check was attempted twice this wake and both attempts were wrong**: comparing firing against token-level support gave a fake **43.7x over-firing**, and comparing against `1-(1-p)^32` flipped it to **29 of 36 under-firing, 0 over-firing**. Neither is the right denominator - the neuron is scored at the scored position, not 'anywhere in the window' - and the audit's own per-window target vector is the only correct basis, which the script does not expose. **So no calibration claim is made**, and the script now prints that instead of a number. Stronger label-honesty - a neuron that fires *because* its concept is true - remains **unmeasured** and is the honest next question. Source: `lens/runs/BOOST-RARE.txt`, `docs/history/ALL-36-PASS.md`.
+
+### QUALIFICATION: 36/36 measures RANKING, not detection - median F1 is 0.18 (2026-11-18)
+
+```
+                                              boosted readable model, 800 windows
+median F1 at the shipped 0.5 cut                       0.081
+median BEST achievable F1 (any threshold)              0.181
+concepts with precision >= 0.5 AND recall >= 0.5
+   at the shipped 0.5 cut                               0 of 36
+   at each concept's own best cut                       3 of 36
+median positives per concept                       32 of 800 windows
+```
+
+The previous entry's **36/36** is correct on its **stated** gate and it is **not** the claim a reader would take from it, so it is qualified here. `lens/api.py#audit` now computes **precision and recall from the same score and target vectors** it already used for AUROC (the only correct basis, after two failed attempts against token-level support), and `tools/concept_pr_curve.py` sweeps the firing threshold per concept. **The gate asks a weak question**: AUROC >= 0.55 with a firing floor asks whether a neuron *ranks* positives above negatives, which it can do while being a poor detector. **Detection is weak**: even after per-concept calibration the median achievable **F1 is 0.181**, and only **3 of 36** concepts reach both precision and recall above 0.5. A neuron named `mentions_sport` that fires mostly where sport is not mentioned does not mean what its label says, however good its ranking. **So the accurate sentence is: 36 of 36 pass the AUROC-0.55 ranking gate; as detectors their median best F1 is 0.18 and 3 of 36 reach precision and recall above 0.5.** "All concepts are label-honest" is **not supported**. The next question is not *which concept is dishonest* but **how to make a concept neuron a detector rather than a ranker** - a loss with precision in it, or a readout that reports PR at a chosen operating point. Both are testable. Source: `tools/concept_pr_curve.py`, `lens/api.py`, `docs/history/RANKING-NOT-DETECTION.md`.
