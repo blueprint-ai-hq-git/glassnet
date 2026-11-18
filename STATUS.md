@@ -6463,3 +6463,18 @@ step 7500             27.20%   loss 5.8903     <- ENDPOINT
 ```
 
 By step 6000 the rate had decayed **0.03 -> 0.0030**, so the plateau was measured while the model took increasingly tiny steps. Resuming `scan12_r090_6k_ep6000` with the rate **re-warmed to 0.03** for 1500 steps, **one variable changed**: **P1 MET** (27.20% > 26.01% band top), **P2 MET** (loss 5.8903, -0.174 nats), **falsifier did not fire**, and **6 of 6** curve points sit above the old band. The effect is **+1.31 points = 1.85 SE** - just under the 2-SE bar on a single comparison - so the honest statement is that the schedule explains **part** of the plateau, worth **1.3-1.8 points**, not all of it. The shape matters more than the size: accuracy climbed for 500 steps then **flattened at ~27.3% while loss kept falling**, the same confidence-without-accuracy pattern at a higher level, so a re-warm is a **one-time lift, not a new regime**. **This exposed an n=1 problem:** the trainer hardcoded **both** `SD.init(..., seed=0)` and `default_rng(0)`, so a second independent draw was impossible. Both now follow **`SEED`** (default 0, existing arms bit-identical, recorded in checkpoint metadata), and `run_rewarm_seed1.sh` re-runs at `SEED=1` with its falsifier pre-registered: **if seed 1 stays inside 25.24-26.01%, this claim is withdrawn and the plateau stands as capacity-limited.** Source: `lens/runs/LR-REWARM.txt`, `docs/history/LR-REWARM.md`.
+
+### 36 of 36 concepts pass the label-honesty gate - first time (2026-11-18)
+
+```
+                                   lam-act 1.5    lam-act 1.5 + boost x3 on the two
+readable-only pass                  34/36               36/36      <- zero failing
+mean AUROC                          0.7573              0.7703
+mean fire rate                      14.2%               15.6%
+failing in readable only      mentions_body,      none
+                                mentions_sport
+```
+
+The dial had stalled at 34/36 and raising it further (lam-act 2.0) started failing *common* concepts, so this arm aimed the pressure at the two failures only - `TALK_BOOST="mentions_body:3,mentions_sport:3"` at the best uniform point. **P1 MET** (36/36, zero failing), **P2 MET** (failing set shrank to empty, mean AUROC 0.7573 -> 0.7703), **P3 MET in direction** (the two now fire on 62.3% and 47.5% of windows), **falsifier did not fire** - so per-concept positive weighting **is** the mechanism and the doctrine's 'drop the concept' fallback was not needed. **This is the first time zero concepts fail.**
+
+**What it does not say:** the gate is AUROC >= 0.55 AND firing >= 2% - a minimum firing floor with **no precision requirement**. A **calibration check was attempted twice this wake and both attempts were wrong**: comparing firing against token-level support gave a fake **43.7x over-firing**, and comparing against `1-(1-p)^32` flipped it to **29 of 36 under-firing, 0 over-firing**. Neither is the right denominator - the neuron is scored at the scored position, not 'anywhere in the window' - and the audit's own per-window target vector is the only correct basis, which the script does not expose. **So no calibration claim is made**, and the script now prints that instead of a number. Stronger label-honesty - a neuron that fires *because* its concept is true - remains **unmeasured** and is the honest next question. Source: `lens/runs/BOOST-RARE.txt`, `docs/history/ALL-36-PASS.md`.
