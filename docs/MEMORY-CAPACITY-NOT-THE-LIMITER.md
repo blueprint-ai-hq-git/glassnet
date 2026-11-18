@@ -17,7 +17,7 @@ delay   bank arm   control arm
   1      100.00%       3.12%
   4      100.00%       3.32%
   8      100.00%       3.03%
- 16       81.93%      at chance (control not rerun at this budget; it sat at chance at 1, 4 and 8)
+ 16       81.25%       3.22%      <- FULL budget (12000 steps)
 chance     3.12%      (vocab 32)
 ```
 
@@ -36,7 +36,8 @@ binding constraint is the **training signal**.
 
 - The synthetic task is **much easier than text**: a 32-token vocabulary, one deterministic fact per sequence, perfect recall of a single token. It bounds what the bank *can* represent, it does
   not show that it will reach the gate on natural text at this scale.
-- Delay 16 was measured at **half the training budget** (6000 steps) of delays 1-8 (12000), and its control was not rerun at that budget. A full-budget delay-16 confirmation is running.
+- Delay 16 was first read at **half** the budget (6000 steps, 81.93%) and is now confirmed at the **full** 12000-step budget: **81.25%** with its **control at 3.22%**. The two budgets agree
+  within 0.68 points, so 16-step recall **plateaus near 81%** rather than climbing to 100% - capability at 16 steps is real but does not match the perfect scores at 1, 4 and 8.
 - This says nothing yet about whether adding real-text demand *works* - that is a separate arm, in flight, with its own written predictions.
 
 ## The consequence for the line

@@ -6558,10 +6558,10 @@ delay   bank arm   control arm
   1      100.00%       3.12%
   4      100.00%       3.32%
   8      100.00%       3.03%
- 16       81.93%      at chance at 1, 4 and 8
+ 16       81.25%       3.22%      <- FULL budget (12000 steps)
 chance     3.12%      (vocab 32)
 ```
 
 The **control** (same readout, memory removed, sees only the final token) sits **exactly at chance**, so the result is attributable to the bank and not to a leak in the wiring. **The falsifier did not fire: the bank can hold a fact for 16 steps when a task demands it.** So the k=16 gate on real text fails **not because the bank cannot hold, but because ordinary text never asks it to** - capacity was never the binding constraint, the **training signal** is. Three defects were found and fixed (each paid +0.293, +0.609) and none of them was the wall.
 
-**Honest limits:** the synthetic task is much easier than text (vocab 32, one deterministic fact, single-token recall) - it bounds what the bank *can* represent, not what it will reach on natural text at this scale; delay 16 was measured at **half** the training budget (6000 steps vs 12000) with its control not rerun, and a full-budget confirmation is running. The next experiment is not another bank fix but a training objective with real cross-step demand (`TGT_DELAY`: target at position t becomes `tok[t+1-16]`), in flight now, with its own falsifier. Source: `tools/delayed_recall_probe.py`, `tools/delayed_recall_gradcheck.py`, `lens/runs/DELAYED-RECALL-16.txt`, `docs/history/MEMORY-CAPACITY-NOT-THE-LIMITER.md`.
+**Honest limits:** the synthetic task is much easier than text (vocab 32, one deterministic fact, single-token recall) - it bounds what the bank *can* represent, not what it will reach on natural text at this scale; delay 16 is now **confirmed at the full 12000-step budget: 81.25% with its control at 3.22%**, agreeing with the half-budget read (81.93%) within 0.68 points, so 16-step recall **plateaus near 81%** rather than reaching the 100% seen at 1, 4 and 8. The next experiment is not another bank fix but a training objective with real cross-step demand (`TGT_DELAY`: target at position t becomes `tok[t+1-16]`), in flight now, with its own falsifier. Source: `tools/delayed_recall_probe.py`, `tools/delayed_recall_gradcheck.py`, `lens/runs/DELAYED-RECALL-16.txt`, `docs/history/MEMORY-CAPACITY-NOT-THE-LIMITER.md`.
