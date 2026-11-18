@@ -6624,3 +6624,25 @@ delay 4, per-window constant = 14.68%
 **The gain is +7.92 points and it is not marginal** - the arm crosses from 3.04 points below a constant predictor to 4.88 points above it in 250 steps. Compare delay 16: base 5.83% -> arm 8.67%, **+2.84 points**. **So the gain is larger at the SHORT delay**, the opposite of what was predicted: demand training helps most where the base model was already capable, and least at the long delay that motivated the experiment.
 
 **Why this is not the win it looks like:** at a 4-step delay the target is 4 tokens back and was in the model's recent input, so much of 19.57% is recent-token carry rather than memory - this model's measured effective context is only ~2-4 tokens. The result says the shifted-target objective can **reshape the readout where the information is already present**, which is narrower than "memory works". **Caveats:** 250 of 1000 steps, one checkpoint, one seed, one arm per delay - the endpoint decides. Source: `tools/eval_delayed_ci.py`, `docs/history/DEMAND-MAKES-MEMORY.md`.
+
+### WITHDRAWN: "demand training creates 16-step memory" - refuted by a frequency split (2026-11-18)
+
+**The interpretation behind three entries today does not survive a control that splits accuracy by target-token frequency, and it is withdrawn.** Frequency ranks computed on the training region only:
+
+```
+delay 4    (250 steps)     top-20    r21-500    tail (888)
+  td4 arm                  35.16%     4.83%      0.00%
+  base                     19.61%     4.75%      0.00%
+  same-window constant     24.87%     5.56%      0.56%
+
+delay 16   (1000 steps)    top-20    r21-500    tail (892)
+  td16 arm                 16.15%     1.60%      0.00%
+  base                     10.09%     2.14%      0.00%
+  same-window constant     23.65%     6.85%      0.56%
+```
+
+**All the gain is in the frequent band** (+15.55 points on top-20 at delay 4, +0.08 at ranks 21-500, **0.00** on the tail), and **rare-token recall is exactly zero at both delays** - 0 correct out of 888 and 892 positions against a constant that gets 0.56%, where a single hit would show as 0.11%. At delay 16 the arm is below a per-window constant predictor in **every band**. So the delayed-target objective changed **how probability mass is distributed across frequent tokens** - a readout/prior shift - and did **not** create token-specific memory. The earlier "above a fair constant predictor" framing was measuring that prior shift.
+
+**Why it looked positive:** the comparisons were **pooled**, and pooling is dominated by the top-20 tokens - 3325 of 6552 scored positions. The band where memory would have to show sat at zero the whole time. A pooled comparison hides exactly the failure this project exists to catch.
+
+**What still stands:** the memory module holds a fact for 16 steps *in isolation* (81.25%, control at chance, gradient certified 6.789e-08, one bank per sample) - a different measurement with a different control, untouched by this. The bank's +3.45 accuracy points are real as an accuracy difference but sit in the same band, so they are not memory evidence either. **New rule:** a pooled accuracy gain is not evidence of the capability the task is named after; any recall claim is split by target frequency first, because the frequent band alone can carry a pooled number. This control should have run before the first publication, not after three. Source: `tools/eval_delayed_split.py`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
