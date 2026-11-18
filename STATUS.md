@@ -6384,3 +6384,15 @@ shift 2 px right                  57.00%            78.10%         +21.10
 ```
 
 Matched control: **same parity config, same seed, no augmentation** (`fixc3_s0_ep24`, 15,977 params) against the augmented model (`shiftaug_s0_ep24`). **Bought:** under a 2-pixel shift the augmented model scores **78.10%** against the control's **57.00%** - a **+21.10-point** improvement, and the shift penalty falls from **-27.47 to -1.93 (14x)**. **Cost:** **4.44 points of clean accuracy**, and every other perturbation moves down 3.1-6.0 points. That is the honest shape of the trade: augmentation does not add robustness on top of accuracy, it **moves accuracy from pristine inputs to realistic ones**. One asymmetry: brightness +0.20 got **1.60 points worse**, because training on shifted copies teaches nothing about global intensity. The arm's own readable-vs-plain delta of **-1.01 at one seed** is **inside the sd 2.02 spread** the fixcentre arm just measured, so it is recorded and not interpreted. Source: `lens/runs/SHIFT-AUG.txt`, `lens/runs/vision_robustness.py` on `fixc3_s0_ep24.npz`, `docs/history/SHIFT-AUG-MATCHED.md`.
+
+### 6000 steps: the plateau holds, and a silent no-op bug in the resume path (2026-11-18)
+
+```
+step  3,000   4,500   5,000   5,500   5,750   6,000      (104 chunks, SE 0.50)
+acc   23.95%  25.35%  25.24%  25.76%  26.01%  25.89%
+loss  6.3261  6.1303  6.1148  6.0826  6.0662  6.0640
+```
+
+**Original P1 (>= 24% at 6000) MET** at 25.89%. **Restated P1 (>= 26%) MISSED by 0.11 points** - recorded as missed, because a gate stated as a number and not reached is missed, and redefining it afterwards is what this project forbids. **Plateau band 4500-6000: 25.24-26.01%, a 0.77-point spread against a 0.50-point SE.** The 3000->4500 span gained **+1.40 points (2.8 SE)**; 4500->6000 gained **+0.54 points (1.1 SE)**, an interval including zero. **Conclusion: at radius 0.9 with a 32-token window this recipe plateaus at ~25.5-26% after ~4,500 steps (~9M tokens).** Not data exhaustion - one epoch is 294M tokens and 12.3M were seen, ~4% of a pass.
+
+**Bug found and fixed in the same wake:** `STEPS` was an absolute end step, so the queued memory arm (`RESUME` at step 3000, `STEPS=1500`) built `range(3001, 1501)` - an **empty loop**. It would have loaded the resumed weights, trained **zero** steps, and printed held-out numbers belonging to the model it started from, with a `COMPLETE` line. A larger `START_STEP` would also have produced a **negative learning rate**. Now `STEPS` means **additional** steps when resuming, both the loop and the schedule are relative to the resume point, a fresh run is unchanged (`steps=2 (from 0 to 2)`), a resume reports `steps=1500 (from 3000 to 4500)`, and a guard **refuses to run** if the resume point is at or past the end. Source: `lens/scripts/train_scan9.py`, `docs/history/PLATEAU-AND-RESUME-BUG.md`.
