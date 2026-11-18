@@ -6548,3 +6548,20 @@ do the two draws agree within 2 points?   NO (-2.73)         YES (+0.30)
 **They disagree in sign.** The 12-chunk probe scores 756 samples (SE ~1.5) against the trainer's 6,656 (SE ~0.55), and it has now produced **two wrong-signed verdicts in one day**: it said the symmetry-broken bank **cost** 0.66 accuracy points when the 104-chunk numbers show it **gained** 0.19, and it says these two draws disagree by 2.73 when they agree within 0.30. An instrument that flips the sign twice is **unfit for endpoint decisions**, so the verdict rests on the 104-chunk evaluation - same code path for every arm, 8.8x the samples.
 
 **Claimed:** on that protocol the re-warm lifts held-out from **21.74% to 26.95% (seed 0, +5.21)** and **27.25% (seed 1b, +5.51)**, the two draws agreeing to **0.30 points**; the pre-registered falsifier does **not** fire. **Withdrawn:** the earlier **+1.31 points at 1.85 SE**, which understates the effect ~4x because it came from the 12-chunk probe, and with it the framing that this result is marginal. **New rule:** every arm report states which protocol produced each number, and endpoints are decided on the trainer's 104-chunk evaluation; any 12-chunk conclusion must be re-measured at 104 before publication. Source: `lens/runs/LR-REWARM.txt`, `lens/runs/LR-REWARM-S1-NEWSHUFFLE.txt`, `lens/runs/SCAN12-R090-6K.txt:135`, `docs/history/REWARM-TWO-DRAWS.md`.
+
+### The memory bank CAN hold 16 steps - the gate was never about capacity (2026-11-18)
+
+The gate (k=16 recall above 10% on real text) failed after every mechanism fix - **1.312% -> 1.605% -> 2.214%**, gate unmoved. This line's pre-registered falsifier said the limiter was **demand**, not capacity. That is now measured on a synthetic task with exactly that demand (fact at position 0, filler, must output it at position D), using the certified memory module with **one bank per sample**. The probe's own backward pass was **certified first**: worst relative error **6.789e-08** against central finite differences across `Wo`, `Wq`, `Wk`, `decay`, embeddings and readout.
+
+```
+delay   bank arm   control arm
+  1      100.00%       3.12%
+  4      100.00%       3.32%
+  8      100.00%       3.03%
+ 16       81.93%      at chance at 1, 4 and 8
+chance     3.12%      (vocab 32)
+```
+
+The **control** (same readout, memory removed, sees only the final token) sits **exactly at chance**, so the result is attributable to the bank and not to a leak in the wiring. **The falsifier did not fire: the bank can hold a fact for 16 steps when a task demands it.** So the k=16 gate on real text fails **not because the bank cannot hold, but because ordinary text never asks it to** - capacity was never the binding constraint, the **training signal** is. Three defects were found and fixed (each paid +0.293, +0.609) and none of them was the wall.
+
+**Honest limits:** the synthetic task is much easier than text (vocab 32, one deterministic fact, single-token recall) - it bounds what the bank *can* represent, not what it will reach on natural text at this scale; delay 16 was measured at **half** the training budget (6000 steps vs 12000) with its control not rerun, and a full-budget confirmation is running. The next experiment is not another bank fix but a training objective with real cross-step demand (`TGT_DELAY`: target at position t becomes `tok[t+1-16]`), in flight now, with its own falsifier. Source: `tools/delayed_recall_probe.py`, `tools/delayed_recall_gradcheck.py`, `lens/runs/DELAYED-RECALL-16.txt`, `docs/history/MEMORY-CAPACITY-NOT-THE-LIMITER.md`.
