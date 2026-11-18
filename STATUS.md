@@ -6396,3 +6396,16 @@ loss  6.3261  6.1303  6.1148  6.0826  6.0662  6.0640
 **Original P1 (>= 24% at 6000) MET** at 25.89%. **Restated P1 (>= 26%) MISSED by 0.11 points** - recorded as missed, because a gate stated as a number and not reached is missed, and redefining it afterwards is what this project forbids. **Plateau band 4500-6000: 25.24-26.01%, a 0.77-point spread against a 0.50-point SE.** The 3000->4500 span gained **+1.40 points (2.8 SE)**; 4500->6000 gained **+0.54 points (1.1 SE)**, an interval including zero. **Conclusion: at radius 0.9 with a 32-token window this recipe plateaus at ~25.5-26% after ~4,500 steps (~9M tokens).** Not data exhaustion - one epoch is 294M tokens and 12.3M were seen, ~4% of a pass.
 
 **Bug found and fixed in the same wake:** `STEPS` was an absolute end step, so the queued memory arm (`RESUME` at step 3000, `STEPS=1500`) built `range(3001, 1501)` - an **empty loop**. It would have loaded the resumed weights, trained **zero** steps, and printed held-out numbers belonging to the model it started from, with a `COMPLETE` line. A larger `START_STEP` would also have produced a **negative learning rate**. Now `STEPS` means **additional** steps when resuming, both the loop and the schedule are relative to the resume point, a fresh run is unchanged (`steps=2 (from 0 to 2)`), a resume reports `steps=1500 (from 3000 to 4500)`, and a guard **refuses to run** if the resume point is at or past the end. Source: `lens/scripts/train_scan9.py`, `docs/history/PLATEAU-AND-RESUME-BUG.md`.
+
+### Training length DID teach the model to use context: ~2 tokens -> ~16 (2026-11-18)
+
+```
+L       6000-step    old 1500-step        (1,500 chunks per length, SE ~1.05)
+1        13.07%          9.27%
+2        20.33%         16.73%
+16       24.13%         17.40%
+32       22.47%         16.73%
+128      22.07%         16.40%
+```
+
+**The 6000-step model gains +3.80 points going from 2 to 16 tokens of context (2.5 SE, RESOLVABLE). The 1500-step model gained +0.67 points (0.5 SE, nothing)** - and that null result is what produced the published "effective context = 2 tokens". So **that figure was true of the model it was measured on and is false as an architectural claim**: for `scan9_ep1500` it is 2 tokens, for `scan12_r090_6k_ep6000` it is **at least 16** in a 32-token window, with no resolvable gain past that (L=32 reads 22.47% and L=128 22.07%, both below L=16's 24.13% at -1.1 and -1.9 SE, so the dips are noise and the honest reading is a plateau, not a peak). **Training length fixed something the accuracy number badly understates** - the model learned to use context it previously ignored - and it bounds the ceiling: more steps stopped helping while context use was still improving, so the remaining limit is **capacity or mechanism, not the schedule and not the amount of text**. `effective_context_tokens` must be **per-model**, since it changes with training. Source: `tools/context_curve.py` on `scan12_r090_6k_ep6000.npz`, `docs/history/CONTEXT-DEPENDS-ON-TRAINING.md`.
