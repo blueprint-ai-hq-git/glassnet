@@ -6320,3 +6320,14 @@ scan11_r090_ep3000 (r=0.9)        21.03%            23.95%           +2.92
 ```
 
 The protocol scored **12 chunks = 768 positions**, SE **1.47 points** - it could not resolve anything under ~2.9 points, and it was being used to argue about 1-point effects. The power calculation: to resolve 1 point at 95% needs **~6,636 scored positions = 104 chunks** (SE 0.50). Scored that way, **all three checkpoints are 2.9-4.0 points higher** - not because the estimator is biased but because every model shared the *same* unrepresentative first twelve chunks. **What survives:** the ordering and every paired comparison (same sample). **What is corrected:** radius 0.9 at 3000 steps is **23.95%** not 21.03%; radius 1.0 is **20.83%** not 16.80%; scan9 is **19.67%** not 16.27%. **What got sharper:** the radius-0.9 advantage is **3.12 points at ~4.4 SE**, resolvable, where it was previously a 2-SE call. Also: the 6000-step arm's P1 is restated - its baseline is 23.95%, not 21.03%, so the honest prediction is **>= 26%**, and 24% should not be counted as success. `tools/eval_radius_arm.py` now defaults to **EVAL_CHUNKS=104**. Source: `docs/history/EVAL-PROTOCOL-TOO-SMALL.md`.
+
+### The activation penalty works: 30/36 -> 34/36 concepts honest (2026-11-18)
+
+```
+lam-act   pass     mean AUROC   mean fire rate   failing concepts
+0.0      30/36      0.6886         47.4%         is_a_list, mentions_a_name, mentions_a_quantity, mentions_body, mentions_family, mentions_sport
+0.3      32/36      0.7038         36.2%         mentions_a_name, mentions_a_quantity, mentions_body, mentions_sport
+1.0      34/36      0.7370         20.1%         mentions_body, mentions_sport
+```
+
+`--lam-act` had been **0.0 in every run this project has ever done**; raising it takes label-honest concepts from **30/36 (83.3%) to 34/36 (94.4%)** and cuts the mean firing rate from **47.4% to 20.1%** (supports are 0.6-14%, so the neurons were firing 5-20x too often). **P1 and P3 held; P2 FAILED** (mean AUROC 0.7370 against a 0.80 target), and the falsifier did not fire but only just - 0.7370 is 0.017 above its 0.72 line. The two remaining failures are `mentions_body` (1.32%) and `mentions_sport` (1.43%), but **rarity is not the whole story**: `mentions_a_name` has the *lowest* support (0.82%) and now passes. Next test (lam-act 1.5 and 2.0, pre-registered) checks whether the dial saturates; if it does, the remaining two need per-concept positive weighting rather than more uniform pressure. Source: `lens/runs/CONCEPT-ACT.txt`, `docs/history/CONCEPT-ACT-WORKS.md`.
