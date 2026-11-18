@@ -6356,3 +6356,16 @@ step 5500                          25.76%                  6.0826
 ```
 
 **Accuracy has plateaued.** From step 4500 to 5500 the readings are 25.35 / 25.24 / 25.76 - a spread of **0.52 points against a 0.50-point standard error**, i.e. flat - and the 2500 steps from 3000 to 5500 bought **+1.81 points** against the **+3.83** that 1500-to-3000 bought. **But loss has not plateaued**: it falls monotonically, **-0.24 nats** over the same stretch. **The model is getting more confident, not more correct.** Scoring: the arm's **original P1 (>= 24% at 6000) is MET**, already at step 4500; the **restated P1 (>= 26%)**, after the eval correction moved its baseline to 23.95%, reads **25.76% at step 5500** and must be judged on the final checkpoint, not extrapolated. **This closes the 'just train longer' line with a measured floor**: more training stopped buying accuracy around step 4500 at ~25.5%, and that was only visible because the eval was made four standard errors tighter than the one that started the line. Source: `lens/runs/chat/scan12_r090_6k_ep*.npz`, `docs/history/PLATEAU-MEASURED.md`.
+
+### Every concept is honest on every seed, and the accuracy gap is not resolvable (2026-11-18)
+
+```
+seed   READABLE   PLAIN    delta        concepts    centre_heavier AUROC   fire vs truth
+  0    15,977     15,910   -0.14 pts     21/21            0.9676            28.0% vs 22.9%
+  1    15,977     15,910   -1.75 pts     21/21            0.9412            34.0% vs 22.9%
+  2    15,977     15,910   +2.26 pts     21/21            0.9327            37.9% vs 22.9%
+```
+
+**21 of 21 concepts label-honest on all three seeds, 0 failing** - the first time this project has measured that. `centre_heavier` had scored **AUROC 0.3196 (below chance)** because its formula fired on **96.8%** of images; moving its threshold 0.05 -> **0.40** (support 96.9% -> 22.9%) took it to a **mean 0.9472** and made its firing track its support (28-38% vs 22.9%). The defect was in the *definition*, not the model.
+
+**And the readable-vs-plain gap is NOT resolvable:** gaps -0.14 / -1.75 / +2.26 give **mean +0.12 points, sd 2.02, 95% interval [-3.11, +3.36]**, which includes zero. This puts the earlier single-seed claims in context: **-1.47 (width21), -1.46 (parity49) and -1.53 all sit inside this arm's seed spread.** A single-seed gap of -1.5 is an ordinary draw from a distribution averaging +0.12, so the readable model is **not demonstrably worse - and not demonstrably better**, and the mechanism questions asked about the "gap" were asked about a quantity with no resolvable sign. Settling it needs 8-12 seeds, where the SE of the mean falls to 0.6-0.7 points. Source: `lens/runs/FIX-CENTRE.txt`, `docs/history/ALL-CONCEPTS-HONEST.md`.
