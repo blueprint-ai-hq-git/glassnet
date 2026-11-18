@@ -6409,3 +6409,16 @@ L       6000-step    old 1500-step        (1,500 chunks per length, SE ~1.05)
 ```
 
 **The 6000-step model gains +3.80 points going from 2 to 16 tokens of context (2.5 SE, RESOLVABLE). The 1500-step model gained +0.67 points (0.5 SE, nothing)** - and that null result is what produced the published "effective context = 2 tokens". So **that figure was true of the model it was measured on and is false as an architectural claim**: for `scan9_ep1500` it is 2 tokens, for `scan12_r090_6k_ep6000` it is **at least 16** in a 32-token window, with no resolvable gain past that (L=32 reads 22.47% and L=128 22.07%, both below L=16's 24.13% at -1.1 and -1.9 SE, so the dips are noise and the honest reading is a plateau, not a peak). **Training length fixed something the accuracy number badly understates** - the model learned to use context it previously ignored - and it bounds the ceiling: more steps stopped helping while context use was still improving, so the remaining limit is **capacity or mechanism, not the schedule and not the amount of text**. `effective_context_tokens` must be **per-model**, since it changes with training. Source: `tools/context_curve.py` on `scan12_r090_6k_ep6000.npz`, `docs/history/CONTEXT-DEPENDS-ON-TRAINING.md`.
+
+### The activation dial is characterised: pass count peaks at lam-act 1.0-1.5, then falls (2026-11-18)
+
+```
+lam-act   pass     mean AUROC   mean fire   failing concepts
+0.0      30/36      0.6886        47.4%     is_a_list, mentions_a_name, mentions_a_quantity, mentions_body, mentions_family, mentions_sport
+0.3      32/36      0.7038        36.2%     mentions_a_name, mentions_a_quantity, mentions_body, mentions_sport
+1.0      34/36      0.7370        20.1%     mentions_body, mentions_sport
+1.5      34/36      0.7573        14.2%     mentions_body, mentions_sport
+2.0      32/36      0.7767        10.5%     mentions_a_quantity, mentions_body, mentions_sport, mentions_time
+```
+
+**AUROC rises monotonically across the whole range, but the pass count peaks and then falls** (30 -> 32 -> 34 -> 34 -> 32). That is the mechanism the arm predicted before it ran: **uniform pressure that keeps climbing stops helping the rare concepts and starts suppressing the common ones** - at 2.0, `mentions_a_quantity` (**13.9% support**, not rare) and `mentions_time` drop out because the pressure is so strong a genuinely-present concept cannot make its neuron fire. Scoring: **P1 HELD** (AUROC 0.7767 >= 0.76), **P2 FAILED** (two new failures at 2.0), **P3 FAILED** (34/36 at 1.5, 32/36 at 2.0), falsifier did not fire. **Honest operating point: lam-act 1.0-1.5, 34/36 (94.4%)**; 1.5 dominates 1.0 because it reaches the same pass count with a higher AUROC (0.7573 vs 0.7370) and lower fire rate (14.2% vs 20.1%). **Uniform activation pressure is finished as a mechanism** - it bought 30/36 -> 34/36 and then began costing what it had bought. Next: `TALK_BOOST` per-concept positive weighting aimed only at `mentions_body` (1.32%) and `mentions_sport` (1.43%), with the doctrine's fallback pre-registered - if they still fail at 3x, they are **DROPPED, never forced**, and the report becomes 34/34 = 100% honest. Source: `lens/runs/CONCEPT-ACT.txt`, `lens/runs/CONCEPT-ACT2.txt`, `docs/history/ACT-DIAL-CHARACTERISED.md`.
