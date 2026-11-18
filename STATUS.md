@@ -6035,3 +6035,16 @@ delta -1.47 points   concepts passing 20/21   (13-concept run: -1.53)
 ```
 
 **The gap did not move (-1.53 -> -1.47, noise).** The plain control is sized to match *parameter count*, so adding concepts also grew the control's hidden layer. The arithmetic is the mechanism: one concept unit costs **1034** params (16 patches x 64 dims + 10 answer weights) against a plain unit's **794** (784 pixels + 10), a ratio of **1.30**, so at matched parameters the readable model gets **68-77% of the units** (measured 21 vs 31). A named concept sits on a wider input than a plain hidden unit. Next arm: `d=49` makes 16x49=784 concept features - exact per-unit parity - with P1 unit parity, P2 gap within +-0.5, and a falsifier of still <=-1.0. Source: `lens/runs/WIDTH-MATCH-21.txt`, `docs/history/UNIT-COST-NOT-WIDTH.md`.
+
+### The readability cost is in the concept representation; width, unit cost and the answer head are ruled out (2026-11-18)
+
+```
+13 concepts, d=64                    -1.53   (3 seeds)
+21 concepts, d=64                    -1.47
+21 concepts, d=49 (unit-cost parity) -1.46   <- falsifier FIRED
+
+answer head on FROZEN concepts:  linear 83.23% | 40 pair rules 83.49% | ALL 78 pairs 84.18% | plain 86.42%
+                                 -> +0.26 / +0.95 points, still 2.2 under plain  <- falsifier FIRED
+```
+
+Raising concepts 13->21 moved the gap 0.06 points; equalising per-unit parameter cost moved it 0.01. Giving the answer layer **rules** ("concept A and concept B" - still fully readable) recovered at most **+0.95** of the deficit. So the cost is not width, not unit cost and not the linear head: **it is the concept representation itself** - a layer forced to match one named formula per unit is a weaker encoder than a free hidden layer of equal size. The number this project reports is therefore **~1.5 points at matched parameters, in exchange for 100% of the middle layer being human-checkable** (21 of 21 honest; zeroing the layer drops 84.15% -> 10.17%, shuffling -> 9.55%, so it is load-bearing). One arm left on this line: give readable a 3x unit advantage (patch 14 x d 56) and see whether capacity, not the constraint, was the story. Source: `lens/runs/UNIT-COST-PARITY.txt`, `tools/rule_answer_probe.py`, `docs/history/READABILITY-COST-LOCATED.md`.
