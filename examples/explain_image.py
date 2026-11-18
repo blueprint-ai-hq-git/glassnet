@@ -25,7 +25,8 @@ def forward(t, cfg, image):
     n = 28 // patch
     x = np.asarray(image, dtype=np.float32).reshape(28, 28)
     patches = np.stack([x[i * patch:(i + 1) * patch, j * patch:(j + 1) * patch].ravel() for i in range(n) for j in range(n)])
-    feats = np.tanh(patches @ t["patch_proj.W"] + t["patch_proj.b"])          # (n*n, d)
+    feats = patches @ t["patch_proj.W"] + t["patch_proj.b"]                    # (n*n, d) - NO activation: PatchEmbed is a
+                                                                              # pure linear projection, checked against lens/vision.py
     h = 1.0 / (1.0 + np.exp(-(feats.ravel() @ t["concept.W"] + t["concept.b"])))  # (K,) named concepts
     logits = h @ t["answer.W"] + t["answer.b"]
     return h, logits
