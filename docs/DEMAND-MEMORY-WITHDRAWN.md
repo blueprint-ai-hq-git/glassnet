@@ -227,3 +227,37 @@ delay 16, td16_r090_ep7000, 1040 windows
 - **The tail zero survives and is now solid**: 0 of 8727, true rate **< 0.034%**.
 - **The delay-4 frequent band survives**: 82.37% vs a 25.17% constant, reproduced at high N within 0.63 points.
 - **The erosion question is now OPEN, not answered** - the four checkpoints must be re-measured at 1040 windows before any trend claim can be made.
+
+
+---
+
+# CORRECTION TO MY OWN RETRACTION: it is over-dispersion, not prefix bias (2026-11-18 21:02)
+
+Ten minutes after publishing the retraction above, I re-read the evaluator's draw loop and found **my stated cause was wrong**.
+
+```python
+rr = np.random.default_rng(4242)
+for _ in range(NCHUNK):
+    i = int(rr.integers(hi, len(ids) - CHUNK - 2))
+```
+
+The positions are drawn **i.i.d. uniform**. So the first 104 windows are a valid uniform random subset of the corpus, **not** a biased "prefix". My sentence "*prefix-selected windows are ~5x easier*" implied a systematic selection effect that does not exist.
+
+## What actually happened, with the arithmetic
+
+```
+mid band (ranks 21-500), delay 16, td16_r090_ep7000, same checkpoint
+  first 104 windows :  38 hits /  104 windows = 0.365 per window
+  remaining 936     :  62 hits /  936 windows = 0.066 per window
+
+if the first-104 rate had held, the remaining 936 windows would give 342 hits - they gave 62 (18.1%)
+```
+
+An unbiased draw cannot be 5x off by bias. It is off because **hits cluster inside a minority of windows**, so the effective sample size is the *window count*, not the *position count*. A 104-window sample can land on one or two hit-carrying windows and read several times too high; that is **over-dispersion**, the window-level clustering already established for pooled numbers.
+
+## Why the distinction matters
+
+- **The conclusion is unchanged** and the retraction stands: the erosion claim used independent-position arithmetic, and 104 windows is far too few for a band whose true rate is ~0.1%. Low-N band figures are unreliable **by a factor of several, in either direction**.
+- **What changes** is what those numbers are allowed to imply. They are **not systematically optimistic** - I must not write "the old figures were inflated", only "the old figures had unusable uncertainty". The corrected high-N magnitudes stand as the measured values; the earlier ones are simply not measurements of that quantity at that resolution.
+
+**Lesson recorded:** "the same checkpoint reads 4x differently at 10x sample" has two candidate causes - a biased instrument, or an over-dispersed quantity - and they license different language. Naming the wrong one turned a correct retraction into an incorrect accusation of my own tooling. Check the draw before blaming the draw.

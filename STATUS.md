@@ -6675,7 +6675,7 @@ chi-square vs uniform   30.5    df 31    5% critical ~43.8   -> consistent with 
 
 ### WITHDRAWN: extended training at a 16-step delay - the "erosion" claim and its z=3.35 (2026-11-18)
 
-**RETRACTED.** This section claimed a resolvable erosion with z = 3.35. It is withdrawn for two defects, both mine: the test treated 2379 """positions""" as independent when 64 positions share a window's recurrent state and bank, and the low-N band figure was biased because the evaluator's seeded RNG makes 104 windows a strict **prefix** of the 1040-window draw (same checkpoint: 1.60% on the first 104 windows, 0.43% on all 1040 - the first chunk is ~5x easier). Corrected high-N numbers below. Original text kept for the record:
+**RETRACTED.** This section claimed a resolvable erosion with z = 3.35. It is withdrawn for two defects, both mine: the test treated 2379 """positions""" as independent when 64 positions share a window's recurrent state and bank, and the low-N band figure came from a draw so small it is unusable - **not** by bias, as I first wrote, but by over-dispersion: the evaluator's positions are i.i.d. uniform, so the estimate is unbiased yet hits cluster inside a minority of windows (same checkpoint, ranks 21-500: first 104 windows 38 hits / 0.365 per window, remaining 936 windows 62 hits / 0.066 per window = 18.1% of what the first-104 rate predicted). See the correction entry below. Corrected high-N numbers below. Original text kept for the record:
 
 ```
 delay 16, ranks 21-500 band, n = 2379 positions per checkpoint
@@ -6727,3 +6727,17 @@ delay 16, td16_r090_ep7000, 1040 windows
 ```
 
 At the larger sample the delay-16 arm is **below** the trivial same-window constant on **every** band, the middle band by about **10x** (0.43% vs 4.26%). The earlier reading of "8.67% vs a 6.59% constant, so delay 16 slightly beats trivial" was propped up by **prefix-selected windows**: the evaluator draws from a seeded RNG, so 104 windows is a strict prefix of the 1040-window draw, and that first chunk is ~5x easier (1.60% vs 0.43% on the same checkpoint). **What survives:** the tail zero (0 of 8727, true rate < 0.034%) and the delay-4 frequent band (82.37% vs 25.17%, reproduced within 0.63 points). Source: `lens/runs/TAIL-HIGHN.txt`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
+
+### Correction to my own retraction: it is over-dispersion, not prefix bias (2026-11-18)
+
+Ten minutes after retracting the erosion claim I re-read the evaluator and found **my stated cause was wrong**. The positions are drawn **i.i.d. uniform** (`rr = np.random.default_rng(4242); i = rr.integers(...)`), so the first 104 windows are a valid uniform random subset - **not** a biased prefix. The arithmetic:
+
+```
+mid band (ranks 21-500), delay 16, td16_r090_ep7000, same checkpoint
+  first 104 windows :  38 hits /  104 windows = 0.365 per window
+  remaining 936     :  62 hits /  936 windows = 0.066 per window
+
+if the first-104 rate had held, the remaining 936 windows would give 342 hits - they gave 62 (18.1%)
+```
+
+An unbiased draw cannot be 5x off by bias. It is off because **hits cluster inside a minority of windows**, so the effective sample size is the *window count*, not the *position count* - **over-dispersion**, the same window-level clustering already established for pooled numbers. **The retraction stands** (the erosion claim used independent-position arithmetic, and 104 windows is far too few for a band whose true rate is ~0.1%), but **the corrected language matters**: those figures are **not systematically optimistic**, they are unreliable by a factor of several in either direction. "The same checkpoint reads 4x differently at 10x sample" has two candidate causes - a biased instrument or an over-dispersed quantity - and they license different claims. Naming the wrong one turned a correct retraction into an incorrect accusation of my own tooling. **Check the draw before blaming the draw.** Source: `docs/history/DEMAND-MEMORY-WITHDRAWN.md`, `tools/eval_delayed_split.py`.
