@@ -6075,3 +6075,17 @@ P1 mean parity HOLDS | P2 gap sd <= 0.6 FAILED (1.66) | P3 honesty>=85% HOLDS | 
 ```
 
 **Parity holds for the mean (+0.26 points) and fails for the spread**: the gap is a coin flip per seed. But the readable model is tightly clustered (spread 0.82) while the plain control jumps **4.28 points** between seeds - **5.4x more seed-to-seed variation**. Same data, same recipe, so this is the architectures: one wide free hidden layer lands in different local minima, while 21 units pinned to named formulas are constrained in what they can learn. **With n=3 that spread difference is a hypothesis, not a result**, and an 8-seed run is in flight with a falsifier that retracts it if the plain sd drops below 1.0. Source: `lens/runs/CAPADV-SEEDS.txt`, `docs/history/PARITY-IN-MEAN-NOT-SPREAD.md`.
+
+### The recurrent clamp is causally responsible for the forgetting: 5.4x more memory, at 3 points of accuracy (2026-11-18)
+
+```
+                       radius 1.0     radius 0.9
+Wh spectral radius      1.0000         0.9000      <- clamp verified to do what it claims
+held-out (teacher-forced)  13.23%         16.27%     <- 3.04 points WORSE unclamped
+free-running             5.81%          5.00%      paired CI [-1.38,+3.00] NOT RESOLVABLE
+memory k=16              4.730%         0.878%     <- 5.4x better unclamped
+memory k=32              0.587%         0.079%     <- 7.4x
+memory k=1              39.144%        50.383%     <- 0.8x: the clamped model is reactive and forgets fast
+```
+
+Two arms, same recipe, same seed, 1500 steps, **one number changed**. Unclamping the recurrent matrix multiplies long-range memory by **5.4x at k=16** and **7.4x at k=32**, so the clamp is the *cause* of the forgetting, not a correlate. It costs **3.04 points** of teacher-forced accuracy, does **not** make the model generate (free-running difference unresolvable), and still **fails** the 10% memory gate at 4.73%. Next, pre-registered: two matched 3000-step arms to test whether the accuracy cost is training-length or the radius itself (falsifier: gap >= 2.5 points at 3000 steps means the trade is permanent). Source: `lens/runs/EVAL-R10.txt`, `lens/runs/SCAN-R10-RADIUS1.txt`, `docs/history/CLAMP-IS-THE-CAUSE.md`.
