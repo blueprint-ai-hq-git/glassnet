@@ -6492,3 +6492,19 @@ median positives per concept                       32 of 800 windows
 ```
 
 The previous entry's **36/36** is correct on its **stated** gate and it is **not** the claim a reader would take from it, so it is qualified here. `lens/api.py#audit` now computes **precision and recall from the same score and target vectors** it already used for AUROC (the only correct basis, after two failed attempts against token-level support), and `tools/concept_pr_curve.py` sweeps the firing threshold per concept. **The gate asks a weak question**: AUROC >= 0.55 with a firing floor asks whether a neuron *ranks* positives above negatives, which it can do while being a poor detector. **Detection is weak**: even after per-concept calibration the median achievable **F1 is 0.181**, and only **3 of 36** concepts reach both precision and recall above 0.5. A neuron named `mentions_sport` that fires mostly where sport is not mentioned does not mean what its label says, however good its ranking. **So the accurate sentence is: 36 of 36 pass the AUROC-0.55 ranking gate; as detectors their median best F1 is 0.18 and 3 of 36 reach precision and recall above 0.5.** "All concepts are label-honest" is **not supported**. The next question is not *which concept is dishonest* but **how to make a concept neuron a detector rather than a ranker** - a loss with precision in it, or a readout that reports PR at a chosen operating point. Both are testable. Source: `tools/concept_pr_curve.py`, `lens/api.py`, `docs/history/RANKING-NOT-DETECTION.md`.
+
+### Breaking the memory bank's symmetry pays, but late (2026-11-18)
+
+The 8-slot bank had a proven defect - every slot ended with a **bit-identical** decay, so it was one slot with eight times the write rate. Per-slot decay init (`MEM_SYM=1`) fixes it. **The benefit is delayed, which is why one checkpoint would have given the wrong answer:**
+
+```
+                                  symmetric      symmetry-broken
+slot decay spread (max-min)       0.000000          0.049954   at step 3250
+                                                    0.064555   at step 3750
+k=16 memory, step ~3250             1.550%             1.512%   <- no benefit yet
+k=16 memory, step ~3750             1.605%             2.254%   <- +0.649 pts, +40% relative
+held-out teacher-forced            21.03%             21.16%
+loss                              6.3199             6.3322
+```
+
+At step 3250 the differentiated bank was marginally **worse**; by 3750 it is clearly better, **+0.649 points at +40% relative**, with held-out slightly up. So the symmetry defect was **suppressing** memory and the slots keep diverging (0.0500 -> 0.0646). **But the memory gate is 10% and the best measurement is 2.254%, so the gate still FAILS by 4.4x** - symmetry was a real but small part of the gap. Caveat: ep3750 is compared against the symmetric arm's ep3500 because that arm stopped there, so 250 steps of training length sit inside the gain; the clean number is the endpoint at 4500. Two real defects have now been fixed in this mechanism (symmetry collapse, missing `dM` gradient path) and k=16 moved **1.312% -> 1.605% -> 2.254%** with the gate unmoved - the signature of a mechanism that is right but **starved** of training signal, exactly what the pre-registered falsifier for this arm predicted. Source: `lens/runs/MEMCHAN-SYM.txt`, `lens/runs/MEMCHAN-SYM-RESUME.txt`, `docs/history/MEMORY-SYMMETRY-PAYS-LATE.md`.
