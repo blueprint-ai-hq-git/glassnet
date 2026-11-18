@@ -6213,3 +6213,18 @@ Every image accuracy this project published was measured on the **clean** test s
 ```
 
 Four arms, one number changed, every row a finished checkpoint. **P1, P2 and P3 all HOLD and the falsifier did not fire.** Each +0.05 of radius buys **+1.8 points of k=16 memory** and costs **1.3 points of held-out accuracy**; extrapolating, the 10% memory gate needs radius ~**1.14**, where accuracy would be ~**9%** against 16.27% at 0.9. **The memory gate is not reachable by tuning the clamp at any accuracy worth having** - it would cost 44% of the shipped accuracy. Free-running never moves (5.00 / 5.81 / 5.50 / 5.06%, every paired CI spanning zero), so memory and generation are separate problems and this dial touches only the first. The clamp line ends here; the structural answer is a separate linear state channel, and the orthogonal-recurrence arms are running. Source: `lens/runs/SCAN11-R105.txt`, `lens/runs/SCAN11-R110.txt`, `docs/history/RADIUS-LADDER-TRADE.md`.
+
+### "Stop and start without losing anything" now exists and is tested (2026-11-18)
+
+A standing requirement was **not met** until now: no trainer accepted a resume, so every invocation re-initialised from scratch and stopping a 3000-step arm discarded everything.
+`lens/scripts/train_scan9.py` now takes `RESUME=<checkpoint.npz>`: it loads the weights, reads the step from `__meta__`, and continues from **step + 1** on the same learning-rate
+decay curve. `CK_PREFIX` still keeps runs separate and an existing checkpoint is still **refused, never overwritten**.
+
+```
+RESUMED from lens/runs/chat/scan11_r100_ep250.npz at step 250
+then: step 275/275 loss 7.1772 acc 7.45%      <- resumed
+a fresh run at step 25:   loss 9.5173 acc 0.42%   <- a model that knows nothing
+source checkpoint mtime unchanged (09:04:47 before and after)
+```
+
+That contrast is the proof the weights loaded rather than being silently re-initialised. **My first version died instantly with `NameError: name 'log' is not defined`** - it called `log()` before its definition further down the file, and the patch parsed fine; the smoke test caught it. **Honest limitation, written in the source:** the sampler's rng state is not stored, so a resumed run continues the weights exactly but sees a different shuffle of the same corpus. Saving the rng state would make it bit-exact and is not done yet. Source: `lens/scripts/train_scan9.py`, `docs/history/RESUME-IMPLEMENTED.md`.
