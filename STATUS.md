@@ -6242,3 +6242,16 @@ step 275/275 loss 8.3962 ema 8.4815 acc 2.54% gnorm 3.46   <- identical to every
 ```
 
 **Two bugs of mine were caught by running the code, not by reading it:** `NameError: name 'log' is not defined` (the first patch called `log()` before its definition, so every *resumed* run died), and then `NameError: name 'seen' is not defined` (the second patch matched a line part-way and buried `t0/ema/seen` inside the `if _resume_msg:` block, so every *fresh* run died). Both failure modes are recorded, because a patch that appends to a line that already has statements is exactly where they live. Source: `lens/scripts/train_scan9.py`, `docs/history/RESUME-BIT-EXACT.md`.
+
+### The chat model is 83% readable, not 100% - and the audit names the cause (2026-11-18)
+
+```
+readable d512   30/36 concepts pass   mean AUROC 0.6886   mean FIRE RATE 47.4%
+copy-path d512  36/36 concepts pass   mean AUROC 0.8695   mean FIRE RATE 28.3%
+
+failing in the readable model only: is_a_list, mentions_a_name, mentions_a_quantity,
+                                    mentions_body, mentions_family, mentions_sport
+failing in BOTH models: none
+```
+
+Two facts matter more than the pass count. **Every failure is the readable model's alone** - a matched model with a direct path passes all 36 with the same formulas, so the six failures are architectural, not wrong definitions. And **the readable units fire 5-20x too often**: concept supports run from 0.58% to 13.9%, but the neurons average a **47.4%** firing rate, so a unit that fires on nearly half of all windows cannot sharply detect a 0.6% property - which is why AUROC sits at 0.6-0.7 while the name is in its own supervision. This is the same defect class found in the image model this morning (`centre_heavier`, AUROC 0.3196 at a 96.9% firing rate). `--lam-act`, the penalty on mean concept activation, has been **0.0 in every run this project has done**; two arms now try 0.3 and 1.0 with P2 requiring mean AUROC above 0.80 and a falsifier that sends the next attempt at the concept definitions instead. Source: `tools/concept_label_audit.py`, `docs/history/CHAT-READABILITY-AUDIT.md`.
