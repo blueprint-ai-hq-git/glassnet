@@ -32,3 +32,39 @@ like success) or the corpus-wide 5.3406% (which is not the right pairing for a s
 - **Is not:** "memory solved". 8.67% is small, the gate is 10% **and that gate is scored by the next-token probe which these arms were not trained for**, so it does not apply unchanged to them. One seed, one arm
   each, 1000 steps.
 - **Still open:** whether delayed recall climbs with more training, and whether a smaller delay gives a cleaner dose-response.
+
+
+---
+
+# CORRECTION AND ADDITION (2026-11-18, same day): the interval was overstated and one baseline was missing
+
+The entry above quotes "+2.08 points, roughly 6 SE". That standard error treated all 6552 scored positions as independent. **They are not.** The 64 scored positions inside one window
+share a recurrent state and a memory-bank state, so they are correlated, and the unit of resampling is the **window** - of which there are only 104. Re-measured with a window-level
+bootstrap (10,000 resamples, `tools/eval_delayed_ci.py`):
+
+```
+vs the FAIR constant predictor (always emit the most frequent corpus token, 6.59%):
+  td16   (demand + bank)   8.67%   +2.08 points   95% CI [+0.93, +3.27]   RESOLVABLE (above)
+  td16nb (demand, no bank) 5.22%   -1.37 points   95% CI [-2.24, -0.44]   RESOLVABLE (below)
+
+vs the WINDOW-ORACLE constant predictor (most frequent target inside each window, 14.41%):
+  td16                     8.67%   -5.74 points   95% CI [-6.75, -4.81]   RESOLVABLE (below)
+  td16nb                   5.22%   -9.19 points   95% CI [-10.30, -8.06]  RESOLVABLE (below)
+
+bank vs no-bank:
+  +3.45 points   95% CI [+2.43, +4.43]                                      RESOLVABLE
+```
+
+**What stands:** the bank arm is above the fair constant predictor, the bankless arm is below it, and the bank is worth **+3.45 points** with an interval that excludes zero. Those are the
+claims this entry rests on, and they survive cluster-robust resampling.
+
+**What was wrong:** "roughly 6 SE" - the true spread is about **3.5 SE**, because the effective sample size is 104 windows, not 6552 positions. A claim that is resolvable at 3.5 SE is
+still resolvable, but the margin I published was inflated by a factor of about 1.7.
+
+**What was missing, and it cuts against the result:** a **window-oracle** constant predictor scores **14.41%**. It sees the whole window including the future, so no causal model can
+implement it and it is not a fair competitor - but it is the right reference for how much structure the targets contain. Against it, both arms are **far below**: the banked arm by 5.74
+points. So "the bank gives measurable 16-step recall" is true against a fair baseline, and simultaneously "this recall is far weaker than the per-window target concentration allows" is
+also true. Both belong on the page.
+
+The honest one-line summary is now: **demand training with the memory bank lifts 16-step recall above a fair constant predictor (+2.08 points, CI [+0.93, +3.27]) and the bank is worth
++3.45 points over no bank (CI [+2.43, +4.43]), while both arms remain well below a window-informed constant predictor (14.41%).**

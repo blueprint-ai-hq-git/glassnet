@@ -6581,3 +6581,19 @@ mem8sym (no demand, bank)    7.02%       23.50%        6.59%
 **The bank arm is above a trivial predictor - 8.67% vs 6.59%, +2.08 points, ~6 SE - while the bankless arm is below it** (5.22%). So the bank earns its keep: **+3.45 points (~7 SE)**. Demand itself adds **+1.65 points (~3 SE)** on top of the bank. The pre-registered falsifier did **not** fire on the valid measure.
 
 **An instrument error hid this for several wakes and is recorded here:** the k=16 probe scores **next-token** logits, and these arms were trained to emit `tok[t+1-16]`. `td16` trades next-token accuracy away (16.54% vs 23.50%), so a next-token probe reads ~1.1% while the arm's own task reads 8.67%. `tools/eval_delayed.py` now scores the offset the arm was trained on, against a **same-sample** constant baseline rather than chance (0.008%, which would make 5.22% look like success). **What this is not:** 'memory solved' - 8.67% is small, the 10% gate is scored by the next-token probe and therefore does not apply unchanged to these arms, and each arm is one seed, 1000 steps. Source: `tools/eval_delayed.py`, `lens/runs/TGT-DELAY16.txt`, `lens/runs/TGT-DELAY16-NOBANK.txt`, `docs/history/DEMAND-MAKES-MEMORY.md`.
+
+### CORRECTION: the demand result survives, its interval was overstated (2026-11-18)
+
+The entry above quotes **+2.08 points, ~6 SE**. That SE treated 6552 scored positions as independent; the 64 positions inside a window share state, so the resampling unit is the **window** and there are only 104. Window-level bootstrap (10,000 resamples, `tools/eval_delayed_ci.py`):
+
+```
+vs FAIR constant (most frequent corpus token, 6.59%):
+  td16   (bank)      8.67%   +2.08 pts   95% CI [+0.93, +3.27]   RESOLVABLE above
+  td16nb (no bank)   5.22%   -1.37 pts   95% CI [-2.24, -0.44]   RESOLVABLE below
+vs WINDOW-ORACLE constant (per-window most frequent target, 14.41%):
+  td16               8.67%   -5.74 pts   95% CI [-6.75, -4.81]   RESOLVABLE below
+  td16nb             5.22%   -9.19 pts   95% CI [-10.30, -8.06]  RESOLVABLE below
+bank vs no-bank:    +3.45 pts   95% CI [+2.43, +4.43]            RESOLVABLE
+```
+
+**Stands:** the bank arm is above the fair constant predictor, the bankless arm is below it, and the bank is worth **+3.45 points** with an interval excluding zero. **Wrong:** "~6 SE" - the true spread is about **3.5 SE**, because the effective sample size is 104 windows, not 6552 positions; the margin was inflated ~1.7x. **Was missing and cuts against the result:** a **window-oracle** constant scores **14.41%** - it sees the future so it is not a fair competitor, but against it both arms are far below (the banked arm by 5.74 points). So "the bank gives measurable 16-step recall" is true against a fair baseline while "this recall is far weaker than the per-window target concentration allows" is also true. Source: `tools/eval_delayed_ci.py`, `docs/history/DEMAND-MAKES-MEMORY.md`.
