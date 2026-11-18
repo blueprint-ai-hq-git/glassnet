@@ -6597,3 +6597,15 @@ bank vs no-bank:    +3.45 pts   95% CI [+2.43, +4.43]            RESOLVABLE
 ```
 
 **Stands:** the bank arm is above the fair constant predictor, the bankless arm is below it, and the bank is worth **+3.45 points** with an interval excluding zero. **Wrong:** "~6 SE" - the true spread is about **3.5 SE**, because the effective sample size is 104 windows, not 6552 positions; the margin was inflated ~1.7x. **Was missing and cuts against the result:** a **window-oracle** constant scores **14.41%** - it sees the future so it is not a fair competitor, but against it both arms are far below (the banked arm by 5.74 points). So "the bank gives measurable 16-step recall" is true against a fair baseline while "this recall is far weaker than the per-window target concentration allows" is also true. Source: `tools/eval_delayed_ci.py`, `docs/history/DEMAND-MAKES-MEMORY.md`.
+
+### The missing "before" numbers: demand takes 16-step recall from below trivial to above it (2026-11-18)
+
+Every earlier comparison measured the arms against each other and against constants - **never against the starting point.** The same base checkpoint, no demand training:
+
+```
+base checkpoint, 104 chunks, 6552 scored:
+  at delay 16:   5.83%   vs fair constant 6.59%   <- BELOW a trivial predictor
+  at delay  4:  11.65%   vs fair constant 7.13%   <- well ABOVE it
+```
+
+**1. The real effect size is +2.84 points, 5.83% -> 8.67%.** One thousand steps of 16-step demand took the model from **worse than a constant predictor to better than one**, and the no-bank control stayed at 5.22% (still worse) - so the bank is what makes the difference. **2. The architecture already handles short delays**: at delay 4 the base scores **11.65%**, higher than the delay-16 arm reaches after training, consistent with this model's measured effective context of about 2-4 tokens. **3. My own falsifier for the delay-4 arm was framed against the wrong number** - it said "at or below 8.67% means no dose-response", but that arm's correct bar is **its own starting point, 11.65%**; a delay-4 arm that merely reproduces the base has demonstrated nothing. The corrected bar is recorded and will be applied when its endpoint lands. Current honest summary: **demand lifts 16-step recall from 5.83% (below a fair constant) to 8.67% (above it), the bank is worth +3.45 points, short delays were already handled, and all of it remains below a window-informed constant at 14.41%.** Source: `tools/eval_delayed.py`, `tools/eval_delayed_ci.py`, `docs/history/DEMAND-MAKES-MEMORY.md`.

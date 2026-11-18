@@ -68,3 +68,33 @@ also true. Both belong on the page.
 
 The honest one-line summary is now: **demand training with the memory bank lifts 16-step recall above a fair constant predictor (+2.08 points, CI [+0.93, +3.27]) and the bank is worth
 +3.45 points over no bank (CI [+2.43, +4.43]), while both arms remain well below a window-informed constant predictor (14.41%).**
+
+
+---
+
+# THE MISSING "BEFORE" NUMBERS, and they change the shape of the claim (2026-11-18, same day)
+
+Every comparison above measured the arms against each other and against constant predictors. **None of them measured the starting point** - the same base checkpoint, `scan12_r090_6k_ep6000`,
+scored on the delayed task with no demand training at all. Without that, "8.67%" has no baseline anywhere near it.
+
+```
+base checkpoint, no demand training, 104 chunks, 6552 scored:
+  at delay 16:   5.83%   vs fair constant 6.59%   <- BELOW a trivial predictor
+  at delay  4:  11.65%   vs fair constant 7.13%   <- well ABOVE it
+```
+
+Three consequences, all of which matter:
+
+**1. The demand arm's real effect size is +2.84 points, from 5.83% to 8.67%.** That is a bigger and cleaner statement than the one previously published, and it is the right one: 1000
+steps of 16-step demand training took the model from **worse than a constant predictor** to **better than one**, and the no-bank control stayed at 5.22% (still worse), so the bank is
+what makes the difference.
+
+**2. The architecture already handles short delays.** At delay 4 the base model scores **11.65%**, which is **higher than the delay-16 arm manages after training (8.67%)**. That is consistent
+with the measured effective context of this model (about 2-4 tokens): nearby tokens are already available, and what was missing was only the long delay.
+
+**3. My own falsifier for the delay-4 dose-response arm was framed against the wrong number.** It was written as "delay-4 accuracy at or below 8.67% means no dose-response", but the
+correct bar for that arm is **its own starting point, 11.65%** - a delay-4 arm that merely reproduces the base model has demonstrated nothing. The arm is already running, so the corrected
+bar is recorded here and will be applied when its endpoint lands: **td4 must beat 11.65%, not 8.67%.**
+
+The honest summary is now: **demand training with the memory bank lifts 16-step recall from 5.83% (below a fair constant predictor) to 8.67% (above it), the bank is worth +3.45 points over
+no bank, short delays were already handled by the base model (11.65% at delay 4), and all of it remains below a window-informed constant predictor (14.41%).**
