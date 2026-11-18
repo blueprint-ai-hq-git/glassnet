@@ -6201,3 +6201,15 @@ clean 84.60% | brightness +0.20 78.13% | contrast x0.70 81.83% | noise sd 0.10 8
 ```
 
 Every image accuracy this project published was measured on the **clean** test set. Under the shifts a user actually produces, **translation is the killer**: noise sd 0.10 costs 1.3 points and blur 1.9, but a **two-pixel shift costs 27.8**, dropping 84.60% to **56.77%**. Brightness is intermediate (-6.5 at +0.20) because the concept set is built on brightness/contrast formulas. The cause is structural and predicted by the architecture: the model reads a **fixed 14x14 patch grid**, so a shift moves content across patch boundaries, and concepts like `top_half_heavier` are alignment-sensitive by construction. **Honest disclosure: the readable image model expects a centred, fairly-exposed input.** Fix under test (`run_shift_aug.sh`): 2px training augmentation, P2 requiring 2px accuracy to reach 75%; falsifier below 65% means alignment is structural, not augmentable. Source: `tools/vision_robustness.py`, `docs/history/ROBUSTNESS-FAIR-WEATHER.md`.
+
+### The radius dial trades memory for accuracy monotonically; the 10% memory gate sits past the collapse (2026-11-18)
+
+```
+ radius   k=16 memory   held-out acc   free-running   repetition   gnorm sd
+   0.90      0.878%        16.27%         5.00%         0.915       0.81
+   1.00      4.730%        13.23%         5.81%         0.908       1.25
+   1.05      6.695%        11.90%         5.50%         0.893       1.38
+   1.10      8.511%        10.05%         5.06%         0.881       1.43
+```
+
+Four arms, one number changed, every row a finished checkpoint. **P1, P2 and P3 all HOLD and the falsifier did not fire.** Each +0.05 of radius buys **+1.8 points of k=16 memory** and costs **1.3 points of held-out accuracy**; extrapolating, the 10% memory gate needs radius ~**1.14**, where accuracy would be ~**9%** against 16.27% at 0.9. **The memory gate is not reachable by tuning the clamp at any accuracy worth having** - it would cost 44% of the shipped accuracy. Free-running never moves (5.00 / 5.81 / 5.50 / 5.06%, every paired CI spanning zero), so memory and generation are separate problems and this dial touches only the first. The clamp line ends here; the structural answer is a separate linear state channel, and the orthogonal-recurrence arms are running. Source: `lens/runs/SCAN11-R105.txt`, `lens/runs/SCAN11-R110.txt`, `docs/history/RADIUS-LADDER-TRADE.md`.
