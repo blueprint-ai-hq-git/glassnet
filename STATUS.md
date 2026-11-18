@@ -6103,3 +6103,17 @@ concepts honest                 20-21 of 21  --        95-100% every seed
 ```
 
 **Two wins, one parity, one loss.** Parity on mean accuracy (-0.30, under one standard error from zero). A real but smaller-than-first-measured stability advantage: **2.6x tighter across seeds** (the 3-seed estimate of 5.4x did not survive; P2 failed). **No learning-speed advantage at all** - faster at 75%, slower at 80% and 84%, no trend. And full transparency: 20-21 of 21 concepts honest, zeroing the layer drops 84.62% -> 9.98%, and all 21 formulas ship in the published model's `config.json`. Source: `lens/runs/CAPADV-SEEDS8.txt`, `docs/history/READABLE-SCORECARD.md`.
+
+### The spectral radius was the wrong dial: memory dies on the AVERAGE singular value (2026-11-18)
+
+```
+Wh spectral radius        1.0000
+Wh largest singular value 1.9601
+Wh MEAN singular value    0.8424
+memory operator diag(1-tanh^2) @ Wh, mean singular value   0.7618
+
+0.7618^16 = 1.29% predicted retention at k=16   (4.73% measured)
+tanh saturation: 0.00% of units beyond |preactivation| 2.0   <- not happening at all
+```
+
+Sphere radius 1.0 still forgets, and this says why: the memory operator's **average singular value is 0.7618**, so the average direction is multiplied by 0.76 every step and sixteen steps of that is 1.29% predicted retention (4.73% measured). **Tanh saturation is 0.00%** - the activations are tiny (mean 0.269), so the saturating-nonlinearity premise that motivated the gated-cell detour was wrong. `renorm_recurrent` constrained the one number that does not govern memory. New `ortho_recurrent()` projects `Wh` onto an orthogonal matrix (every singular value exactly 1.000000, verified), with two arms running: **P1 k=16 above the 10% gate at scale 1.0**, P2 1.0 trains worse than 0.98, P3 operator mean singular value above 0.90; falsifier k=16 below 6% means the decay is in the embedding or readout path instead. Source: `tools/saturation_probe.py`, `lens/runs/EVAL-R10.txt`, `docs/history/SPECTRAL-RADIUS-WRONG-DIAL.md`.
