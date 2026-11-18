@@ -6565,3 +6565,19 @@ chance     3.12%      (vocab 32)
 The **control** (same readout, memory removed, sees only the final token) sits **exactly at chance**, so the result is attributable to the bank and not to a leak in the wiring. **The falsifier did not fire: the bank can hold a fact for 16 steps when a task demands it.** So the k=16 gate on real text fails **not because the bank cannot hold, but because ordinary text never asks it to** - capacity was never the binding constraint, the **training signal** is. Three defects were found and fixed (each paid +0.293, +0.609) and none of them was the wall.
 
 **Honest limits:** the synthetic task is much easier than text (vocab 32, one deterministic fact, single-token recall) - it bounds what the bank *can* represent, not what it will reach on natural text at this scale; delay 16 is now **confirmed at the full 12000-step budget: 81.25% with its control at 3.22%**, agreeing with the half-budget read (81.93%) within 0.68 points, so 16-step recall **plateaus near 81%** rather than reaching the 100% seen at 1, 4 and 8. The next experiment is not another bank fix but a training objective with real cross-step demand (`TGT_DELAY`: target at position t becomes `tok[t+1-16]`), in flight now, with its own falsifier. Source: `tools/delayed_recall_probe.py`, `tools/delayed_recall_gradcheck.py`, `lens/runs/DELAYED-RECALL-16.txt`, `docs/history/MEMORY-CAPACITY-NOT-THE-LIMITER.md`.
+
+### 16-step demand on real text: the bank converts it (2026-11-18)
+
+Two arms from the same base checkpoint, both 1000 steps with the target at position t being `tok[t+1-16]`, differing in exactly one thing - the memory bank:
+
+```
+                          delayed acc   next-token   same-sample constant
+td16   (demand + bank)       8.67%       16.54%        6.59%
+td16nb (demand, no bank)     5.22%       14.32%        6.59%
+mem8sym (no demand, bank)    7.02%       23.50%        6.59%
+6552 scored positions, 104 held-out chunks
+```
+
+**The bank arm is above a trivial predictor - 8.67% vs 6.59%, +2.08 points, ~6 SE - while the bankless arm is below it** (5.22%). So the bank earns its keep: **+3.45 points (~7 SE)**. Demand itself adds **+1.65 points (~3 SE)** on top of the bank. The pre-registered falsifier did **not** fire on the valid measure.
+
+**An instrument error hid this for several wakes and is recorded here:** the k=16 probe scores **next-token** logits, and these arms were trained to emit `tok[t+1-16]`. `td16` trades next-token accuracy away (16.54% vs 23.50%), so a next-token probe reads ~1.1% while the arm's own task reads 8.67%. `tools/eval_delayed.py` now scores the offset the arm was trained on, against a **same-sample** constant baseline rather than chance (0.008%, which would make 5.22% look like success). **What this is not:** 'memory solved' - 8.67% is small, the 10% gate is scored by the next-token probe and therefore does not apply unchanged to these arms, and each arm is one seed, 1000 steps. Source: `tools/eval_delayed.py`, `lens/runs/TGT-DELAY16.txt`, `lens/runs/TGT-DELAY16-NOBANK.txt`, `docs/history/DEMAND-MAKES-MEMORY.md`.
