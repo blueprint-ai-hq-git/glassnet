@@ -6192,3 +6192,12 @@ SE 0.98 points (n=1500, p~0.174); a difference needs ~1.9 points to be resolvabl
 ```
 
 Both chat cards said **context window 32 tokens** - inherited from an older README and never measured. Measured now, by feeding exactly L tokens and scoring the next one over the same 1,500 held-out chunks: context buys **7.6 standard errors** of accuracy going from 1 to 2 tokens (9.27% -> 16.73%), and **nothing resolvable** from 2 to 128. **The effective context is 2 tokens**, and the published figure overstated it by 16x. This is the same finding as the state-side memory measurements (a token 16 back moves the state 0.878%) seen from the outside instead: nothing past two tokens changes the prediction. `glassnet-scan-r9-recurrent` now reports **effective context (measured): 2 tokens**, and `config.json` carries `effective_context_tokens` and `trainer_context_length` separately so a trained length can never be mistaken for a usable one. Source: `tools/context_curve.py`, `docs/history/EFFECTIVE-CONTEXT-IS-TWO.md`.
+
+### 84% is a fair-weather number: a 2-pixel shift costs 27.8 points (2026-11-18)
+
+```
+clean 84.60% | brightness +0.20 78.13% | contrast x0.70 81.83% | noise sd 0.10 83.30% | blur 82.73%
+1px shift 76.83% (-7.77) | 2px shift 56.77% (-27.83)   <- collapse
+```
+
+Every image accuracy this project published was measured on the **clean** test set. Under the shifts a user actually produces, **translation is the killer**: noise sd 0.10 costs 1.3 points and blur 1.9, but a **two-pixel shift costs 27.8**, dropping 84.60% to **56.77%**. Brightness is intermediate (-6.5 at +0.20) because the concept set is built on brightness/contrast formulas. The cause is structural and predicted by the architecture: the model reads a **fixed 14x14 patch grid**, so a shift moves content across patch boundaries, and concepts like `top_half_heavier` are alignment-sensitive by construction. **Honest disclosure: the readable image model expects a centred, fairly-exposed input.** Fix under test (`run_shift_aug.sh`): 2px training augmentation, P2 requiring 2px accuracy to reach 75%; falsifier below 65% means alignment is structural, not augmentable. Source: `tools/vision_robustness.py`, `docs/history/ROBUSTNESS-FAIR-WEATHER.md`.
