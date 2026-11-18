@@ -185,3 +185,45 @@ That is the same lesson as the tail, applied to a band I had assumed was well-sa
 - **Frequent band**: 82.37% vs 25.17% constant at delay 4 - large, stable, reproduced.
 - **Middle band**: 13.11% vs 3.89% constant - real but 3 points smaller than first published.
 - **Tail**: **0 of 8728**, true rate below **0.034%** - this is now a defensible zero rather than a rhetorical one.
+
+
+---
+
+# WITHDRAWN: the "monotone erosion" claim and its z=3.35 (2026-11-18 20:55)
+
+I published, two wakes ago, that extending delay-16 training *erodes* the middle band, with a two-proportion test giving **z = 3.35, CI [+0.42, +1.60] points**. **That claim is withdrawn.** Two independent defects, both mine:
+
+## 1. The z-test assumed independent positions, which they are not
+
+The test treated **2379 scored positions as 2379 independent trials**. They are not: 64 positions sit inside each window and share recurrent state and a memory bank, so hits cluster within windows. This is *precisely* the error I corrected for pooled numbers earlier the same evening - I wrote the cluster-robust rule and then broke it for the band numbers.
+
+## 2. The low-N midpoint was biased, and the high-N measurement proves it
+
+The evaluator draws windows from a seeded RNG, so **104 windows is a strict prefix of the 1040-window draw** - not an independent smaller sample. Measured on the *same* checkpoint:
+
+```
+delay 16, ranks 21-500, td16_r090_ep7000
+  first  104 windows (2379 positions):  38 hits = 1.60%
+  all   1040 windows (23364 positions): 100 hits = 0.43%
+  -> the remaining 976 windows contribute only 62 hits in 20985 positions = 0.30%
+```
+
+So the first 104 windows are roughly **5x easier** than the rest of the corpus, and the low-N number was an artefact of which windows happened to be drawn first. Every mid-band and tail figure I quoted at 104 windows inherits that bias.
+
+## Corrected delay-16 numbers, at the resolution that is available
+
+```
+delay 16, td16_r090_ep7000, 1040 windows
+  band                 model    same-window constant
+  top-20               16.53%          24.94%
+  ranks 21-500          0.43%           4.26%
+  tail (>500)           0.00%           0.19%   (0 of 8727, true rate < 0.034%)
+```
+
+**The correction makes the delay-16 result worse, not better.** At high N the model is *below* the trivial constant predictor on **every** band: the middle band by about 10x (0.43% vs 4.26%). The earlier "8.67% vs a 6.59% constant, so delay 16 slightly beats trivial" reading was propped up by prefix-selected windows.
+
+## What survives
+
+- **The tail zero survives and is now solid**: 0 of 8727, true rate **< 0.034%**.
+- **The delay-4 frequent band survives**: 82.37% vs a 25.17% constant, reproduced at high N within 0.63 points.
+- **The erosion question is now OPEN, not answered** - the four checkpoints must be re-measured at 1040 windows before any trend claim can be made.

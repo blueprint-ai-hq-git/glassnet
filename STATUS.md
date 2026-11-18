@@ -6673,9 +6673,9 @@ chi-square vs uniform   30.5    df 31    5% critical ~43.8   -> consistent with 
 
 **There is no frequent band to exploit** - with only 32 tokens all equally likely, a prior over frequent tokens is a uniform prior. **The best constant predictor scores exactly 1/32 = 3.125%**, and the control arm (same readout, memory removed) measures **3.03-3.22%** across delays 1, 4, 8 and 16 - exactly where a constant must sit. So the bank's **81.25% at 16 steps is 26x chance with no frequency structure available to inflate it**: it is carrying token identity. This does not improve the real-text result, which stays withdrawn; it establishes that the module capability is real, which is what makes the real-text failure informative - the bank can hold a token for 16 steps and the real model cannot, so the limiter is the base model, not the memory mechanism. Source: `tools/delayed_recall_probe.py`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
 
-### Extended training at a 16-step delay ERODES the middle band (2026-11-18)
+### WITHDRAWN: extended training at a 16-step delay - the "erosion" claim and its z=3.35 (2026-11-18)
 
-Chasing "it just needs more steps" produced the opposite result, and it survives a significance test:
+**RETRACTED.** This section claimed a resolvable erosion with z = 3.35. It is withdrawn for two defects, both mine: the test treated 2379 """positions""" as independent when 64 positions share a window's recurrent state and bank, and the low-N band figure was biased because the evaluator's seeded RNG makes 104 windows a strict **prefix** of the 1040-window draw (same checkpoint: 1.60% on the first 104 windows, 0.43% on all 1040 - the first chunk is ~5x easier). Corrected high-N numbers below. Original text kept for the record:
 
 ```
 delay 16, ranks 21-500 band, n = 2379 positions per checkpoint
@@ -6715,3 +6715,15 @@ delay 4, 8728 tail positions
 ```
 
 **P1 MET** (0 of 8728, bound 0.034%). **P2 PARTIALLY MET - and this is the correction:** top-20 reproduced (82.37% vs 81.74%), but the **middle band did not** - **13.11% at high N against the 16.29% published from low N**, a **3.18-point move**, outside the stability window I set in advance. So the published *"ranks 21-500 16.29% against a 5.56% constant"* is corrected to **13.11% against 3.89%**: the qualitative claim survives (still **3.4x its constant**, so real mid-frequency delayed learning exists) but the magnitude was **overstated by ~3 points** because 104 windows was too few for that band. Falsifier did not fire. **The lesson generalises:** only the *frequent* band was stable at 104 windows - anything derived from the middle or tail bands at that sample size is an estimate with ~3-point uncertainty and must carry that caveat or be re-measured at 10x. What now stands at the available resolution: frequent 82.37% vs 25.17% constant, middle 13.11% vs 3.89%, tail **0 of 8728 (true rate < 0.034%)**. Source: `lens/runs/TAIL-HIGHN.txt`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
+
+### Delay-16 at high N: the model is BELOW the constant predictor on every band (2026-11-18)
+
+```
+delay 16, td16_r090_ep7000, 1040 windows
+  band                 model    same-window constant
+  top-20               16.53%          24.94%
+  ranks 21-500          0.43%           4.26%
+  tail (>500)           0.00%           0.19%   (0 of 8727, true rate < 0.034%)
+```
+
+At the larger sample the delay-16 arm is **below** the trivial same-window constant on **every** band, the middle band by about **10x** (0.43% vs 4.26%). The earlier reading of "8.67% vs a 6.59% constant, so delay 16 slightly beats trivial" was propped up by **prefix-selected windows**: the evaluator draws from a seeded RNG, so 104 windows is a strict prefix of the 1040-window draw, and that first chunk is ~5x easier (1.60% vs 0.43% on the same checkpoint). **What survives:** the tail zero (0 of 8727, true rate < 0.034%) and the delay-4 frequent band (82.37% vs 25.17%, reproduced within 0.63 points). Source: `lens/runs/TAIL-HIGHN.txt`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
