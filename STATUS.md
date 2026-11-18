@@ -6436,3 +6436,16 @@ mem_decay: 0.8580580949783325  0.8580580949783325  0.8580580949783325 ...  (all 
 ```
 
 **The slots can never differentiate**, and it is exact symmetry rather than convergence: `M` starts at **zero** for every slot, so every slot scores `q.M = 0`, the softmax over slots is **uniform**, every slot receives the **identical** write, and `d_decay[k]` is therefore identical for every `k`, forever. **The 8-slot bank is mathematically ONE slot with 8x the write rate** - which is what a memory gain of 0.293 points looks like. Fix: `MEM_SYM=1` initialises per-slot decay from `uniform(0.85, 0.95)` (from all-0.9), `MEM_SYM=0` restores the old behaviour bit-for-bit. `run_memchan_sym.sh` re-runs the identical recipe with that one change: **P1** max-min across decays **> 0.005** (symmetric arm scored 0.000000), **P2** k=16 above 1.605%, **P3** no accuracy cost; **falsifier** - decays still identical or memory at/below 1.605%, which would mean the limiter is the **training signal** (a 32-token window cannot teach what must survive 16 steps), not the bank. Two real bugs fixed while editing: `Mm` possibly unbound in the held-out path, and `ema` being `None` in the final log line (any zero-step run would have crashed) - verified by a complete 2-step smoke run. Source: `lens/runs/MEMCHAN-ARM.txt`, `docs/history/MEMBANK-SYMMETRY.md`.
+
+### Memory channel: all three predictions met, the gate 3.3% of the way, and the reason proven (2026-11-18)
+
+```
+                            channel arm    resumed baseline    change
+held-out teacher-forced       24.30%          23.95%           +0.35 pts  (~0.5 SE, NOT resolvable)
+held-out loss                 6.1754          6.3261           -0.15 nats
+free-running                   6.06%           6.88%           -0.82 pts  (NOT resolvable)
+repetition                     0.875           0.923           -0.048     (less repetitive)
+k=16 memory                    1.642%          1.312%          +0.330 pts (gate is 10%)
+```
+
+1500 steps from `scan11_r090_ep3000`, scored at the corrected 104-chunk protocol. **P1 MET** (memory 1.642% > 1.322%), **P2 MET** (held-out 24.30% > 21.02%, and above the baseline's own 23.95% though not resolvably), **P3 MET** (decay moved off 0.9), **falsifier did not fire**. The channel is installed, gradient-certified, a proven forward no-op at injection, and it moves every number the right way: accuracy +0.35 (inside noise), **loss -0.15 nats**, **repetition -0.048**, memory **+0.33 points** - which is **3.3% of the way to the 10% gate**. **And P3 exposed why:** all eight slots read the *same* decay to the bit (`0.8580580949783325`), because `M` starts at zero, every slot scores `q.M = 0`, the softmax is uniform, every slot receives the identical write, so `d_decay[k]` is identical forever. **The 8-slot bank was mathematically one slot with 8x the write rate** - exactly what +0.33 points looks like, found by reading the weights instead of tuning. `MEM_SYM=1` now randomises the per-slot start and `run_memchan_sym.sh` re-runs the identical recipe with that one change. If that arm does not beat 1.605%, the limiter is the **training signal** (a 32-token window never asks the model to remember for 16 steps). Source: `lens/runs/MEMCHAN-ARM.txt`, `docs/history/MEMCHAN-ENDPOINT.md`.
