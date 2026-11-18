@@ -6701,3 +6701,17 @@ ep8500          8.26%     11.86%   16.09%      0.55%        0.00%
 ```
 
 The middle band declines **monotonically** across all four checkpoints (1.60 -> 1.47 -> 0.59 -> 0.55) while the frequent band is flat and the tail never moves off zero. The pooled number - the only one that had been improving - also falls at the endpoint (8.67 -> 8.26). **The delay-16 line closes on four consecutive checkpoints: no training length produces rare-token recall, and continuing actively erodes the middle band.** Source: `lens/runs/TD16-EXTEND.txt`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
+
+### High-N tail test: the zero is solid, and one published magnitude was overstated (2026-11-18)
+
+The rare-token band had only ~890 positions per checkpoint, which bounds a zero at merely **< 0.34%**. Re-measured on **1,040 windows (10x)**:
+
+```
+delay 4, 8728 tail positions
+  td4_r090_ep7000       top-20 82.37%    ranks 21-500 13.11%    TAIL 0.00%
+  same-window constant  top-20 25.17%    ranks 21-500  3.89%    tail 0.38%
+
+95% upper bound, 0 hits in 8728:  true rate < 0.034%
+```
+
+**P1 MET** (0 of 8728, bound 0.034%). **P2 PARTIALLY MET - and this is the correction:** top-20 reproduced (82.37% vs 81.74%), but the **middle band did not** - **13.11% at high N against the 16.29% published from low N**, a **3.18-point move**, outside the stability window I set in advance. So the published *"ranks 21-500 16.29% against a 5.56% constant"* is corrected to **13.11% against 3.89%**: the qualitative claim survives (still **3.4x its constant**, so real mid-frequency delayed learning exists) but the magnitude was **overstated by ~3 points** because 104 windows was too few for that band. Falsifier did not fire. **The lesson generalises:** only the *frequent* band was stable at 104 windows - anything derived from the middle or tail bands at that sample size is an estimate with ~3-point uncertainty and must carry that caveat or be re-measured at 10x. What now stands at the available resolution: frequent 82.37% vs 25.17% constant, middle 13.11% vs 3.89%, tail **0 of 8728 (true rate < 0.034%)**. Source: `lens/runs/TAIL-HIGHN.txt`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.

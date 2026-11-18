@@ -152,3 +152,36 @@ The middle band declines **monotonically** across all four checkpoints (1.60 -> 
 tail never moves off zero. The pooled number, which had been the only thing improving, also falls at the endpoint (8.67 -> 8.26).
 
 So the delay-16 line closes on four consecutive checkpoints: **no training length produces rare-token recall, and the middle band is actively eroded by continuing.**
+
+
+---
+
+# HIGH-N TAIL TEST: the zero is now solid, and one published magnitude was overstated (2026-11-18 20:45)
+
+The rare-token band had only ~890 positions per checkpoint, which bounds a zero result at merely **below 0.34%**. Re-measured on **1,040 windows (10x)**:
+
+```
+delay 4, 8728 tail positions
+  td4_r090_ep7000       top-20 82.37%    ranks 21-500 13.11%    TAIL 0.00%
+  same-window constant  top-20 25.17%    ranks 21-500  3.89%    tail 0.38%
+
+95% upper bound, 0 hits in 8728:  true rate < 0.034%
+```
+
+## Predictions, scored
+
+- **P1** "zero tail hits, bound below 0.05%" - **MET**: 0 of 8728, bound **0.034%**.
+- **P2** "the bands reproduce the low-N values within ~2 points" - **PARTIALLY MET, and this is the correction.** Top-20 reproduced well (82.37% vs 81.74%, 0.63 points apart). The **middle band did not**: **13.11% at high N against the 16.29% published from low N, a 3.18-point move** - outside the stability window I set in advance.
+- **Falsifier** ("any tail hit") - **did not fire**.
+
+## The correction
+
+The published tn4 endpoint entry says *"ranks 21-500 16.29% against a 5.56% constant"*. The high-N measurement is **13.11% against 3.89%**. The qualitative claim survives - the middle band is still **3.4x its constant**, so real mid-frequency delayed learning exists - but the **magnitude was overstated by about 3 points**, because 104 windows was too few to pin that band down.
+
+That is the same lesson as the tail, applied to a band I had assumed was well-sampled: **only the frequent band was stable at 104 windows.** Anything derived from the middle or tail bands at that sample size should be treated as an estimate with a ~3-point uncertainty, and published with that caveat or re-measured at 10x.
+
+## What now stands, at the resolution actually available
+
+- **Frequent band**: 82.37% vs 25.17% constant at delay 4 - large, stable, reproduced.
+- **Middle band**: 13.11% vs 3.89% constant - real but 3 points smaller than first published.
+- **Tail**: **0 of 8728**, true rate below **0.034%** - this is now a defensible zero rather than a rhetorical one.
