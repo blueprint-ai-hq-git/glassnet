@@ -6344,3 +6344,15 @@ memory operator mean sv      0.8969        0.7618 (radius 1.0)
 ```
 
 **P1 FAILED** (7.888% against the 10% gate - the most memory any configuration has produced, and not enough), **P3 FAILED narrowly** (operator mean sv 0.8969 against a 0.90 line: the projection is exact, and `diag(1-tanh^2)` pulls it under), **falsifier did not fire** (7.888% > 6%), so orthogonalising genuinely buys memory - just not enough. The result worth keeping: **ortho dominates the frontier**, giving **3.29 points more accuracy for 0.62 points less memory than radius 1.10** (8.511% / 10.05%). The probe's mean-singular-value model **over-predicts by 2.2x** (17.53% predicted vs 7.888% measured) because it uses the mean direction and the real perturbation finds contracting ones. **A bug in my own probe** printed a hardcoded `4.730%` from a *different* checkpoint as if measured on the one being probed - the measured value must now be supplied, and the tool says `NOT SUPPLIED` instead of inventing one. Memory line status: nothing reaches 10% at usable accuracy; a recurrent weight matrix alone cannot deliver it. Source: `lens/runs/SCAN11-R090-1500` reference, `docs/history/ORTHO-FRONTIER.md`.
+
+### The accuracy plateau is measurable: flat from step 4500 while loss keeps falling (2026-11-18)
+
+```
+                             104 chunks (6,552 scored)      loss
+step 3000  (resume point)          23.95%                  6.3261
+step 4500                          25.35%                  6.1303
+step 5000                          25.24%                  6.1148
+step 5500                          25.76%                  6.0826
+```
+
+**Accuracy has plateaued.** From step 4500 to 5500 the readings are 25.35 / 25.24 / 25.76 - a spread of **0.52 points against a 0.50-point standard error**, i.e. flat - and the 2500 steps from 3000 to 5500 bought **+1.81 points** against the **+3.83** that 1500-to-3000 bought. **But loss has not plateaued**: it falls monotonically, **-0.24 nats** over the same stretch. **The model is getting more confident, not more correct.** Scoring: the arm's **original P1 (>= 24% at 6000) is MET**, already at step 4500; the **restated P1 (>= 26%)**, after the eval correction moved its baseline to 23.95%, reads **25.76% at step 5500** and must be judged on the final checkpoint, not extrapolated. **This closes the 'just train longer' line with a measured floor**: more training stopped buying accuracy around step 4500 at ~25.5%, and that was only visible because the eval was made four standard errors tighter than the one that started the line. Source: `lens/runs/chat/scan12_r090_6k_ep*.npz`, `docs/history/PLATEAU-MEASURED.md`.
