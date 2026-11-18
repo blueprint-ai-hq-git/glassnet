@@ -6449,3 +6449,17 @@ k=16 memory                    1.642%          1.312%          +0.330 pts (gate 
 ```
 
 1500 steps from `scan11_r090_ep3000`, scored at the corrected 104-chunk protocol. **P1 MET** (memory 1.642% > 1.322%), **P2 MET** (held-out 24.30% > 21.02%, and above the baseline's own 23.95% though not resolvably), **P3 MET** (decay moved off 0.9), **falsifier did not fire**. The channel is installed, gradient-certified, a proven forward no-op at injection, and it moves every number the right way: accuracy +0.35 (inside noise), **loss -0.15 nats**, **repetition -0.048**, memory **+0.33 points** - which is **3.3% of the way to the 10% gate**. **And P3 exposed why:** all eight slots read the *same* decay to the bit (`0.8580580949783325`), because `M` starts at zero, every slot scores `q.M = 0`, the softmax is uniform, every slot receives the identical write, so `d_decay[k]` is identical forever. **The 8-slot bank was mathematically one slot with 8x the write rate** - exactly what +0.33 points looks like, found by reading the weights instead of tuning. `MEM_SYM=1` now randomises the per-slot start and `run_memchan_sym.sh` re-runs the identical recipe with that one change. If that arm does not beat 1.605%, the limiter is the **training signal** (a 32-token window never asks the model to remember for 16 steps). Source: `lens/runs/MEMCHAN-ARM.txt`, `docs/history/MEMCHAN-ENDPOINT.md`.
+
+### Re-warming the learning rate buys 1.31 points: the schedule was part of the plateau (2026-11-18)
+
+```
+step 6000 (plateau)   25.89%   loss 6.0640     <- flat band 4500-6000 was 25.24-26.01
+step 6250             26.53%   loss 5.9681
+step 6500             27.27%   loss 5.9166
+step 6750             27.18%   loss 5.8918
+step 7000             27.32%   loss 5.8783
+step 7250             27.69%   loss 5.8653
+step 7500             27.20%   loss 5.8903     <- ENDPOINT
+```
+
+By step 6000 the rate had decayed **0.03 -> 0.0030**, so the plateau was measured while the model took increasingly tiny steps. Resuming `scan12_r090_6k_ep6000` with the rate **re-warmed to 0.03** for 1500 steps, **one variable changed**: **P1 MET** (27.20% > 26.01% band top), **P2 MET** (loss 5.8903, -0.174 nats), **falsifier did not fire**, and **6 of 6** curve points sit above the old band. The effect is **+1.31 points = 1.85 SE** - just under the 2-SE bar on a single comparison - so the honest statement is that the schedule explains **part** of the plateau, worth **1.3-1.8 points**, not all of it. The shape matters more than the size: accuracy climbed for 500 steps then **flattened at ~27.3% while loss kept falling**, the same confidence-without-accuracy pattern at a higher level, so a re-warm is a **one-time lift, not a new regime**. **This exposed an n=1 problem:** the trainer hardcoded **both** `SD.init(..., seed=0)` and `default_rng(0)`, so a second independent draw was impossible. Both now follow **`SEED`** (default 0, existing arms bit-identical, recorded in checkpoint metadata), and `run_rewarm_seed1.sh` re-runs at `SEED=1` with its falsifier pre-registered: **if seed 1 stays inside 25.24-26.01%, this claim is withdrawn and the plateau stands as capacity-limited.** Source: `lens/runs/LR-REWARM.txt`, `docs/history/LR-REWARM.md`.
