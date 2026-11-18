@@ -6609,3 +6609,18 @@ base checkpoint, 104 chunks, 6552 scored:
 ```
 
 **1. The real effect size is +2.84 points, 5.83% -> 8.67%.** One thousand steps of 16-step demand took the model from **worse than a constant predictor to better than one**, and the no-bank control stayed at 5.22% (still worse) - so the bank is what makes the difference. **2. The architecture already handles short delays**: at delay 4 the base scores **11.65%**, higher than the delay-16 arm reaches after training, consistent with this model's measured effective context of about 2-4 tokens. **3. My own falsifier for the delay-4 arm was framed against the wrong number** - it said "at or below 8.67% means no dose-response", but that arm's correct bar is **its own starting point, 11.65%**; a delay-4 arm that merely reproduces the base has demonstrated nothing. The corrected bar is recorded and will be applied when its endpoint lands. Current honest summary: **demand lifts 16-step recall from 5.83% (below a fair constant) to 8.67% (above it), the bank is worth +3.45 points, short delays were already handled, and all of it remains below a window-informed constant at 14.41%.** Source: `tools/eval_delayed.py`, `tools/eval_delayed_ci.py`, `docs/history/DEMAND-MAKES-MEMORY.md`.
+
+### Dose-response at 250 steps: delay 4 goes from below a trivial predictor to above it (2026-11-18)
+
+Measured against its **own starting point** - the bar written down before this result existed - with the window as the resampling unit:
+
+```
+delay 4, per-window constant = 14.68%
+  scan12_r090_6k_ep6000 (base)   11.65%   -3.04 pts  CI [-4.20, -2.01]   BELOW trivial
+  td4_r090_ep6250 (250 steps)    19.57%   +4.88 pts  CI [+3.54, +6.03]   ABOVE trivial
+  arm vs its own base                     +7.92 pts  CI [+7.20, +8.64]   RESOLVABLE
+```
+
+**The gain is +7.92 points and it is not marginal** - the arm crosses from 3.04 points below a constant predictor to 4.88 points above it in 250 steps. Compare delay 16: base 5.83% -> arm 8.67%, **+2.84 points**. **So the gain is larger at the SHORT delay**, the opposite of what was predicted: demand training helps most where the base model was already capable, and least at the long delay that motivated the experiment.
+
+**Why this is not the win it looks like:** at a 4-step delay the target is 4 tokens back and was in the model's recent input, so much of 19.57% is recent-token carry rather than memory - this model's measured effective context is only ~2-4 tokens. The result says the shifted-target objective can **reshape the readout where the information is already present**, which is narrower than "memory works". **Caveats:** 250 of 1000 steps, one checkpoint, one seed, one arm per delay - the endpoint decides. Source: `tools/eval_delayed_ci.py`, `docs/history/DEMAND-MAKES-MEMORY.md`.

@@ -98,3 +98,32 @@ bar is recorded here and will be applied when its endpoint lands: **td4 must bea
 
 The honest summary is now: **demand training with the memory bank lifts 16-step recall from 5.83% (below a fair constant predictor) to 8.67% (above it), the bank is worth +3.45 points over
 no bank, short delays were already handled by the base model (11.65% at delay 4), and all of it remains below a window-informed constant predictor (14.41%).**
+
+
+---
+
+# DOSE-RESPONSE at 250 steps: delay 4 goes from below a trivial predictor to above it (2026-11-18)
+
+The delay-4 arm, measured against **its own starting point** - the bar written down before this result existed - with the window as the resampling unit (104 windows, 10,000 resamples):
+
+```
+delay 4, per-window constant predictor = 14.68%
+  scan12_r090_6k_ep6000 (base)     11.65%   -3.04 pts  95% CI [-4.20, -2.01]   BELOW trivial
+  td4_r090_ep6250 (250 steps)      19.57%   +4.88 pts  95% CI [+3.54, +6.03]   ABOVE trivial
+  arm vs its own base                      +7.92 pts  95% CI [+7.20, +8.64]   RESOLVABLE
+```
+
+**The gain is +7.92 points and it is not marginal.** The arm crosses from 3.04 points *below* a constant predictor to 4.88 points *above* it, in 250 steps, and both intervals exclude zero.
+
+Compare the shape with delay 16: base 5.83% -> arm 8.67%, **+2.84 points**. So the **gain is larger at the short delay**, which is the opposite of the direction predicted. Demand training helps most where the base model was
+already capable, and least at the long delay that motivated the experiment.
+
+## Why this is not the win it looks like
+
+At a 4-step delay the target is 4 tokens back and was **in the model's recent input**. Much of the 19.57% is recent-token carry rather than memory, and this model's measured effective context is only about 2-4 tokens. The
+dose-response therefore says something real but narrower than "memory works": it says the shifted-target objective can **reshape the readout substantially in the regime where the information is already present**.
+
+## Caveats held against the result
+
+- **250 of 1000 steps**, one checkpoint, one seed. The endpoint decides.
+- One arm per delay, so the shape is two points, not a curve.
