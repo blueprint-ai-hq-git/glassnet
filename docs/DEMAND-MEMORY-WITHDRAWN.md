@@ -49,3 +49,37 @@ hides exactly the failure this project exists to catch.**
 
 **A pooled accuracy gain is not evidence of the capability the task is named after.** Any claim about recall must be split by target frequency first, because the frequent band is large
 enough to carry a pooled number on its own. This control should have been run before the first publication, not after three.
+
+
+---
+
+# DOSE-RESPONSE ENDPOINT: 47.30% pooled, and still ZERO rare-token recall (2026-11-18)
+
+The delay-4 arm finished its 1000 steps. Frequency-split, ranks from the training region only:
+
+```
+delay 4 endpoint        top-20    ranks 21-500    tail (888)    pooled
+  td4_r090_ep7000       81.74%       16.29%         0.00%       47.30%
+  base (no demand)      19.61%        4.75%         0.00%       11.65%
+  same-window constant  24.87%        5.56%         0.56%        7.13%
+```
+
+**The pooled number quadrupled - 11.65% to 47.30% - and rare-token recall is still exactly zero.** Not "low": zero, out of 888 positions, at every checkpoint this arm produced (0.00% at 250, 500 and 1000 steps). One correct rare token would have read 0.11%.
+
+## What the bands say
+
+- **Top-20: 81.74% against a 24.87% constant.** The model became very good at the frequent tokens.
+- **Ranks 21-500: 16.29% against 5.56%** - a genuine 2.9x improvement, so this is not pure frequency: the model is using local context for mid-frequency tokens too.
+- **Tail (rank > 500): 0.00% against 0.56%** - the model is *worse than a constant predictor* on rare tokens, because a constant at least guesses one of them occasionally.
+
+So the arm learned **the local statistics of tokens it can afford to guess**, and has no ability whatsoever to retrieve *which* rare token occurred four steps back. A four-step-back target was sitting in the model's input four tokens earlier - a copy mechanism would get some of them. It gets none.
+
+## The line's conclusion, now with a mechanism
+
+The synthetic delayed-recall probe proved the **memory bank itself** holds a fact for 16 steps when a task demands it (81.25%, control at chance, gradient certified 6.789e-08, one bank per sample). The real model, trained with genuine delayed demand, still cannot retrieve a rare token across 4 steps.
+
+**The gap is not the bank and not the objective. It is the base model's ability to represent token identity in its recurrent state at 4.7M parameters.** Both levers this line could pull - the memory mechanism and the training signal - have now been pulled and measured, and neither moved rare-token recall off zero.
+
+## The rule this validates
+
+Published one wake earlier, before this endpoint existed: *a pooled accuracy gain is not evidence of the capability the task is named after; split by target frequency first.* The endpoint is its strongest test yet - a **47.30% pooled score with 0/888 rare-token recall** - and the pooled number alone would have read as a success.

@@ -6646,3 +6646,18 @@ delay 16   (1000 steps)    top-20    r21-500    tail (892)
 **Why it looked positive:** the comparisons were **pooled**, and pooling is dominated by the top-20 tokens - 3325 of 6552 scored positions. The band where memory would have to show sat at zero the whole time. A pooled comparison hides exactly the failure this project exists to catch.
 
 **What still stands:** the memory module holds a fact for 16 steps *in isolation* (81.25%, control at chance, gradient certified 6.789e-08, one bank per sample) - a different measurement with a different control, untouched by this. The bank's +3.45 accuracy points are real as an accuracy difference but sit in the same band, so they are not memory evidence either. **New rule:** a pooled accuracy gain is not evidence of the capability the task is named after; any recall claim is split by target frequency first, because the frequent band alone can carry a pooled number. This control should have run before the first publication, not after three. Source: `tools/eval_delayed_split.py`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
+
+### Dose-response endpoint: 47.30% pooled, still ZERO rare-token recall (2026-11-18)
+
+The delay-4 arm finished 1000 steps. Frequency-split, ranks computed on the training region only:
+
+```
+delay 4 endpoint        top-20    r21-500    tail (888)    pooled
+  td4_r090_ep7000       81.74%     16.29%      0.00%       47.30%
+  base (no demand)      19.61%      4.75%      0.00%       11.65%
+  same-window constant  24.87%      5.56%      0.56%        7.13%
+```
+
+**The pooled number quadrupled, 11.65% -> 47.30%, and rare-token recall is still exactly zero** - 0 of 888 positions, at every checkpoint this arm produced (250, 500 and 1000 steps); one correct rare token would have read 0.11%. **Top-20 81.74% against a 24.87% constant**, and **ranks 21-500 16.29% against 5.56%** (a genuine 2.9x, so not pure frequency) - but on the **tail the model is worse than a constant** (0.00% vs 0.56%), because a constant at least guesses one occasionally.
+
+So the arm learned the local statistics of tokens it can afford to guess, with no ability to retrieve *which* rare token occurred four steps back - a target that was sitting in its input four tokens earlier, which a copy mechanism would catch some of. **The line's conclusion now has a mechanism:** the synthetic probe proved the memory bank holds a fact for 16 steps (81.25%, control at chance, gradient certified), while the real model trained with genuine delayed demand still cannot retrieve a rare token across 4 steps. The gap is neither the bank nor the objective - it is the base model's ability to represent token identity in its recurrent state at 4.7M parameters. **Both levers this line could pull have now been pulled and measured, and neither moved rare-token recall off zero.** This is also the strongest test yet of the rule published a wake earlier: a 47.30% pooled score with 0/888 rare-token recall would have read as a success if not split by frequency. Source: `tools/eval_delayed_split.py`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
