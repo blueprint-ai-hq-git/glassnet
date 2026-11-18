@@ -6255,3 +6255,21 @@ failing in BOTH models: none
 ```
 
 Two facts matter more than the pass count. **Every failure is the readable model's alone** - a matched model with a direct path passes all 36 with the same formulas, so the six failures are architectural, not wrong definitions. And **the readable units fire 5-20x too often**: concept supports run from 0.58% to 13.9%, but the neurons average a **47.4%** firing rate, so a unit that fires on nearly half of all windows cannot sharply detect a 0.6% property - which is why AUROC sits at 0.6-0.7 while the name is in its own supervision. This is the same defect class found in the image model this morning (`centre_heavier`, AUROC 0.3196 at a 96.9% firing rate). `--lam-act`, the penalty on mean concept activation, has been **0.0 in every run this project has done**; two arms now try 0.3 and 1.0 with P2 requiring mean AUROC above 0.80 and a falsifier that sends the next attempt at the concept definitions instead. Source: `tools/concept_label_audit.py`, `docs/history/CHAT-READABILITY-AUDIT.md`.
+
+### Concept honesty across 8 seeds: one unreliable concept, no others - and a correction to my own claim (2026-11-18)
+
+```
+seed       pass    centre_heavier AUROC   failing
+0         20/21          0.2889         centre_heavier
+1         21/21          0.6336         none
+2         20/21          0.5095         centre_heavier
+3         20/21          0.2903         centre_heavier
+4         21/21          0.5999         none
+5         21/21          0.7741         none
+6         20/21          0.4643         centre_heavier
+7         20/21          0.4282         centre_heavier
+
+centre_heavier fails in 5 of 8 seeds; NO other concept fails in any seed (168 concept-seed pairs)
+```
+
+**`centre_heavier` is the only concept that ever fails**, and it is **unreliable rather than always inverted**: 5 of 8 seeds fail, AUROC ranges 0.2889 to 0.7741 - it learns something real at seed 5 (0.77) and inverts at seeds 0 and 3 (0.29). **CORRECTION to the earlier report in this same day**, which said "AUROC 0.3196, below chance, the neuron fires more often where the claim is false": that was measured at **seed 0** and stated as a property of the concept. It is true at seeds 0 and 3 only. The honest statement is **seed-dependent unreliability**, not constant inversion - the stronger claim came from one checkpoint, which is the mistake the three-seed rule exists to prevent, caught here by applying that rule to my own result. The fix (threshold 0.05 -> 0.40, support 96.9% -> 23.45%) is now tested at **three seeds**, with a falsifier that drops the concept if it still fails in 2 or more. Source: `tools/honesty_all_seeds.py`, `docs/history/HONESTY-ACROSS-SEEDS.md`.
