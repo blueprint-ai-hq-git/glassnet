@@ -6171,3 +6171,24 @@ glassnet-scan-r9-recurrent
 ```
 
 The chat model's published accuracy reproduces **to the digit** from the downloaded file alone, and the readable vision model rebuilt from its downloaded bytes scores 85.50% over 2,000 images. Both models now carry a **canonical weights hash** (stable across rebuilds) alongside the container file hash, because the safetensors header is not byte-stable. `tools/verify_hf_scan.py` and `tools/verify_hf_vision.py` re-run these checks and fail loudly on a canonical mismatch. Source: `docs/history/SAFETENSORS-HASH-STABILITY.md`, `docs/history/PUBLISHED-ARTIFACTS-VERIFIED.md`.
+
+### CORRECTION: the published "32-token context" is wrong - the model uses 2 tokens (2026-11-18)
+
+```
+     L   accuracy   vs L=1
+     1      9.27%   +0.00    <- only the current token
+     2     16.73%   +7.47
+     4     17.40%   +8.13
+     8     17.40%   +8.13
+    16     17.40%   +8.13
+    32     16.73%   +7.47    <- the figure the cards used to claim
+    64     17.93%   +8.67
+   128     16.40%   +7.13
+
+SE 0.98 points (n=1500, p~0.174); a difference needs ~1.9 points to be resolvable at 95%
+  1 -> 2 tokens   : +7.47 points = 7.6 SE   RESOLVABLE
+  2 -> 128 tokens : -0.33 points = -0.3 SE  NOT RESOLVABLE
+  spread over L>=2 : 1.53 points = 1.6 SE   NOT RESOLVABLE
+```
+
+Both chat cards said **context window 32 tokens** - inherited from an older README and never measured. Measured now, by feeding exactly L tokens and scoring the next one over the same 1,500 held-out chunks: context buys **7.6 standard errors** of accuracy going from 1 to 2 tokens (9.27% -> 16.73%), and **nothing resolvable** from 2 to 128. **The effective context is 2 tokens**, and the published figure overstated it by 16x. This is the same finding as the state-side memory measurements (a token 16 back moves the state 0.878%) seen from the outside instead: nothing past two tokens changes the prediction. `glassnet-scan-r9-recurrent` now reports **effective context (measured): 2 tokens**, and `config.json` carries `effective_context_tokens` and `trainer_context_length` separately so a trained length can never be mistaken for a usable one. Source: `tools/context_curve.py`, `docs/history/EFFECTIVE-CONTEXT-IS-TWO.md`.
