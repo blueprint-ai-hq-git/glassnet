@@ -6089,3 +6089,17 @@ memory k=1              39.144%        50.383%     <- 0.8x: the clamped model is
 ```
 
 Two arms, same recipe, same seed, 1500 steps, **one number changed**. Unclamping the recurrent matrix multiplies long-range memory by **5.4x at k=16** and **7.4x at k=32**, so the clamp is the *cause* of the forgetting, not a correlate. It costs **3.04 points** of teacher-forced accuracy, does **not** make the model generate (free-running difference unresolvable), and still **fails** the 10% memory gate at 4.73%. Next, pre-registered: two matched 3000-step arms to test whether the accuracy cost is training-length or the radius itself (falsifier: gap >= 2.5 points at 3000 steps means the trade is permanent). Source: `lens/runs/EVAL-R10.txt`, `lens/runs/SCAN-R10-RADIUS1.txt`, `docs/history/CLAMP-IS-THE-CAUSE.md`.
+
+### The readable image model, scored on four questions at 8 seeds (2026-11-18)
+
+```
+                                readable      plain
+mean accuracy (8 seeds)          84.14%      84.44%    gap -0.30 points (SE 0.43)
+seed-to-seed sd                  0.49        1.26      readable 2.6x tighter
+spread                           1.42 pts    4.28 pts
+epochs to 80%                    3.2         2.9       0.88x (no speed advantage)
+epochs to 84%                   14.9        10.7       0.72x
+concepts honest                 20-21 of 21  --        95-100% every seed
+```
+
+**Two wins, one parity, one loss.** Parity on mean accuracy (-0.30, under one standard error from zero). A real but smaller-than-first-measured stability advantage: **2.6x tighter across seeds** (the 3-seed estimate of 5.4x did not survive; P2 failed). **No learning-speed advantage at all** - faster at 75%, slower at 80% and 84%, no trend. And full transparency: 20-21 of 21 concepts honest, zeroing the layer drops 84.62% -> 9.98%, and all 21 formulas ship in the published model's `config.json`. Source: `lens/runs/CAPADV-SEEDS8.txt`, `docs/history/READABLE-SCORECARD.md`.
