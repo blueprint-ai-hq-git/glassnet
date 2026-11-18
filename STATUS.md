@@ -6025,3 +6025,13 @@ GATE (>5% acc AND cosine <0.90): FAIL
 ```
 
 The readout was given the current token embedding as well as the state (`logits = [c_t ; x_t] @ Wc + bc`) - the pre-registered change. **Accuracy stayed at 0.00%**, so the falsifier fired and the harness is **abandoned rather than re-scaled**, as the pre-registration required. The loss does fall monotonically (9.4722 -> 9.3625, `ln(12002)` = 9.3936), so this is slow learning, not a dead pipeline - but three attempts have now failed to reach non-zero accuracy and a falsifier obeyed only when it agrees is not a falsifier. `lens/cell.py` remains certified and reusable. Next: train the real scan model with `TARGET_RADIUS=1.0` from the start, the one mechanism this week with a confirmed cause. Source: `tools/cell_input_readout.py`, `docs/history/CELL-HARNESS-ABANDONED.md`.
+
+### Raising the concept count did not close the matched gap; what a concept costs does (2026-11-18)
+
+```
+READABLE: 24,945 params  16 patches x 64  ->  21 concepts  ->  10
+PLAIN   : 24,655 params  784 -> 31 hidden ->  10   (1.16% size difference)
+delta -1.47 points   concepts passing 20/21   (13-concept run: -1.53)
+```
+
+**The gap did not move (-1.53 -> -1.47, noise).** The plain control is sized to match *parameter count*, so adding concepts also grew the control's hidden layer. The arithmetic is the mechanism: one concept unit costs **1034** params (16 patches x 64 dims + 10 answer weights) against a plain unit's **794** (784 pixels + 10), a ratio of **1.30**, so at matched parameters the readable model gets **68-77% of the units** (measured 21 vs 31). A named concept sits on a wider input than a plain hidden unit. Next arm: `d=49` makes 16x49=784 concept features - exact per-unit parity - with P1 unit parity, P2 gap within +-0.5, and a falsifier of still <=-1.0. Source: `lens/runs/WIDTH-MATCH-21.txt`, `docs/history/UNIT-COST-NOT-WIDTH.md`.
