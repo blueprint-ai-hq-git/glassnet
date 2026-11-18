@@ -6331,3 +6331,16 @@ lam-act   pass     mean AUROC   mean fire rate   failing concepts
 ```
 
 `--lam-act` had been **0.0 in every run this project has ever done**; raising it takes label-honest concepts from **30/36 (83.3%) to 34/36 (94.4%)** and cuts the mean firing rate from **47.4% to 20.1%** (supports are 0.6-14%, so the neurons were firing 5-20x too often). **P1 and P3 held; P2 FAILED** (mean AUROC 0.7370 against a 0.80 target), and the falsifier did not fire but only just - 0.7370 is 0.017 above its 0.72 line. The two remaining failures are `mentions_body` (1.32%) and `mentions_sport` (1.43%), but **rarity is not the whole story**: `mentions_a_name` has the *lowest* support (0.82%) and now passes. Next test (lam-act 1.5 and 2.0, pre-registered) checks whether the dial saturates; if it does, the remaining two need per-concept positive weighting rather than more uniform pressure. Source: `lens/runs/CONCEPT-ACT.txt`, `docs/history/CONCEPT-ACT-WORKS.md`.
+
+### Orthogonal recurrence: the best memory/accuracy point found, still 7.7 points behind (2026-11-18)
+
+```
+                        ortho s=1.0     radius 0.9 (same 1500 steps)
+Wh largest singular value   1.0000        1.6245    <- exactly orthogonal, as designed
+held-out teacher-forced     13.34%        21.02%
+free-running                 4.06%         6.31%   (paired CI [-4.62,+0.00] NOT RESOLVABLE)
+k=16 memory                  7.888%        1.322%
+memory operator mean sv      0.8969        0.7618 (radius 1.0)
+```
+
+**P1 FAILED** (7.888% against the 10% gate - the most memory any configuration has produced, and not enough), **P3 FAILED narrowly** (operator mean sv 0.8969 against a 0.90 line: the projection is exact, and `diag(1-tanh^2)` pulls it under), **falsifier did not fire** (7.888% > 6%), so orthogonalising genuinely buys memory - just not enough. The result worth keeping: **ortho dominates the frontier**, giving **3.29 points more accuracy for 0.62 points less memory than radius 1.10** (8.511% / 10.05%). The probe's mean-singular-value model **over-predicts by 2.2x** (17.53% predicted vs 7.888% measured) because it uses the mean direction and the real perturbation finds contracting ones. **A bug in my own probe** printed a hardcoded `4.730%` from a *different* checkpoint as if measured on the one being probed - the measured value must now be supplied, and the tool says `NOT SUPPLIED` instead of inventing one. Memory line status: nothing reaches 10% at usable accuracy; a recurrent weight matrix alone cannot deliver it. Source: `lens/runs/SCAN11-R090-1500` reference, `docs/history/ORTHO-FRONTIER.md`.
