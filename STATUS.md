@@ -6228,3 +6228,17 @@ source checkpoint mtime unchanged (09:04:47 before and after)
 ```
 
 That contrast is the proof the weights loaded rather than being silently re-initialised. **My first version died instantly with `NameError: name 'log' is not defined`** - it called `log()` before its definition further down the file, and the patch parsed fine; the smoke test caught it. **Honest limitation, written in the source:** the sampler's rng state is not stored, so a resumed run continues the weights exactly but sees a different shuffle of the same corpus. Saving the rng state would make it bit-exact and is not done yet. Source: `lens/scripts/train_scan9.py`, `docs/history/RESUME-IMPLEMENTED.md`.
+
+### Resume is now BIT-EXACT; the earlier version was only weight-exact (2026-11-18)
+
+The resume added earlier today continued the weights but not the sampler, so a resumed run saw a different shuffle. `__meta__` now carries `rng_state` (PCG64 state, JSON round-tripped) plus `ortho`/`ortho_scale`, and the state is restored before the first batch is drawn.
+
+```
+meta keys: ['D','H','V','ck_prefix','ortho','ortho_scale','rng_state','step','target_radius']
+
+two independent resumes from the same checkpoint, 25 steps each:
+step 275/275 loss 8.3962 ema 8.4815 acc 2.54% gnorm 3.46
+step 275/275 loss 8.3962 ema 8.4815 acc 2.54% gnorm 3.46   <- identical to every printed digit
+```
+
+**Two bugs of mine were caught by running the code, not by reading it:** `NameError: name 'log' is not defined` (the first patch called `log()` before its definition, so every *resumed* run died), and then `NameError: name 'seen' is not defined` (the second patch matched a line part-way and buried `t0/ema/seen` inside the `if _resume_msg:` block, so every *fresh* run died). Both failure modes are recorded, because a patch that appends to a line that already has statements is exactly where they live. Source: `lens/scripts/train_scan9.py`, `docs/history/RESUME-BIT-EXACT.md`.
