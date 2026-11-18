@@ -6048,3 +6048,13 @@ answer head on FROZEN concepts:  linear 83.23% | 40 pair rules 83.49% | ALL 78 p
 ```
 
 Raising concepts 13->21 moved the gap 0.06 points; equalising per-unit parameter cost moved it 0.01. Giving the answer layer **rules** ("concept A and concept B" - still fully readable) recovered at most **+0.95** of the deficit. So the cost is not width, not unit cost and not the linear head: **it is the concept representation itself** - a layer forced to match one named formula per unit is a weaker encoder than a free hidden layer of equal size. The number this project reports is therefore **~1.5 points at matched parameters, in exchange for 100% of the middle layer being human-checkable** (21 of 21 honest; zeroing the layer drops 84.15% -> 10.17%, shuffling -> 9.55%, so it is load-bearing). One arm left on this line: give readable a 3x unit advantage (patch 14 x d 56) and see whether capacity, not the constraint, was the story. Source: `lens/runs/UNIT-COST-PARITY.txt`, `tools/rule_answer_probe.py`, `docs/history/READABILITY-COST-LOCATED.md`.
+
+### Readability at PARITY: -0.08 points (single seed, replication running) (2026-11-18)
+
+```
+READABLE: 15,977 params   4 patches x 56  ->  21 concepts  -> 10
+PLAIN   : 15,910 params   784 -> 20 hidden -> 10   (0.42% size difference)
+delta -0.08 points      concepts passing 20/21 (95.2%)
+```
+
+Every configuration so far measured ~-1.5 points. This one measures **parity**, and the difference is shape, not capacity: `patch 7 x d 64` gave 1024 features per concept unit (gap -1.47/-1.53), `patch 7 x d 49` gave 784 (gap -1.46), and **`patch 14 x d 56` gives 224 features per concept unit for a gap of -0.08**. Coarse 14x14 patches match the concept formulas, which are region-shaped (`top_half_heavier`, `centre_heavier`), and unit cost falls from 1034 to 234 parameters so the concept layer is no longer starved. **P1 failed** (I predicted a 30+ unit advantage; the readable model fielded 21 against 20), P2 and P3 hold, and the falsifier did not fire - a weak pass, not a strong one. **One seed: the 3-seed replication is running and this page gets the retraction in place if the mean lands at or below -1.0.** Source: `lens/runs/CAPACITY-ADVANTAGE.txt`, `docs/history/READABILITY-PARITY.md`.
