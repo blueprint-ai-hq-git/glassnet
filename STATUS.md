@@ -6690,7 +6690,7 @@ So 1,250 further steps of the same delayed-target objective **actively removed a
 
 **Bound I am not overstating:** the tail result is `0 of 892`, which only implies a true rate below **0.34%** - one in 300 rare targets could exist unseen. The high-N run (1,040 windows, ~8,900 tail positions) is in flight to tighten that to **0.034%**; until it lands, "zero" means "below 0.34%". Source: `tools/eval_delayed_split.py`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
 
-### Delay-16 extension endpoint: monotone erosion, zero tail (2026-11-18)
+### WITHDRAWN: delay-16 extension endpoint - the "monotone erosion" reading (2026-11-18)
 
 ```
 delay 16       POOLED   next-tok   top-20   ranks 21-500   TAIL(892)
@@ -6700,7 +6700,7 @@ ep8250                              15.79%      0.59%        0.00%
 ep8500          8.26%     11.86%   16.09%      0.55%        0.00%
 ```
 
-The middle band declines **monotonically** across all four checkpoints (1.60 -> 1.47 -> 0.59 -> 0.55) while the frequent band is flat and the tail never moves off zero. The pooled number - the only one that had been improving - also falls at the endpoint (8.67 -> 8.26). **The delay-16 line closes on four consecutive checkpoints: no training length produces rare-token recall, and continuing actively erodes the middle band.** Source: `lens/runs/TD16-EXTEND.txt`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
+The middle band declines **monotonically** across all four checkpoints (1.60 -> 1.47 -> 0.59 -> 0.55) while the frequent band is flat and the tail never moves off zero. The pooled number - the only one that had been improving - also falls at the endpoint (8.67 -> 8.26). **RETRACTED:** all four band figures in this section came from the 104-window protocol, which the seeded RNG makes a strict *prefix* of the 1040-window draw - and prefix windows are ~5x easier on the middle band (1.60% vs 0.43% on the same checkpoint). The monotone decline was measured on a biased instrument, so it is withdrawn. What still stands is only the tail: **no training length produces rare-token recall** (0 of 8727 at high N, true rate < 0.034%). The all-four-checkpoint re-measurement at 1040 windows is running. Source: `lens/runs/TD16-EXTEND.txt`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
 
 ### High-N tail test: the zero is solid, and one published magnitude was overstated (2026-11-18)
 
