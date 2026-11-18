@@ -6309,3 +6309,14 @@ loss 7.451  7.064  7.034  6.828  6.811  6.698  6.653  6.590  6.537  6.495  6.454
 ```
 
 **The climb is real** - 5.29% to 21.03%, a 15.7-point gain, loss falling monotonically with one wobble. **But the standard error on a single point is 1.47 points**, so the fine structure is noise: the last four increments (+0.40, +0.53, +0.66, +0.13 per 250 steps, mean +0.43) are **all inside the error bar**, which means **"the curve is decelerating" is NOT established** - that is what increments smaller than a 1.47-point error look like. What is resolvable is coarser: step 1500 to 3000 gains **3.83 points = 2.6 SE**. Linear fits over the later half extrapolate to **26.7-29.6%** at 6000 steps, which contains the 6000-step arm's prediction of >= 24%, but the fit rests on 1.47-point points, so 24% is **plausible and unproven** and the arm is the test. Source: `tools/learning_curve.py`, `docs/history/LEARNING-CURVE-R090.md`.
+
+### CORRECTION: the held-out eval was too small - every absolute accuracy was ~3.2 points too low (2026-11-18)
+
+```
+checkpoint                    12 chunks (768)   104 chunks (6552)   difference
+scan9_ep1500   (r=0.9)            16.27%            19.67%           +3.40
+scan11_r100_ep3000 (r=1.0)        16.80%            20.83%           +4.03
+scan11_r090_ep3000 (r=0.9)        21.03%            23.95%           +2.92
+```
+
+The protocol scored **12 chunks = 768 positions**, SE **1.47 points** - it could not resolve anything under ~2.9 points, and it was being used to argue about 1-point effects. The power calculation: to resolve 1 point at 95% needs **~6,636 scored positions = 104 chunks** (SE 0.50). Scored that way, **all three checkpoints are 2.9-4.0 points higher** - not because the estimator is biased but because every model shared the *same* unrepresentative first twelve chunks. **What survives:** the ordering and every paired comparison (same sample). **What is corrected:** radius 0.9 at 3000 steps is **23.95%** not 21.03%; radius 1.0 is **20.83%** not 16.80%; scan9 is **19.67%** not 16.27%. **What got sharper:** the radius-0.9 advantage is **3.12 points at ~4.4 SE**, resolvable, where it was previously a 2-SE call. Also: the 6000-step arm's P1 is restated - its baseline is 23.95%, not 21.03%, so the honest prediction is **>= 26%**, and 24% should not be counted as success. `tools/eval_radius_arm.py` now defaults to **EVAL_CHUNKS=104**. Source: `docs/history/EVAL-PROTOCOL-TOO-SMALL.md`.
