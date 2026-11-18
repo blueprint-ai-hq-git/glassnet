@@ -136,3 +136,19 @@ converging onto the frequency prior and away from whatever partial delayed infor
 
 **A bound I am NOT overstating.** The tail result is `0 of 892`, which only implies a true rate below **0.34%** - one in 300 rare targets could exist and this sample would not see it. The high-N run (1,040 windows, ~8,900 tail positions) is in flight to
 tighten that to **0.034%**. Until it lands, "zero" means "below 0.34%", not "exactly none".
+
+
+## Endpoint of the delay-16 extension: monotone erosion, zero tail (2026-11-18 20:30)
+
+```
+delay 16       POOLED   next-tok   top-20   ranks 21-500   TAIL(892)
+ep7000          8.67%     16.54%   16.15%      1.60%        0.00%
+ep7500                              15.60%      1.47%        0.00%
+ep8250                              15.79%      0.59%        0.00%
+ep8500          8.26%     11.86%   16.09%      0.55%        0.00%
+```
+
+The middle band declines **monotonically** across all four checkpoints (1.60 -> 1.47 -> 0.59 -> 0.55) while the frequent band is flat (16.15 -> 15.60 -> 15.79 -> 16.09) and the
+tail never moves off zero. The pooled number, which had been the only thing improving, also falls at the endpoint (8.67 -> 8.26).
+
+So the delay-16 line closes on four consecutive checkpoints: **no training length produces rare-token recall, and the middle band is actively eroded by continuing.**

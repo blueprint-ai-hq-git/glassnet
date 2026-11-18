@@ -6689,3 +6689,15 @@ ep7000 vs ep8250:  1.60% vs 0.59%   z = 3.35   95% CI [+0.42, +1.60] points   RE
 So 1,250 further steps of the same delayed-target objective **actively removed about a point of delayed ability from the middle-frequency band**, while the frequent band stayed flat (16.15% -> 15.60% -> 15.79%) and the tail stayed at **0 of 892**. That is not "needs more training": the objective converges onto the frequency prior and away from whatever partial delayed information it briefly held.
 
 **Bound I am not overstating:** the tail result is `0 of 892`, which only implies a true rate below **0.34%** - one in 300 rare targets could exist unseen. The high-N run (1,040 windows, ~8,900 tail positions) is in flight to tighten that to **0.034%**; until it lands, "zero" means "below 0.34%". Source: `tools/eval_delayed_split.py`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
+
+### Delay-16 extension endpoint: monotone erosion, zero tail (2026-11-18)
+
+```
+delay 16       POOLED   next-tok   top-20   ranks 21-500   TAIL(892)
+ep7000          8.67%     16.54%   16.15%      1.60%        0.00%
+ep7500                              15.60%      1.47%        0.00%
+ep8250                              15.79%      0.59%        0.00%
+ep8500          8.26%     11.86%   16.09%      0.55%        0.00%
+```
+
+The middle band declines **monotonically** across all four checkpoints (1.60 -> 1.47 -> 0.59 -> 0.55) while the frequent band is flat and the tail never moves off zero. The pooled number - the only one that had been improving - also falls at the endpoint (8.67 -> 8.26). **The delay-16 line closes on four consecutive checkpoints: no training length produces rare-token recall, and continuing actively erodes the middle band.** Source: `lens/runs/TD16-EXTEND.txt`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
