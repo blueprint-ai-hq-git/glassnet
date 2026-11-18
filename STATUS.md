@@ -6133,3 +6133,13 @@ identity verified on 500 images: max |bias + all contributions - logit| = 1.689e
 ```
 
 `examples/explain_image.py` in the public tree reproduces it from the published weights in plain numpy, including the per-concept formulas, so a reader can recompute every concept by hand. Source: `lens/vision_explain.py`, `tools/vision_explain_check.py`, `examples/explain_image.py`.
+
+### The one dishonest concept: a claim 96.9% of images satisfy cannot be read (2026-11-18)
+
+```
+centre_heavier   AUROC 0.3196 (BELOW chance)   fires 39.2%   truth 96.8%   <- the single failure of 21
+has_top_edge_ink    0.9601 | has_bottom_edge_ink 0.9651 | has_diagonal_structure 0.8003   (all added today, all honest)
+the other 17 concepts: 0.70 - 0.98
+```
+
+"20 of 21 passing" hid which one fails. `centre_heavier` scores **AUROC 0.3196 - below chance**: its neuron fires *more* often where its claim is **false**, because at threshold 0.05 the concept fired on **96.9%** of training images and left almost nothing to rank against. A claim nearly every image satisfies is not a property of an image. Same defect class as the near-constant concepts that could pass an audit for free on the text side. **The three concepts added today are all honest** (0.9601 / 0.9651 / 0.8003), so the widening bought real neurons. Fix queued: threshold **0.05 -> 0.40** (support 96.9% -> **23.45%**), P1 AUROC above 0.80, P3 honesty 21 of 21; falsifier AUROC below 0.60 means **drop the concept** rather than keep a neuron that cannot mean what it says. Source: `tools/concept_honesty_detail.py`, `docs/history/ONE-DISHONEST-CONCEPT.md`.
