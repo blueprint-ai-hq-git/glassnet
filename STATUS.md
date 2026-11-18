@@ -6508,3 +6508,25 @@ loss                              6.3199             6.3322
 ```
 
 At step 3250 the differentiated bank was marginally **worse**; by 3750 it is clearly better, **+0.649 points at +40% relative**, with held-out slightly up. So the symmetry defect was **suppressing** memory and the slots keep diverging (0.0500 -> 0.0646). **But the memory gate is 10% and the best measurement is 2.254%, so the gate still FAILS by 4.4x** - symmetry was a real but small part of the gap. Caveat: ep3750 is compared against the symmetric arm's ep3500 because that arm stopped there, so 250 steps of training length sit inside the gain; the clean number is the endpoint at 4500. Two real defects have now been fixed in this mechanism (symmetry collapse, missing `dM` gradient path) and k=16 moved **1.312% -> 1.605% -> 2.254%** with the gate unmoved - the signature of a mechanism that is right but **starved** of training signal, exactly what the pre-registered falsifier for this arm predicted. Source: `lens/runs/MEMCHAN-SYM.txt`, `lens/runs/MEMCHAN-SYM-RESUME.txt`, `docs/history/MEMORY-SYMMETRY-PAYS-LATE.md`.
+
+### Memory bank endpoint: the symmetry fix is real, durable, small, and not free (2026-11-18)
+
+```
+                        symmetric bank     symmetry-broken bank
+                          (step 3500)          (step 4500)
+k=16 memory                 1.605%               2.214%        +0.609 pts, +38% relative
+k=32 memory                 0.093%               0.112%
+held-out teacher-forced     21.03%               20.37%        -0.66 pts
+loss                       6.3199               6.2993
+slot decay spread          0.000000             0.068527       (8 of 8 distinct)
+```
+
+**P1 MET** (spread **0.068527**, 8 of 8 distinct, still growing 0.0500 -> 0.0646 -> 0.0685, so the slots never collapse back). **P2 MET** (k=16 **2.214%**, **+0.609 points, +38% relative**). **P3 NOT met in direction**: held-out **20.37% vs 21.03%**, **-0.66 points** - about 1 SE against the 0.60-point same-step spread measured here, so not resolvable, but on the wrong side and stated as such. Falsifier did not fire. **The trend is the finding:** step 3250 **1.512%** (the broken bank was *worse* there), 3750 **2.254%**, 4000 **2.164%**, 4500 **2.214%** - delayed, then flat. A single early checkpoint would have concluded the fix did nothing. **Three fixes have now paid and the gate is still 4.5x away:**
+```
+radius-only recurrent state        1.312%
++ symmetric 8-slot bank            1.605%   (+0.293)
++ broken symmetry                  2.214%   (+0.609)
+gate                              10.000%   still 4.5x away
+```
+
+**The gate is not reachable by fixing the bank.** Each defect was real, each fix paid +0.3 to +0.6 points, and the required move is +7.8 - the pre-registered falsifier's branch, now measured rather than predicted: **the limiter is the training signal, not the mechanism.** A 32-token window never asks the model to retain anything for 16 steps, so a better bank mostly stores better noise. The next attempt must change what the model is **asked to do** before touching the bank again. Source: `lens/runs/MEMCHAN-SYM.txt`, `lens/runs/MEMCHAN-SYM-RESUME.txt`, `docs/history/MEMORY-BANK-ENDPOINT.md`.
