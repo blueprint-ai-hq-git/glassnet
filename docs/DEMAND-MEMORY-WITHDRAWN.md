@@ -111,3 +111,28 @@ Consequences:
 
 **What this does and does not do.** It does not make the real-text result better - that stays withdrawn. It establishes that the module-level capability is real, which is what makes the
 real-text failure informative: the bank can hold a token for 16 steps, the real model cannot, so the limiter sits in the base model rather than in the memory mechanism.
+
+
+---
+
+# Extended training at a 16-step delay ERODES the middle band - measured, not inferred (2026-11-18)
+
+Chasing the "it just needs more steps" hypothesis produced a result in the opposite direction, and it survives a significance test:
+
+```
+delay 16, ranks 21-500 band, n = 2379 positions per checkpoint
+  td16  ep7000    1.60%   = 38 hits
+  td16x ep7500    1.47%   = 35 hits
+  td16x ep8250    0.59%   = 14 hits
+
+ep7000 vs ep8250:  1.60% vs 0.59%   z = 3.35   95% CI on the difference [+0.42, +1.60] points
+VERDICT: RESOLVABLE decay
+```
+
+Meanwhile the frequent band stayed flat (16.15% -> 15.60% -> 15.79%) and the tail stayed at **0 of 892** throughout.
+
+So 1,250 further steps of the same delayed-target objective **actively removed** about a point of delayed ability from the middle-frequency band, while neither the frequent band nor the tail improved. That is not "needs more training": the objective is
+converging onto the frequency prior and away from whatever partial delayed information it had briefly encoded.
+
+**A bound I am NOT overstating.** The tail result is `0 of 892`, which only implies a true rate below **0.34%** - one in 300 rare targets could exist and this sample would not see it. The high-N run (1,040 windows, ~8,900 tail positions) is in flight to
+tighten that to **0.034%**. Until it lands, "zero" means "below 0.34%", not "exactly none".

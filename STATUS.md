@@ -6672,3 +6672,20 @@ chi-square vs uniform   30.5    df 31    5% critical ~43.8   -> consistent with 
 ```
 
 **There is no frequent band to exploit** - with only 32 tokens all equally likely, a prior over frequent tokens is a uniform prior. **The best constant predictor scores exactly 1/32 = 3.125%**, and the control arm (same readout, memory removed) measures **3.03-3.22%** across delays 1, 4, 8 and 16 - exactly where a constant must sit. So the bank's **81.25% at 16 steps is 26x chance with no frequency structure available to inflate it**: it is carrying token identity. This does not improve the real-text result, which stays withdrawn; it establishes that the module capability is real, which is what makes the real-text failure informative - the bank can hold a token for 16 steps and the real model cannot, so the limiter is the base model, not the memory mechanism. Source: `tools/delayed_recall_probe.py`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
+
+### Extended training at a 16-step delay ERODES the middle band (2026-11-18)
+
+Chasing "it just needs more steps" produced the opposite result, and it survives a significance test:
+
+```
+delay 16, ranks 21-500 band, n = 2379 positions per checkpoint
+  td16  ep7000    1.60%   = 38 hits
+  td16x ep7500    1.47%   = 35 hits
+  td16x ep8250    0.59%   = 14 hits
+
+ep7000 vs ep8250:  1.60% vs 0.59%   z = 3.35   95% CI [+0.42, +1.60] points   RESOLVABLE decay
+```
+
+So 1,250 further steps of the same delayed-target objective **actively removed about a point of delayed ability from the middle-frequency band**, while the frequent band stayed flat (16.15% -> 15.60% -> 15.79%) and the tail stayed at **0 of 892**. That is not "needs more training": the objective converges onto the frequency prior and away from whatever partial delayed information it briefly held.
+
+**Bound I am not overstating:** the tail result is `0 of 892`, which only implies a true rate below **0.34%** - one in 300 rare targets could exist unseen. The high-N run (1,040 windows, ~8,900 tail positions) is in flight to tighten that to **0.034%**; until it lands, "zero" means "below 0.34%". Source: `tools/eval_delayed_split.py`, `docs/history/DEMAND-MEMORY-WITHDRAWN.md`.
