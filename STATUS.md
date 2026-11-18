@@ -6159,3 +6159,15 @@ build 2: header 112ac390d0b4880b | DATA 853dfd0ad0b6999b (63908 B) | canonical 9
 ```
 
 Republishing a model kept changing the `.safetensors` `sha256` with identical tensors (three pushes: `c83f8410`, `d6955049`, `d853b88e`). The **tensor data is byte-identical** every time; only the **512-byte JSON header** varies, and metadata key ordering was tested and is not the cause. A manifest hash that changes when nothing changed is decoration, not an integrity check. Every artifact now carries **two labelled hashes**: a **canonical** hash over sorted name+dtype+shape+bytes (stable - verify this) and the container file hash (documented as rebuild-unstable). Verified from the Hub: canonical **MATCH: YES**, and the model rebuilt from the **downloaded bytes only** in plain numpy scores **85.50% over 2,000 test images**. The explainer `explain_image.py` now ships inside the model repo too. Source: `tools/verify_hf_vision.py`, `docs/history/SAFETENSORS-HASH-STABILITY.md`.
+
+### Both published artifacts verify from the Hub bytes alone (2026-11-18)
+
+```
+glassnet-scan-r9-recurrent
+  published canonical 6dce6567eefa0c6b386fa97101834fb86aa5ebef26631dfd98f34ceeab9aacc4
+  recomputed          6dce6567eefa0c6b386fa97101834fb86aa5ebef26631dfd98f34ceeab9aacc4   MATCH
+  held-out accuracy recomputed from the DOWNLOADED weights: 16.27% over 756 positions
+  published figure: 16.27%   <- exact
+```
+
+The chat model's published accuracy reproduces **to the digit** from the downloaded file alone, and the readable vision model rebuilt from its downloaded bytes scores 85.50% over 2,000 images. Both models now carry a **canonical weights hash** (stable across rebuilds) alongside the container file hash, because the safetensors header is not byte-stable. `tools/verify_hf_scan.py` and `tools/verify_hf_vision.py` re-run these checks and fail loudly on a canonical mismatch. Source: `docs/history/SAFETENSORS-HASH-STABILITY.md`, `docs/history/PUBLISHED-ARTIFACTS-VERIFIED.md`.
