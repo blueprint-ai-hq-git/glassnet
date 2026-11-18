@@ -6149,3 +6149,13 @@ the other 17 concepts: 0.70 - 0.98
 **Shipped default changed.** `lens/scripts/train_image.py` used to default to `patch 7 / d 64 / support floor 0.02` - the shape that measured **-1.47 to -1.53 points** against its matched plain control. It now defaults to `--preset parity`: **patch 14, d 56, floor 0.002**, which resolves to **4x56 patches -> 21 named concepts -> 10 classes, 15,977 parameters** and measured **-0.08 points**. The old shape stays reachable as `--preset legacy`, and any explicit `--d / --patch / --min-support` still overrides the preset. Both paths were smoke-tested after the change and print the same shapes they did before.
 
 **Published model card corrected.** `glassnet-readable-vision-21` said *"3 seeds: this architecture's spread 0.82 points against the plain control's 4.28"* - the smaller-sample estimate. With 8 seeds the honest figure is **standard deviation 0.49 against 1.26, a 2.6x tighter spread**, and the card now states that and says the 3-seed figures are superseded. A published artifact is not allowed to keep a number the project has outgrown. Source: `lens/scripts/train_image.py`, `lens/runs/CAPADV-SEEDS8.txt`, `tools/publish_vision_hf.py`.
+
+### The safetensors file hash is not rebuild-stable; artifacts now carry a canonical hash (2026-11-18)
+
+```
+build 0: header fdbecdd9703d613a | DATA 853dfd0ad0b6999b (63908 B) | canonical 9ea18a1b41897ce9
+build 1: header fdbecdd9703d613a | DATA 853dfd0ad0b6999b (63908 B) | canonical 9ea18a1b41897ce9
+build 2: header 112ac390d0b4880b | DATA 853dfd0ad0b6999b (63908 B) | canonical 9ea18a1b41897ce9
+```
+
+Republishing a model kept changing the `.safetensors` `sha256` with identical tensors (three pushes: `c83f8410`, `d6955049`, `d853b88e`). The **tensor data is byte-identical** every time; only the **512-byte JSON header** varies, and metadata key ordering was tested and is not the cause. A manifest hash that changes when nothing changed is decoration, not an integrity check. Every artifact now carries **two labelled hashes**: a **canonical** hash over sorted name+dtype+shape+bytes (stable - verify this) and the container file hash (documented as rebuild-unstable). Verified from the Hub: canonical **MATCH: YES**, and the model rebuilt from the **downloaded bytes only** in plain numpy scores **85.50% over 2,000 test images**. The explainer `explain_image.py` now ships inside the model repo too. Source: `tools/verify_hf_vision.py`, `docs/history/SAFETENSORS-HASH-STABILITY.md`.
