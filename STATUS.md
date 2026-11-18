@@ -6274,7 +6274,7 @@ centre_heavier fails in 5 of 8 seeds; NO other concept fails in any seed (168 co
 
 **`centre_heavier` is the only concept that ever fails**, and it is **unreliable rather than always inverted**: 5 of 8 seeds fail, AUROC ranges 0.2889 to 0.7741 - it learns something real at seed 5 (0.77) and inverts at seeds 0 and 3 (0.29). **CORRECTION to the earlier report in this same day**, which said "AUROC 0.3196, below chance, the neuron fires more often where the claim is false": that was measured at **seed 0** and stated as a property of the concept. It is true at seeds 0 and 3 only. The honest statement is **seed-dependent unreliability**, not constant inversion - the stronger claim came from one checkpoint, which is the mistake the three-seed rule exists to prevent, caught here by applying that rule to my own result. The fix (threshold 0.05 -> 0.40, support 96.9% -> 23.45%) is now tested at **three seeds**, with a falsifier that drops the concept if it still fails in 2 or more. Source: `tools/honesty_all_seeds.py`, `docs/history/HONESTY-ACROSS-SEEDS.md`.
 
-### Radius 1.0 at 3000 steps: accuracy recovered, free-running gain RESOLVABLE for the first time (2026-11-18)
+### WITHDRAWN: the "resolvable free-running gain" was training length, not the radius (2026-11-18)
 
 ```
                               r=1.0 @1500   r=1.0 @3000   r=0.9 @1500 (reference)
@@ -6286,3 +6286,16 @@ paired free-running vs reference  NOT RESOLVABLE   RESOLVABLE      -
 ```
 
 **The 3.04-point accuracy penalty of unclamping was mostly under-training**: at 3000 steps radius 1.0 reaches **16.80%** against the reference's 16.27%, and the free-running difference becomes **resolvable for the first time in this project** (8.44% vs 5.00%, paired mean +1.375 tokens per 40, CI [+1.75, +5.44], excludes zero). Memory does not improve with length (4.434% at 3000 vs 4.730% at 1500) and still fails the 10% gate. **CAVEAT: this comparison is unmatched** - 3000 steps against a 1500-step reference - so the gain could come from training length rather than the radius. The matched control (radius 0.9 at 3000 steps) is at step 2700 and will separate them. Source: `lens/runs/SCAN11-R100-3K.txt`, `docs/history/R100-3K-RESOLVABLE.md`.
+
+### CORRECTION: the resolvable free-running gain was TRAINING LENGTH, not the radius (2026-11-18)
+
+```
+                          radius 1.0     radius 0.9     (both 3000 steps)
+held-out teacher-forced      16.80%         21.03%
+free-running                  8.44%          6.88%
+k=16 memory                   4.434%         1.312%
+
+paired free-running difference (1.0 - 0.9): +0.625 tokens of 40, CI [-0.38, +3.56]  -> NOT RESOLVABLE
+```
+
+The claim published last wake - "the first resolvable free-running gain in this line", 8.44% vs the 1500-step reference's 5.00% with CI [+1.75, +5.44] - is **WITHDRAWN**. The comparison was unmatched (3000 steps against 1500) and the matched control has now run: **the free-running difference vanishes into a CI that includes zero**. The gain was training length. **P1, the prediction written against my own result, held.** P2 held (radius 0.9 is 4.23 points more accurate at matched length) and P3 held (radius 1.0 keeps 3.38x the memory, still failing the 10% gate). At equal training, unclamping buys memory that still fails and an unresolvable generation gain, at a cost of 4.23 points of accuracy - **so the shipped radius 0.9 stands.** Meanwhile at radius 0.9, doubling training moved held-out from 16.27% to **21.03%**, memory 0.878% to 1.312% and free-running 5.00% to 6.88%: **the lever that actually moved this model was more training, not the clamp.** Source: `lens/runs/MATCHED-3K.txt`, `lens/runs/SCAN11-R090-3K.txt`, `docs/history/CORRECTION-MATCHED-3K.md`.
