@@ -83,3 +83,31 @@ The synthetic delayed-recall probe proved the **memory bank itself** holds a fac
 ## The rule this validates
 
 Published one wake earlier, before this endpoint existed: *a pooled accuracy gain is not evidence of the capability the task is named after; split by target frequency first.* The endpoint is its strongest test yet - a **47.30% pooled score with 0/888 rare-token recall** - and the pooled number alone would have read as a success.
+
+
+---
+
+# Why the memory-module result is immune to the frequency artefact that killed the other claims (2026-11-18)
+
+The delayed-recall numbers on **real text** were withdrawn because all their gain sat in the 20 most frequent tokens, with **0 rare-token recalls out of 888-892 positions**. The obvious next question is
+whether the one surviving memory result - the **8-slot bank holding a fact for 16 steps in the synthetic probe (81.25%)** - is the same kind of artefact.
+
+It cannot be, and that is now measured rather than asserted.
+
+**The synthetic task draws every token uniformly.** Verified on 51,000 draws from the probe's own generator:
+
+```
+per-token share     min 0.0298   max 0.0328   (perfectly uniform = 1/32 = 0.03125)
+chi-square vs uniform   30.5    df 31    5% critical ~43.8   -> consistent with uniform
+```
+
+Consequences:
+
+1. **There is no frequent band to exploit.** The top-20 tokens are 62.5% of a 32-token vocabulary simply because there are only 32 tokens; every token is equally likely, so a "prior over
+   frequent tokens" is just a uniform prior over all of them.
+2. **The best constant predictor scores exactly 1/32 = 3.125%.** The control arm - same readout, memory channel removed - measures **3.03-3.22%** across delays 1, 4, 8 and 16. It sits exactly
+   where a constant predictor must sit, which is the check that the wiring leaks nothing.
+3. So the bank's **81.25% at a 16-step delay** is 26x the chance rate with **no frequency structure available to inflate it**. Whatever it is doing, it is carrying token identity.
+
+**What this does and does not do.** It does not make the real-text result better - that stays withdrawn. It establishes that the module-level capability is real, which is what makes the
+real-text failure informative: the bank can hold a token for 16 steps, the real model cannot, so the limiter sits in the base model rather than in the memory mechanism.
