@@ -6530,3 +6530,21 @@ gate                              10.000%   still 4.5x away
 ```
 
 **The gate is not reachable by fixing the bank.** Each defect was real, each fix paid +0.3 to +0.6 points, and the required move is +7.8 - the pre-registered falsifier's branch, now measured rather than predicted: **the limiter is the training signal, not the mechanism.** A 32-token window never asks the model to retain anything for 16 steps, so a better bank mostly stores better noise. The next attempt must change what the model is **asked to do** before touching the bank again. Source: `lens/runs/MEMCHAN-SYM.txt`, `lens/runs/MEMCHAN-SYM-RESUME.txt`, `docs/history/MEMORY-BANK-ENDPOINT.md`.
+
+### Re-warm, two draws: +5.21 and +5.51 points on the reliable protocol - and my 12-chunk probe is withdrawn from endpoint decisions (2026-11-18)
+
+The second draw finished, and comparing it to seed 0 exposed a **conflict between two instruments on identical checkpoints**:
+
+```
+                                       12-chunk probe   104-chunk (each trainer's own HELD-OUT)
+base, 6000 steps                          25.89%              21.74%     (loss 9.4149)
+seed 0, +1500 steps at lr 0.03            27.20%              26.95%     (loss 9.3506)
+seed 1b, +1500 steps, new data order      24.47%              27.25%     (loss 9.3389)
+gain, seed 0                               +1.31              +5.21
+gain, seed 1b                                  -              +5.51
+do the two draws agree within 2 points?   NO (-2.73)         YES (+0.30)
+```
+
+**They disagree in sign.** The 12-chunk probe scores 756 samples (SE ~1.5) against the trainer's 6,656 (SE ~0.55), and it has now produced **two wrong-signed verdicts in one day**: it said the symmetry-broken bank **cost** 0.66 accuracy points when the 104-chunk numbers show it **gained** 0.19, and it says these two draws disagree by 2.73 when they agree within 0.30. An instrument that flips the sign twice is **unfit for endpoint decisions**, so the verdict rests on the 104-chunk evaluation - same code path for every arm, 8.8x the samples.
+
+**Claimed:** on that protocol the re-warm lifts held-out from **21.74% to 26.95% (seed 0, +5.21)** and **27.25% (seed 1b, +5.51)**, the two draws agreeing to **0.30 points**; the pre-registered falsifier does **not** fire. **Withdrawn:** the earlier **+1.31 points at 1.85 SE**, which understates the effect ~4x because it came from the 12-chunk probe, and with it the framing that this result is marginal. **New rule:** every arm report states which protocol produced each number, and endpoints are decided on the trainer's 104-chunk evaluation; any 12-chunk conclusion must be re-measured at 104 before publication. Source: `lens/runs/LR-REWARM.txt`, `lens/runs/LR-REWARM-S1-NEWSHUFFLE.txt`, `lens/runs/SCAN12-R090-6K.txt:135`, `docs/history/REWARM-TWO-DRAWS.md`.
