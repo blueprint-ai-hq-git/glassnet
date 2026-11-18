@@ -7,8 +7,8 @@ The 8-slot bank was proven to be **one slot with eight times the write rate** (a
                           (step 3500)          (step 4500)
 k=16 memory                 1.605%               2.214%        +0.609 pts, +38% relative
 k=32 memory                 0.093%               0.112%
-held-out teacher-forced     21.03%               20.37%        -0.66 pts
-loss                       6.3199               6.2993
+held-out teacher-forced     24.46%               24.65%        +0.19 pts   (104 chunks, each trainer's own eval)
+held-out loss              9.1529               9.0575
 slot decay spread          0.000000             0.068527       (8 of 8 distinct)
 ```
 
@@ -16,7 +16,23 @@ slot decay spread          0.000000             0.068527       (8 of 8 distinct)
 
 - **P1** "max-min decay spread > 0.005" - **MET**: **0.068527**, 8 of 8 values distinct, and the spread kept *growing* across checkpoints (0.0500 -> 0.0646 -> 0.0685), so the slots never collapse back.
 - **P2** "k=16 memory > 1.605%" - **MET**: **2.214%**, +0.609 points, **+38% relative**.
-- **P3** "no accuracy cost" - **NOT met in direction**: held-out **20.37% vs 21.03%**, a **-0.66-point** change. Against the 0.60-point same-step spread measured on this hardware it is about 1 SE, i.e. not resolvable, but it is on the wrong side and must be stated as such.
+- **P3** "no accuracy cost" - **MET (corrected)**: held-out **24.65% vs 24.46%**, **+0.19 points**, loss 9.0575 vs 9.1529. See the correction below.
+
+### CORRECTION (2026-11-18, recorded rather than quietly edited)
+
+This entry first published P3 as **"NOT met in direction: held-out 20.37% vs 21.03%, -0.66 points"**. That was **wrong-signed**, and the cause is a protocol error of the exact class this
+project has already documented: the numbers came from my own `tools/eval_radius_arm.py` probe run at **`EVAL_CHUNKS=12`** (768 scored samples, ~1.5-point standard error) instead of each
+trainer's own **`EVAL_CHUNKS=104`** evaluation. On the authoritative protocol the ordering is the opposite way round:
+
+```
+                                   ARM (4500)      REF (3500)
+held-out acc, 104 chunks             24.65%          24.46%      +0.19
+held-out loss, 104 chunks           9.0575          9.1529
+held-out acc, my 12-chunk probe      20.37%          21.03%      -0.66   <- too few chunks, wrong sign
+```
+
+A 12-chunk probe cannot resolve a 0.2-point difference, and it did not merely lose precision, it reported the **opposite sign**. The k=16 memory numbers in this entry are unaffected - both were
+measured with the same probe on both arms - but the accuracy verdict is corrected here.
 - **FALSIFIER** "decays still identical, or memory <= 1.605%" - **did not fire**.
 
 ## The trend across four checkpoints, which is the real finding

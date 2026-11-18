@@ -6516,8 +6516,8 @@ At step 3250 the differentiated bank was marginally **worse**; by 3750 it is cle
                           (step 3500)          (step 4500)
 k=16 memory                 1.605%               2.214%        +0.609 pts, +38% relative
 k=32 memory                 0.093%               0.112%
-held-out teacher-forced     21.03%               20.37%        -0.66 pts
-loss                       6.3199               6.2993
+held-out teacher-forced     24.46%               24.65%        +0.19 pts   (104 chunks, each trainer's own eval)
+held-out loss              9.1529               9.0575
 slot decay spread          0.000000             0.068527       (8 of 8 distinct)
 ```
 
