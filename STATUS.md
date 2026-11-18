@@ -6299,3 +6299,13 @@ paired free-running difference (1.0 - 0.9): +0.625 tokens of 40, CI [-0.38, +3.5
 ```
 
 The claim published last wake - "the first resolvable free-running gain in this line", 8.44% vs the 1500-step reference's 5.00% with CI [+1.75, +5.44] - is **WITHDRAWN**. The comparison was unmatched (3000 steps against 1500) and the matched control has now run: **the free-running difference vanishes into a CI that includes zero**. The gain was training length. **P1, the prediction written against my own result, held.** P2 held (radius 0.9 is 4.23 points more accurate at matched length) and P3 held (radius 1.0 keeps 3.38x the memory, still failing the 10% gate). At equal training, unclamping buys memory that still fails and an unresolvable generation gain, at a cost of 4.23 points of accuracy - **so the shipped radius 0.9 stands.** Meanwhile at radius 0.9, doubling training moved held-out from 16.27% to **21.03%**, memory 0.878% to 1.312% and free-running 5.00% to 6.88%: **the lever that actually moved this model was more training, not the clamp.** Source: `lens/runs/MATCHED-3K.txt`, `lens/runs/SCAN11-R090-3K.txt`, `docs/history/CORRECTION-MATCHED-3K.md`.
+
+### The returns-to-training curve at radius 0.9, measured on all 12 checkpoints (2026-11-18)
+
+```
+step  250    500    750   1000   1250   1500   1750   2000   2250   2500   2750   3000
+acc  5.29  12.70  13.49  16.80  16.27  17.20  17.33  19.31  19.71  20.24  20.90  21.03
+loss 7.451  7.064  7.034  6.828  6.811  6.698  6.653  6.590  6.537  6.495  6.454  6.442
+```
+
+**The climb is real** - 5.29% to 21.03%, a 15.7-point gain, loss falling monotonically with one wobble. **But the standard error on a single point is 1.47 points**, so the fine structure is noise: the last four increments (+0.40, +0.53, +0.66, +0.13 per 250 steps, mean +0.43) are **all inside the error bar**, which means **"the curve is decelerating" is NOT established** - that is what increments smaller than a 1.47-point error look like. What is resolvable is coarser: step 1500 to 3000 gains **3.83 points = 2.6 SE**. Linear fits over the later half extrapolate to **26.7-29.6%** at 6000 steps, which contains the 6000-step arm's prediction of >= 24%, but the fit rests on 1.47-point points, so 24% is **plausible and unproven** and the arm is the test. Source: `tools/learning_curve.py`, `docs/history/LEARNING-CURVE-R090.md`.
