@@ -7149,3 +7149,22 @@ MID-BAND DIAGNOSTIC  win6koff_K0_ep6000.npz
 ```
 
 **SMALL SAMPLE, stated up front:** 8 windows and 192 mid-band positions - treat the percentages as indicative and the direction as the finding. **What this establishes: (1) it is NOT a near-miss problem** - if the state could not separate mid-frequency tokens, wrong answers would be other mid-frequency tokens, and only **12.80%** are; **(2) it IS frequency bias** - on mid-band targets the model outputs a **top-20 token 74.48%** of the time; **(3) the information is present** - the correct token's **median rank is 34** and on **66.67%** of mid-band positions it is inside the model's own top-100, so the model is not ignorant of the answer, it is choosing not to say it. **Why this matters more than any architecture change:** a capacity repair would need to move the correct token from rank ~34 to rank 1 by representing more, which is expensive; a **calibration** repair only has to re-rank answers the state already contains, and can be tested at inference with no retraining. First candidate is **logit adjustment** (subtract `tau * log(prior)` before the argmax). **Pre-registered:** P1 some `tau > 0` raises OVERALL accuracy above the shipped baseline on 104 windows and both instruments; P2 the mid band gains more than the top-20 band loses; P3 the effect is monotone in `tau` up to a peak then reverses (a single lucky `tau` is a warning, not a result); **FALSIFIER** no `tau` beats the baseline by >= 0.5 points -> calibration is not the lever either. This is an inference-time experiment (minutes, not hours) aimed at a **+4.3-point** headroom, and it exists because the diagnostic ruled out the expensive explanation first. Source: `docs/history/MIDBAND-IS-FREQUENCY-BIAS.md`, `tools/midband_diagnostic.py`, `lens/runs/MIDBAND-DIAG.txt`.
+
+### Calibration is not the lever: logit adjustment gains +0.84 on one checkpoint and nothing on another (2026-11-19 19:35)
+
+The mid-band diagnostic said the failure is frequency bias (correct token at median rank 34, top-20 token emitted 74.48% of the time). The textbook correction is logit adjustment, `logits - tau*log(prior)`, inference-time only. Run on 104 windows it looked like a clean win:
+
+```
+LOGIT ADJUSTMENT  win6koff_K0_ep6000.npz
+  tau    top20     r21-500   OVERALL
+  0.00   36.15%    8.13%     20.30%
+  0.20   36.90%    8.81%     20.92%
+  0.35   36.70%    9.67%     21.14%   <- peak, +0.84 points
+  0.50   33.97%    9.76%     19.88%
+  1.00    1.74%    0.00%      0.83%
+
+P1 overall >= 0.5 MET (+0.84)   P2 mid gains more than top-20 loses MET (+1.54 vs +0.55)
+P3 monotone to a peak then reverses MET (peak 0.35)   FALSIFIER: did not fire
+```
+
+So two more checkpoints were tested before publishing: `win6kon_K8_ep6000` gives **+0.49** overall (P1 NOT met) and `scan12_r090_6k_ep6000` (untied table) gives **+0.00** with the optimum at `tau = 0` (P1 NOT met). **The falsifier fired on 2 of the 3 checkpoints.** The +0.84 does not replicate; on an untied model calibration buys exactly nothing, which is consistent with an untied answer table already absorbing frequency in its row norms. **What survives: (1) the DIAGNOSIS** - the mid band really is frequency-biased (median rank 34, inside the model's own top-100 on 66.67% of mid-band positions); **(2) the mid band does move on every checkpoint** (+1.54 and +1.67 points on r21-500) - the premise was right, the correction is just too blunt to convert it into overall gain without costing the top-20 band on two of three runs; **(3) it was cheap to be wrong** - minutes and no training. **The rule this re-confirms: a pre-registered falsifier is only worth writing if it is evaluated on more than the checkpoint that motivated it** - stopping at the first table would have published "+0.84 free points" from a single file, the same error shape as this morning's single-seed +0.50 that had to be withdrawn. **What is now established is that capacity is not the first thing to fix.** Source: `docs/history/CALIBRATION-NOT-THE-LEVER.md`, `tools/logit_adjust.py`, `lens/runs/chat/win6koff_K0_ep6000.npz`, `win6kon_K8_ep6000.npz`, `scan12_r090_6k_ep6000.npz`.
