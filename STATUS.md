@@ -6787,3 +6787,15 @@ memory operator diag(1-tanh^2) @ Wh : mean singular value 0.5613
 ```
 
 The operator carrying information from one step to the next has a **mean singular value of 0.5613**, so the average direction loses **44% of its perturbation every step**. Wh's largest singular value is **2.1763** against a spectral radius of 0.9000 - strongly non-normal, a few directions explode while the average shrinks. **This is the mechanism behind the whole memory line failing**: not saturation, capacity or training length, but a recurrence that physically cannot carry a fact 16 steps. It also explains why clamping the radius to 0.9 helped the original forgetting while still leaving the 16-step gate at 4.73%: radius governs the largest eigenvalue, retention depends on the average of the singular values. Repair: drive the **mean** toward 1.0 - measured achievable at **0.9500** with the largest capped at 2.0. Source: `tools/saturation_probe.py`, `docs/ARCHITECTURE-FLAWS.md`.
+
+### Tied readout: 64% fewer parameters, no measurable loss (2026-11-19)
+
+The audit said the H x V answer table was 62.3% of the model. Head-to-head, same trainer, same seed, same data order, same 600 steps, one variable:
+
+```
+arm        params        ep600 HELD-OUT        ep500 overall   ep500 top-20   train time
+untied     4,735,970     5.27% (loss 6.3339)       5.10%          10.04%      3599 s
+tied       1,684,224     4.93% (loss 6.9018)       5.71%          11.24%      1848 s
+```
+
+**The difference is not resolvable.** At ep600 tied is 0.34 points behind; at ep500 it is **0.61 points ahead** - the sign flips between two checkpoints of the same run. So the correct statement is that **at 600 steps a 64%-smaller tied model is statistically indistinguishable from the untied one**: the separate answer table bought nothing measurable and cost 3,051,746 parameters and 1.95x the training time. Predictions scored: P1 tied >= 90% of untied **MET** (93.5%), P2 bands close **MET**, P3 tied faster **MET** (1.95x), falsifier (below 80%) **did not fire**. **What this does not establish:** both arms are under-trained (5% against a 14.70% trivial constant), so it tests the *shape* at a small budget, not final quality - the claim is "the answer table is redundant at this scale", not "tied is better". Two defects found while measuring: the driver saved only on multiples of 250 so the 600-step endpoint left **no weights on disk** (now fixed to save at the last step), and the band evaluator only knew the untied readout and raised `KeyError: 'Wa'` on the tied model it was supposed to judge (now understands both). Source: `docs/history/TIED-READOUT.md`, `lens/runs/TIE-untied.txt`, `lens/runs/TIE-tied.txt`.
