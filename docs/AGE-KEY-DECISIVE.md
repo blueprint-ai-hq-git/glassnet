@@ -14,10 +14,10 @@ delay   agekey      plain        diff        (chance 3.12%)
 2        99.90%      99.71%      +0.20
 4        95.21%      56.93%     +38.28
 8        83.20%      19.82%     +63.38
-16       running
+16       57.23%      14.06%     +43.16
 ```
 
-- **P2 MET:** the plain arm decays to **19.82%** by delay 8 - content-similarity addressing works while the window is short and collapses as it fills.
+- **P2 NOT MET, and it is my prediction that was wrong:** I wrote that the plain arm would sit near chance at delay 16 (threshold 8%). It reads **14.06%** - 4.5x chance. Content similarity therefore keeps real residual signal even with 17 slots filled, it just degrades badly. The prediction was too strong; the measured decay (56.93 -> 19.82 -> 14.06) is the honest version.
 - **P3 MET:** the age-key arm clears 50% at delay 8 by a wide margin (**83.20%**).
 - **FALSIFIER DID NOT FIRE:** it required agekey to beat plain by 5 points at delay 8; the measured gain is **+63.38**.
 - **P1 was corrected by the smoke run before the full run:** both arms solve delay 1 at 100% (the window holds two contents, and the mean of two token
