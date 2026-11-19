@@ -6844,3 +6844,19 @@ rare2 (alpha=2)  26.99%      3.43%           0.00%          0.00%        14.99% 
 ```
 
 The monotone degradation holds at 10x the sample, and both targeted bands are **0.00% at ~8,700 positions each** - genuinely zero, not zero-at-a-small-sample. Source: `lens/runs/chain_rare.out`, `docs/history/RARITY-LOSS-REFUTED.md`.
+
+### The readable window bank: readable, and useless at this budget (2026-11-19)
+
+Predictions and falsifier were written before the run:
+
+```
+arm            params      HELD-OUT              train ema   gap
+winoff (K=0)   1,684,224   6.07%  (loss 6.5013)   7.0492    -0.5479
+winon  (K=8)   1,848,320   6.04%  (loss 6.5862)   7.0475    -0.4613
+
+window at the end: ` | class | for | a | library | management | ` | book
+```
+
+**P1 FAILED** (both far below the 14.70% trivial constant), **P2 FAILED** (window 0.03 points *below* control), **P3 MET** (eight distinct real words - the readability problem is solved). **The pre-registered falsifier fired.**
+
+**The diagnosis this forces:** both arms sit at ~6% while the per-window constant scores **14.70%**, so the model is *worse than guessing the most frequent token* - and a mechanism that supplies context cannot help a model that has not learned to use the context it already has. **The experiment was mis-designed, by me:** at 1,200 steps this trainer produces a model below trivial, so no memory mechanism could have shown anything. The base models that reach 21.74% needed **6,000** steps, and every memory arm today used 600-1,500. **The memory question has never been tested at a budget where the model can answer it.** Established: the window is readable, its gradient exact (4.334e-10), its batched path equivalent to the certified one (1e-16), and it does not collapse (slot-to-slot cosine -0.081 vs 0.864). Not established: that it helps. **Next:** window vs no-window at 3,000-4,000 steps where models clear the constant, plus the delayed-recall probe as a sharper instrument. Source: `docs/history/WINDOW-BANK-NO-BENEFIT.md`, `lens/runs/WIN-winon.txt`, `lens/runs/WIN-winoff.txt`.
