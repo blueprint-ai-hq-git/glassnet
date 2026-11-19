@@ -7000,3 +7000,19 @@ K=16     5.0%   (typical token-to-token distance 1.60)
 ```
 
 **With a full 16-slot window, a uniform read returns a vector whose nearest real token is one of the 16 only 5% of the time** - so unless attention is sharply peaked on exactly the right slot, the read is not noisy, it is **wrong**, and peakedness needs a discriminator the architecture does not provide. **Consequence for the probe I was about to run:** delayed recall asks the model to report the token from position 0 after D fillers; the query at step D is built from fillers and contains nothing that says "position 0", so **the probe would have failed by construction and I would have recorded it as "the window bank cannot hold 16 steps" - the wrong conclusion about the right mechanism.** **The repair this points to: give the read a position/age term** (`s = (Km + age_emb[j]) @ q / sqrt(H)` or concatenate age to the key) - small, and it makes arbitrary-delay addressing possible for the first time. **What the bank IS good for:** because the key comes from the state at write time and the query from the current state, it retrieves **recent or similar tokens**, which is what next-token prediction needs - a KV-cache-like recent buffer, not a long-delay store. Source: `docs/history/WINDOW-BANK-ADDRESSING.md`, `lens/winmem.py`, `lens/runs/chat/win3kwinoff_K0_ep3000.npz`.
+
+### The age key: the window bank can now address slots by age, and its gradient is certified (2026-11-19 15:25)
+
+The measured defect: the read had **no position or age information**, so the only way to select a slot was content similarity, and with a full 16-slot window a uniform read lands on a wrong token 95% of the time (nearest-token-is-one-of-the-16 = **5.0%** on a real V=12002 D=128 embedding matrix). Retention was never the problem - slots are replaced wholly and nothing decays - so addressing was the whole limitation. **The repair:** slot `j` at step `t` holds data written at step `t - age` with `age = (t - j) mod K`, identical for every sample, so the fix stays exactly batchable - `s = ((Km + age_emb[age]) @ q)/sqrt(H)`, with `np.add.at(g["age_emb"], age, ...)` in the backward. It is **opt-in** (activates only when `age_emb` is in the parameter dict), so no existing checkpoint, script or running job changes.
+
+```
+AGE-KEY FINITE-DIFFERENCE GATE  (H=4 D=3 V=5 K=3 T=5 B=3)
+  parameters checked: 71  (includes age_emb (3,4) and every path the key changes)
+  worst absolute error: 1.713e-09   at Wk[3,1]
+  worst relative error: 4.157e-07
+  GATE: PASS
+  absence of age_emb gives identical forward: max |diff| 9.849e-02 (expected NONZERO: the key is active)
+  zeroed age_emb gives identical forward:      max |diff| 0.000e+00 PASS (a zero key is a no-op)
+```
+
+Three things established, each measured: **the gradient is exact** (1.7e-09 over all 71 parameters including `age_emb` and the Wq/Wk/Wo/emb paths whose backward now differs); **the key is genuinely active** (removing it changes the forward by 9.8e-02, so the test does not pass on a no-op); **it is safe for existing artefacts** (zeroing `age_emb` reproduces the old forward bit-exactly at 0.000e+00). **What is NOT established: whether it helps.** The gate proves the mechanism is implemented correctly, not that it improves recall - and it must be judged on an instrument that can see the difference, not next-token accuracy whose seed noise (2.89) is 10x the effects this project has chased. The delayed-recall probe is now a **fair** test of the window bank for the first time, because the architecture can express positional addressing. **Next:** train with the key on delayed recall at delays 1/2/4/8/16 against a channel-removed control; predictions written before launch, falsifier = no better than the pre-age-key bank at every delay. Source: `docs/history/AGE-KEY-CERTIFIED.md`, `lens/winmem.py`, `tools/agekey_gradcheck.py`.
