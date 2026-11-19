@@ -7046,3 +7046,18 @@ delay  agekey            plain             delta     per-seed paired deltas
 ```
 
 **P1 MET** (paired delta at delay 8 above +30 on **every** seed; the smallest is **+62.1**, more than double the bar), **P2 MET** (same sign at every delay of 4 and above on all three seeds), **FALSIFIER DID NOT FIRE** (it needed any seed below +10; the minimum observed is +62.1). **The effect is not one seed's luck** - and the asymmetry is the honest shape of it: the plain arm is remarkably stable (20.61 +/- 0.70) while the age-key arm varies more (85.61 +/- 4.09), so the plain bank fails at the same place every time and the age key succeeds by a variable but always-large margin. **What this establishes:** the age key - **1,024 parameters, 0.06% of a 1.68M model** - is what the readable window bank was missing. Without a position/age term the read can only select a slot by content similarity and a full window reads as a blend; with it, delay-8 recall goes from **20.61%** (6.6x chance) to **85.61%** (27x chance), replicated across three seeds with per-seed deltas between +62.1 and +69.5. **What it still does not establish:** it is a synthetic probe with a frozen feature extractor, a 32-token vocabulary and embeddings trained through the bank contents only - nothing here is a claim about next-token accuracy on real text; and **no end-to-end arm has been trained with the age key**, which is the test that matters for the product. Source: `docs/history/AGE-KEY-THREE-SEEDS.md`, `tools/delayed_recall_agekey.py`, `lens/runs/AGEKEY-SEEDS.txt`.
+
+### The window bank at three seeds: +0.87 points, all three seeds positive (2026-11-19 16:24)
+
+The paired comparison that replaced this morning's withdrawn single-seed +0.50. Three seeds, both arms per seed, same data order, only the window differs, scored on the trainer's own 104-window line (`rng(999)` is fixed so the draws are identical across arms - a genuinely paired design):
+
+```
+seed   control (K=0)   window (K=8)   paired delta
+0      14.75%          15.25%         +0.50
+1      16.03%          17.11%         +1.08
+2      10.50%          11.52%         +1.02
+
+mean paired delta +0.87   sd 0.32   se 0.19   t = 4.73 (crit 4.303 at 95%, df=2)   CI [0.07, 1.66]
+```
+
+**P2 MET - all three seeds share the same sign**, and **the paired test is significant at 95%** (t 4.73 against 4.303) with an interval that excludes zero, just barely. **This is not the claim that was withdrawn this morning:** that one was a single seed compared as arm means and an independent re-score flipped its sign; this one is three paired seeds. **Two caveats keep it small:** (1) **it is measured on ONE instrument** - the independent evaluator gave 12.19% / 12.03% on the seed-0 pair, a NEGATIVE delta, so the sign has not yet been confirmed on a second instrument for seeds 1 and 2, which is the immediate next measurement; (2) **both arms are at or below the trivial constant** on the corrected protocol at 3000 steps, so a +0.87-point gain on a model still at the level of "guess the most frequent token in the window" is real but not useful yet. **Plain terms:** at a budget where the model cannot beat a constant, adding the readable window changes its score by **+0.87 consistently across three seeds** - small, but no longer explicable as one seed's luck. Source: `docs/history/WINDOW-BANK-THREE-SEEDS.md`, `lens/runs/WINSEEDS.txt`, `lens/runs/WINS-s1off.txt`, `lens/runs/WINS-s1on.txt`, `lens/runs/WINS-s2off.txt`, `lens/runs/WINS-s2on.txt`.
