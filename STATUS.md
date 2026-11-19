@@ -6889,3 +6889,17 @@ difference                                 -11.28 points  -0.92
 ```
 
 **The falsifier fired on its most severe branch: -11.28 points.** The interesting part is the dissociation: `svon` has a **lower held-out loss** (8.6336 vs 9.5525) and a **far lower accuracy** (6.42% vs 17.70%) - probability mass spread more sensibly across plausible tokens while almost never putting the best token on top. Raising the mean singular value flattened the readout's confidence: better calibrated in aggregate, useless for greedy prediction. **This is also the third arm today whose generalisation gap shrank while the model got worse** (rarity +2.87 -> +0.77 as accuracy fell 2.91; the tied readout at 600 steps; now +2.4955 -> +1.2297 as accuracy fell 11.28). A smaller gap is a consequence of fitting less - any arm reporting it must report accuracy beside it. **What this does not refute:** the retention measurement stands; the operator's mean really is 0.5613 and really does imply ~0.01% retention over 16 steps. What failed is the assumption that forcing that number toward 1.0 every training step is free. **Next:** raise it only at inference, or with a gentler target, and measure the accuracy cost per step as a curve rather than one all-or-nothing point. Source: `docs/history/SVNORM-REFUTED.md`, `lens/runs/SVN-svoff.txt`, `lens/runs/SVN-svon.txt`.
+
+### Depth at 1200 steps: falsifier fired, but the per-layer readout works (2026-11-19)
+
+The audit said the core was 1.3% of the model and one tanh step cannot compose. `lens/model2.py` adds a second recurrent layer and gives layer 1 its own readout on the same objective (gate 4.026e-10).
+
+```
+arm                                  HELD-OUT            train ema   held-out loss
+single layer (winoff, 1200 steps)     6.07%                7.0492       6.5013
+two layers + per-layer readout        5.68% (layer 2)      9.1805       8.4180
+                                       4.90% (layer 1)
+difference                            -0.39 points
+```
+
+**P1 FAILED and the falsifier fired** (-0.39 against a +0.5 bar). **P2 MET and this is the transparency deliverable: layer 1's own readout reaches 4.90%**, above zero and 0.78 points from layer 2 - each layer produces its own next-token prediction and both are scored every run. **P3 MET** (5.68% vs 4.90% - the layers are not identical). **Why I am not yet accepting "depth does not help":** depth2 was **harder to optimise, not merely worse** - train EMA 9.18 against the baseline's 7.05, held-out loss 8.42 against 6.50 - and a second layer was added with the SAME learning rate, init scale and clip of 1.0 chosen for a one-layer model. A model that trains worse is evidence the optimiser settings suit a different model, not that the architecture is wrong. Honest status: **"depth with a one-layer learning rate does not help"**, which is weaker than "depth does not help". **One retry, pre-registered:** learning rate 0.03 -> 0.01 as the single change; if it clears 6.07% by +0.5 the earlier result was an optimisation artefact, and if it still fails the claim becomes "depth does not help at 1.8M parameters and 1200 steps" and the next repair is FLAW 4 (`<unk>` is 5.34% of the corpus). A single retry with a pre-registered outcome is not fishing; a second one after seeing the result would be. Source: `docs/history/DEPTH-REFUTED-AT-1K.md`, `lens/runs/DEPTH2.txt`, `lens/runs/WIN-winoff.txt`.
