@@ -6814,3 +6814,20 @@ finite-difference: worst abs 4.334e-10   GATE: PASS
 ```
 
 **Three gradient bugs were found by that one check:** the embedding gradient for slot contents was never wired (numeric 1.423356 vs analytic 0.0); attribution was gated on the slot being filled *before* the write, skipping the first K steps (off by 1.40); the pre-write slot was zeroed when this step's read had touched its old content (off by 0.63). Each was invisible in the code and obvious in the difference. **Honest status:** a working, gated, readable window bank - **not yet a result**. It has not been trained at scale or compared against a control; the trainer wiring is next. Source: `docs/history/READABLE-WINDOW-BANK.md`, `lens/winmem.py`.
+
+### Rarity-weighted loss: REFUTED by its own falsifier (2026-11-19)
+
+The first training method that follows from a measured failure (11,002 of 12,002 vocabulary entries beyond rank 1,000, occupying 14.41% of positions, with the rare bands at **0.00%**). The loss reweighted every scored position by inverse frequency. Predictions and the falsifier were written down **before** the run:
+
+```
+band                 alpha=0 (plain)   alpha=1 (rarity)   change
+top-20                    32.74%            30.52%        -2.22
+ranks 21-500               9.67%             8.26%        -1.41
+ranks 501-2000             0.00%             0.00%         0.00   <- the band it was aimed at
+TAIL (rank > 2000)         0.00%             0.00%         0.00   <- the band it was aimed at
+overall                   20.07%            18.44%        -1.63
+
+held-out (trainer line)   22.91%            21.08%        -1.83   (loss 9.3447 vs 9.6752)
+```
+
+**P1 (gain >= 3 points on the tail and 501-2000) FAILED. P2 (top-20 loss <= 3) MET at -2.22. P3 (overall loss <= 2) MET at -1.63. The pre-registered FALSIFIER fired: "if the tail band does not improve, the method is dead."** Rarity weighting made **every** band worse, including both bands it was designed to help, which stayed at exactly zero. The weighting is implemented correctly - the gradient check passed at alpha 0, 1 and 2 (worst 5.9e-10) and was proven inert at alpha 0 - it simply does not change what the model can represent: at this budget there is **no** rare-token ability to reallocate toward, so redistributing loss weight only distorts the frequent band. **The binding constraint is representational capacity or training budget, not loss weighting.** Honest scope: 2,500 steps, 4.7M parameters, one seed - which cannot rule out a small effect, but does rule out the >= 3-point gain that was predicted. Source: `docs/history/RARITY-LOSS-REFUTED.md`, `lens/runs/RARE-0.txt`, `lens/runs/RARE-1.txt`, `tools/eval_next_bands.py`.
