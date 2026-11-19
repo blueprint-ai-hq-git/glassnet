@@ -7168,3 +7168,21 @@ P3 monotone to a peak then reverses MET (peak 0.35)   FALSIFIER: did not fire
 ```
 
 So two more checkpoints were tested before publishing: `win6kon_K8_ep6000` gives **+0.49** overall (P1 NOT met) and `scan12_r090_6k_ep6000` (untied table) gives **+0.00** with the optimum at `tau = 0` (P1 NOT met). **The falsifier fired on 2 of the 3 checkpoints.** The +0.84 does not replicate; on an untied model calibration buys exactly nothing, which is consistent with an untied answer table already absorbing frequency in its row norms. **What survives: (1) the DIAGNOSIS** - the mid band really is frequency-biased (median rank 34, inside the model's own top-100 on 66.67% of mid-band positions); **(2) the mid band does move on every checkpoint** (+1.54 and +1.67 points on r21-500) - the premise was right, the correction is just too blunt to convert it into overall gain without costing the top-20 band on two of three runs; **(3) it was cheap to be wrong** - minutes and no training. **The rule this re-confirms: a pre-registered falsifier is only worth writing if it is evaluated on more than the checkpoint that motivated it** - stopping at the first table would have published "+0.84 free points" from a single file, the same error shape as this morning's single-seed +0.50 that had to be withdrawn. **What is now established is that capacity is not the first thing to fix.** Source: `docs/history/CALIBRATION-NOT-THE-LEVER.md`, `tools/logit_adjust.py`, `lens/runs/chat/win6koff_K0_ep6000.npz`, `win6kon_K8_ep6000.npz`, `scan12_r090_6k_ep6000.npz`.
+
+### Calibration line closed: gated adjustment does not replicate either, and the model has no confident set (2026-11-19 19:50)
+
+Global logit adjustment failed to replicate (+0.84 / +0.49 / +0.00), so the one refinement allowed was to gate it on the model's own uncertainty - apply the correction only when the top1-top2 margin is small, protecting confident answers - with **+0.5 points on ALL THREE checkpoints** as the bar:
+
+```
+margin   tau   |  win6koff_K0    win6kon_K8    scan12 (untied)
+0.5      0.35  |  ov +0.76       ov +0.41      ov -0.29
+1.0      0.35  |  ov +0.84       ov +0.49      ov -0.37
+2.0      0.35  |  ov +0.84       ov +0.49      ov -0.37
+4.0      0.35  |  ov +0.84       ov +0.49      ov -0.37
+ungated  0.35  |  ov +0.84       ov +0.49      ov -0.37
+
+P2 settings clearing +0.5 on ALL THREE: 0
+FALSIFIER: FIRED - calibration is not the lever and this line closes
+```
+
+**The finding inside the failure:** thresholds of 1.0, 2.0, 4.0 and ungated produce **identical numbers to two decimals**, which can only happen if **essentially every scored position has a top1-top2 margin below 1.0** - so there is **no confident set to protect**, and the model is **uniformly uncertain across positions**. Tightening to 0.5 does change the numbers and makes them worse (+0.84 -> +0.76, +0.49 -> +0.41), because the positions it protects were the ones the correction was helping least. **Closed by pre-registration, not opinion:** the plan allowed three refinements (global, cross-checkpoint, gated); all three are measured and none replicates. **Two facts now constrain the next attempt:** (1) the mid band **does** gain +0.47 to +1.67 points under a prior correction on every checkpoint, so the frequency bias is real and exploitable; (2) the **top-20 band pays more than the mid band gains** on the untied model, and there is no confident subset to spare. That points away from post-hoc re-ranking and toward changing the readout's behaviour **during** training - but the honest next step is a different diagnostic first: which specific mid-frequency tokens the model gets right when it does, since that determines whether the 480-token band should be split. Source: `docs/history/CALIBRATION-CLOSED.md`, `tools/gated_replication.py`.
