@@ -6799,3 +6799,18 @@ tied       1,684,224     4.93% (loss 6.9018)       5.71%          11.24%      18
 ```
 
 **The difference is not resolvable.** At ep600 tied is 0.34 points behind; at ep500 it is **0.61 points ahead** - the sign flips between two checkpoints of the same run. So the correct statement is that **at 600 steps a 64%-smaller tied model is statistically indistinguishable from the untied one**: the separate answer table bought nothing measurable and cost 3,051,746 parameters and 1.95x the training time. Predictions scored: P1 tied >= 90% of untied **MET** (93.5%), P2 bands close **MET**, P3 tied faster **MET** (1.95x), falsifier (below 80%) **did not fire**. **What this does not establish:** both arms are under-trained (5% against a 14.70% trivial constant), so it tests the *shape* at a small budget, not final quality - the claim is "the answer table is redundant at this scale", not "tied is better". Two defects found while measuring: the driver saved only on multiples of 250 so the 600-step endpoint left **no weights on disk** (now fixed to save at the last step), and the band evaluator only knew the untied readout and raised `KeyError: 'Wa'` on the tied model it was supposed to judge (now understands both). Source: `docs/history/TIED-READOUT.md`, `lens/runs/TIE-untied.txt`, `lens/runs/TIE-tied.txt`.
+
+### The memory bank failed, and the readable window bank that replaces it (2026-11-19)
+
+**The failure, measured.** Token-space bank against its no-bank control, same seed/data/600 steps: bank **5.33%**, no bank **5.27%** - **+0.06 points, nothing** - and **all 16 slots decoded to the same word**. The diagnosis on the trained weights: `slot-to-slot cosine mean 0.864, max 1.000`, **effective distinct slots 1.3 of 16**, each slot 0.934 cosine to the mean slot direction. **Sixteen slots held 1.3 slots' worth of information.** My previous fix (content-addressed writes plus a per-slot bias) missed the real cause: the write was still `softmax` over slots, so every token went a little into *every* slot, all slots converged to the corpus average, and the decoder mapped that average to whichever word sits nearest the embedding table's centre. Predictions: P1 (both above the 14.70% trivial constant) **FAILED**, P2 (within 1 point of control) **MET** (+0.06), P3 (distinct words per slot) **FAILED**.
+
+**The rebuild** (`lens/winmem.py`): the bank IS the last K tokens. Slot j holds the embedding of exactly one real token and is replaced **wholly**, never blended; the addressing is a ring buffer, so it is discrete, needs no write policy, and cannot collapse. Reading is learned (`softmax(K q / sqrt(H))` attention), so the model chooses which past tokens matter while being unable to smear them in storage.
+
+```
+tokens fed:       the captain sailed west storm harbour again sailed captain
+window contents:  storm | harbour | again | sailed
+slot-to-slot cosine: -0.081      (was 0.864)
+finite-difference: worst abs 4.334e-10   GATE: PASS
+```
+
+**Three gradient bugs were found by that one check:** the embedding gradient for slot contents was never wired (numeric 1.423356 vs analytic 0.0); attribution was gated on the slot being filled *before* the write, skipping the first K steps (off by 1.40); the pre-write slot was zeroed when this step's read had touched its old content (off by 0.63). Each was invisible in the code and obvious in the difference. **Honest status:** a working, gated, readable window bank - **not yet a result**. It has not been trained at scale or compared against a control; the trainer wiring is next. Source: `docs/history/READABLE-WINDOW-BANK.md`, `lens/winmem.py`.
