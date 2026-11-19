@@ -6741,3 +6741,19 @@ if the first-104 rate had held, the remaining 936 windows would give 342 hits - 
 ```
 
 An unbiased draw cannot be 5x off by bias. It is off because **hits cluster inside a minority of windows**, so the effective sample size is the *window count*, not the *position count* - **over-dispersion**, the same window-level clustering already established for pooled numbers. **The retraction stands** (the erosion claim used independent-position arithmetic, and 104 windows is far too few for a band whose true rate is ~0.1%), but **the corrected language matters**: those figures are **not systematically optimistic**, they are unreliable by a factor of several in either direction. "The same checkpoint reads 4x differently at 10x sample" has two candidate causes - a biased instrument or an over-dispersed quantity - and they license different claims. Naming the wrong one turned a correct retraction into an incorrect accusation of my own tooling. **Check the draw before blaming the draw.** Source: `docs/history/DEMAND-MEMORY-WITHDRAWN.md`, `tools/eval_delayed_split.py`.
+
+### BUG FOUND AND FIXED: every resume silently wiped the trained memory bank (2026-11-19)
+
+The most consequential defect found so far, because it invalidates the **interpretation** of several arms rather than one number. The trainer restores weights from a checkpoint and then, further down, initialises the memory bank - so `mem_Wq`, `mem_Wk`, `mem_Wo` and `mem_decay` (**trained** parameters, the resumed checkpoint's `mem_Wo` has |sum| = 111.06) were reset to fresh random values, with `Wo` back to **zero**, while the log said "weights loaded".
+
+```
+step 8025          loss      ema      acc      gnorm    lr
+original          4.7316   4.0703   44.12%   2.95   0.0116
+offline replay    4.7316   3.9774   44.12%   2.95   0.0116
+resumed (buggy)   4.7916   4.0391   42.43%   3.46   0.0116
+resumed (FIXED)   4.7316   3.9774   44.12%   2.95   0.0116
+```
+
+Found by a resume disagreeing with its own checkpoint: the learning rate was proven equal and the weights were loaded, so an offline replay of the same 25 steps was run - it reproduced the **original** exactly, proving the checkpoint faithful and the *process* wrong. Fixing it turned up a **second** defect: guarding the init block on the set of restored tensors did nothing, because that set was built by iterating `p`, which does not yet contain `mem_*`; the "fixed" run produced numbers **identical to the buggy one**. The restore loop now iterates the checkpoint's keys. A resume is now a true continuation, and `ema` is saved and restored as well.
+
+**Blast radius, 8 runner scripts.** `td16` and `td4` resumed from a **bankless** base, so a fresh bank was correct - those arms are clean. **`td16x` and `td4x` resumed from banked checkpoints and wiped the bank those arms had just trained for 7000 steps**, so the "extension" arms were not extensions: they were a new bank trained from scratch for 1500 steps on carried-over language weights. **The earlier conclusion "more delay-16 training erodes the middle band" is therefore confounded and is withdrawn pending the corrected re-run** (`td16xf_r090`, running now, predictions written before launch). Source: `docs/history/RESUME-WIPED-THE-BANK.md`, `lens/scripts/train_scan9.py`.
