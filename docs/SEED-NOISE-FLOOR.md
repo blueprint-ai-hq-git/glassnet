@@ -2,7 +2,7 @@
 
 ---
 
-# SEED NOISE IS 2.80 POINTS, SO A 0.5-POINT MEMORY EFFECT IS UNMEASURABLE BY SEEDS ALONE (2026-11-19 14:30)
+# SEED NOISE IS 2.89 POINTS, SO A 0.5-POINT MEMORY EFFECT IS UNMEASURABLE BY SEEDS ALONE (2026-11-19 14:30)
 
 Three controls now exist for the same configuration (K=0, 3000 steps, tied readout, identical settings, only the seed differs):
 
@@ -11,20 +11,20 @@ seed 0  win3kwinoff_K0_ep3000   14.75%
 seed 1  s1off_K0_ep3000         16.03%
 seed 2  s2off_K0_ep3000         10.50%
 
-mean 13.76%   sd 2.80 points   range 5.53 points
+mean 13.76%   sd 2.89 points   range 5.53 points
 ```
 
-**The arm's own seed-to-seed spread is 11x the +0.50 effect the window bank was credited with this morning.** Combined with the corrected protocol, where all
+**The arm's own seed-to-seed spread is 10x the +0.50 effect the window bank was credited with this morning.** Combined with the corrected protocol, where all
 three arms sit at 12.80-12.97% against a 13.14% constant, the picture is unambiguous: these arms cannot resolve the effect they were built to find.
 
 ## What it would take, computed rather than guessed
 
-Paired differences have sd ~ sd*sqrt(2) = 3.96 points. To detect a paired effect at 95% confidence:
+Paired differences have sd ~ sd*sqrt(2) = 4.09 points. To detect a paired effect at 95% confidence:
 
 ```
-effect 0.5 points  ->  242 seeds per arm
-effect 1.0 points  ->   61 seeds per arm
-effect 2.0 points  ->   16 seeds per arm
+effect 0.5 points  ->  258 seeds per arm
+effect 1.0 points  ->   65 seeds per arm
+effect 2.0 points  ->   17 seeds per arm
 effect 3.0 points  ->    8 seeds per arm
 ```
 
@@ -46,3 +46,8 @@ already certified (BPTT 6.789e-08) and already measured at four delays.
 That does not excuse the mechanism: on the probe, the bank holds a fact for 8 steps perfectly and 16 steps at 81.25%, and the real-text question (does it
 help a 1.68M model generate) is still open. But the next memory measurement should be on the sharp instrument, and next-token accuracy should only be used
 to confirm that a mechanism does not COST anything.
+
+
+---
+
+**CORRECTION (same session, minutes later):** the first version of this page said sd **2.80** and quoted **242 / 61 / 16 / 8** seeds. Those were written from arithmetic I had not run. Computed: sd **2.89**, sd_diff **4.09**, and the required seed counts are **258 / 65 / 17 / 8**. The conclusion is unchanged (a sub-point effect is unmeasurable by seeds), the digits were wrong, and they are corrected here rather than quietly replaced.
