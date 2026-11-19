@@ -6917,3 +6917,19 @@ paired delta                  +0.50                -0.16   <- THE SIGN FLIPS
 ```
 
 Three reasons the +0.50 cannot be quoted: **(1) it does not reproduce** - an independent instrument on the same files reads **-0.16**; both are 104-window evaluations with different draws, so the difference between draws exceeds the effect. **(2) It is smaller than seed noise** - seed 2's control finished at **10.50%** against seed 0's **14.75%**, **4.25 points of seed-to-seed variance** in the same arm and settings, so the claimed effect is **8.5x smaller** than the arm's own seed spread. **(3) The trainer reads ~2.6 points higher than the independent tool on both files** (14.75 vs 12.19, 15.25 vs 12.03) - a protocol difference that applies equally to both arms, which is why the delta matters and why a delta computed on one instrument must be confirmed on a second. **WITHDRAWN:** "the readable window bank gives +0.50 points at 3000 steps". **STILL TRUE:** the window is readable (8 distinct real tokens), its gradient is exact (4.334e-10), its batched path equals the certified one (1e-16), it does not collapse (slot cosine -0.081 vs the old 0.864), and it is not measurably negative at 3000 steps the way the slot bank was. **STILL OPEN:** whether any memory mechanism helps this model - three seeds are running, and the statistic is the mean **paired** delta with an interval. **Process lesson:** the self-check added two hours ago forces exactly this comparison at the end of every run; these two arms predate it and are the first case where its absence hid a withdrawn number. **A delta measured on one instrument is a hypothesis until a second instrument agrees on the same file.** Source: `docs/history/WINDOW-BANK-3K-CORRECTION.md`, `lens/runs/WIN3K-winoff.txt`, `lens/runs/WIN3K-winon.txt`, `lens/runs/WINS-s2off.txt`.
+
+### The instrument is sharper than I said: 104-window draw noise is 0.41 points, not 1.5 (2026-11-19)
+
+Twice today I wrote that a single 104-window number has a standard error "around 1.5 points" and used it to dismiss small effects. **I never measured it.** Measured now on one fixed checkpoint, five window draws, no training:
+
+```
+draw_seed 4242 -> 12.19%
+draw_seed 11   -> 12.19%
+draw_seed 22   -> 11.57%
+draw_seed 33   -> 11.23%
+draw_seed 44   -> 11.81%
+
+mean 11.80%   sd 0.41 points   full range 0.96 points
+```
+
+**Draw noise is 0.41 points, about 3.6x smaller than the 1.5 I had been quoting** - wrong in the pessimistic direction, so I had been discarding effects as "inside the noise" that were larger than the instrument's real resolution. **The withdrawal of the +0.50 window-bank delta stands**, and not because of draw noise: the independent re-score put it at -0.16 (sign flipped) and the arm's own seed-to-seed spread is **4.25 points**. **The 2.6-point trainer-vs-evaluator gap is a protocol difference, not sampling** - at 0.41 points of draw noise it cannot be noise. **The measured noise hierarchy for this project:** seed variance **4.25** >> protocol difference **2.6** >> draw noise **0.41** - and every arm today was compared on one seed, so every arm was dominated by the largest source and the instrument was never the limiting factor. **Resolution floor for future single-draw comparisons: 0.41 points**, measured rather than guessed. Source: `docs/history/DRAW-NOISE-MEASURED.md`, `lens/runs/DRAW-NOISE.txt`, `lens/scripts/run_draw_noise.sh`.
