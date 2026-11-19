@@ -6875,3 +6875,17 @@ window at the end: ` | class | for | a | library | management | ` | book   (8 di
 ```
 
 **P1 MET barely** (both clear the 14.70% constant; the control by 0.05), **P2 MET exactly** (+0.50 against a +0.5 bar), **P3 MET**, and the **pre-registered falsifier did NOT fire - by 0.00 points**. **Why this is not a win yet:** a 0.50-point difference on **one seed** with a 104-window evaluation is inside the noise of the instrument (single-number SE ~1.5 points), so one seed cannot distinguish +0.50 from 0. The correct statement is that **the point estimate lands exactly on the pre-registered threshold**. It is the first time a memory mechanism has not been measurably negative - the slot bank gave +0.06 with collapsed slots, and this same window gave -0.03 at 1200 steps while the model was below trivial - but that is not evidence memory works. **The only thing that would settle it:** the same comparison at **3 seeds**, scoring the paired per-seed difference rather than arm means; if the mean paired delta stays near +0.50 with an interval excluding zero, the window earns its place, and if the interval straddles zero the honest conclusion is that a 1.68M model at 3000 steps cannot demonstrate a memory benefit and the line stops. Source: `docs/history/WINDOW-BANK-3K.md`, `lens/runs/WIN3K-winoff.txt`, `lens/runs/WIN3K-winon.txt`.
+
+### The mean-singular-value repair failed badly: -11.28 accuracy points with a LOWER loss (2026-11-19)
+
+The repair came from a real measurement - the memory operator `diag(1-tanh^2) @ Wh` had mean singular value **0.5613**, implying ~0.01% retention over 16 steps while the spectral radius was a satisfied 0.9. The repair raised the mean to 0.95 with the largest singular value capped at 2.0. The pre-registered falsifier was "P2 failing by more than 1.5 points means instability":
+
+```
+arm     what it does                        HELD-OUT      loss      train ema   gap
+svoff   spectral-radius clamp (0.9)         17.70%       9.5525     7.0570    +2.4955
+svon    mean singular value -> 0.95          6.42%       8.6336     7.4039    +1.2297
+
+difference                                 -11.28 points  -0.92
+```
+
+**The falsifier fired on its most severe branch: -11.28 points.** The interesting part is the dissociation: `svon` has a **lower held-out loss** (8.6336 vs 9.5525) and a **far lower accuracy** (6.42% vs 17.70%) - probability mass spread more sensibly across plausible tokens while almost never putting the best token on top. Raising the mean singular value flattened the readout's confidence: better calibrated in aggregate, useless for greedy prediction. **This is also the third arm today whose generalisation gap shrank while the model got worse** (rarity +2.87 -> +0.77 as accuracy fell 2.91; the tied readout at 600 steps; now +2.4955 -> +1.2297 as accuracy fell 11.28). A smaller gap is a consequence of fitting less - any arm reporting it must report accuracy beside it. **What this does not refute:** the retention measurement stands; the operator's mean really is 0.5613 and really does imply ~0.01% retention over 16 steps. What failed is the assumption that forcing that number toward 1.0 every training step is free. **Next:** raise it only at inference, or with a gentler target, and measure the accuracy cost per step as a curve rather than one all-or-nothing point. Source: `docs/history/SVNORM-REFUTED.md`, `lens/runs/SVN-svoff.txt`, `lens/runs/SVN-svon.txt`.
