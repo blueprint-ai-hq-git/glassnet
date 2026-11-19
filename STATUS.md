@@ -7016,3 +7016,18 @@ AGE-KEY FINITE-DIFFERENCE GATE  (H=4 D=3 V=5 K=3 T=5 B=3)
 ```
 
 Three things established, each measured: **the gradient is exact** (1.7e-09 over all 71 parameters including `age_emb` and the Wq/Wk/Wo/emb paths whose backward now differs); **the key is genuinely active** (removing it changes the forward by 9.8e-02, so the test does not pass on a no-op); **it is safe for existing artefacts** (zeroing `age_emb` reproduces the old forward bit-exactly at 0.000e+00). **What is NOT established: whether it helps.** The gate proves the mechanism is implemented correctly, not that it improves recall - and it must be judged on an instrument that can see the difference, not next-token accuracy whose seed noise (2.89) is 10x the effects this project has chased. The delayed-recall probe is now a **fair** test of the window bank for the first time, because the architecture can express positional addressing. **Next:** train with the key on delayed recall at delays 1/2/4/8/16 against a channel-removed control; predictions written before launch, falsifier = no better than the pre-age-key bank at every delay. Source: `docs/history/AGE-KEY-CERTIFIED.md`, `lens/winmem.py`, `tools/agekey_gradcheck.py`.
+
+### The age key is decisive on the sharp instrument: 83.20% against 19.82% at delay 8 (2026-11-19 15:45)
+
+The first measurement all day that is both large and on the right instrument. Delayed recall - remember one token from position 0 across D filler steps and output it; chance is **3.12%** (vocab 32). Both arms are the same readable window bank, same data stream, same frozen feature extractor, same parameters apart from `age_emb` (**K*H = 1024 params**):
+
+```
+delay   agekey      plain        diff        (chance 3.12%)
+1       100.00%     100.00%      +0.00
+2        99.90%      99.71%      +0.20
+4        95.21%      56.93%     +38.28
+8        83.20%      19.82%     +63.38
+16       running
+```
+
+**P2 MET** (plain decays to 19.82% by delay 8 - content-similarity addressing works while the window is short and collapses as it fills), **P3 MET** (agekey clears 50% by a wide margin), **FALSIFIER DID NOT FIRE** (it required +5 points at delay 8; measured **+63.38**). **P1 was corrected by the smoke run before the full run:** both arms solve delay 1 at 100%, because the window holds two contents and the mean of two token embeddings still identifies one 100% of the time at K=2 (measured) - not a leak, since delay 4 shows the decay. **What this confirms:** the defect diagnosed at 15:10 was real and it **was** the limiter - the read had no position or age term, so slot selection depended entirely on content similarity, and a full window read as a blend whose nearest real token is one of the K only 5% of the time at K=16. A learned per-age key - **1024 parameters, 0.06% of a 1.68M model** - takes delay-8 recall from 19.82% to 83.20%. It also retro-explains the whole memory line: both earlier banks failed to show benefit at 16 steps because neither could address a slot by age. **What this does NOT establish:** it is a synthetic probe with a frozen feature extractor, a 32-token vocabulary and training that flows to the embeddings through the bank contents only - it says nothing yet about next-token accuracy on real text; it is **one seed**; and **no end-to-end arm has been trained with the age key**. **Next:** three seeds of this probe (minutes), then an end-to-end arm at the qualifying budget (6000 steps) scored on the trainer line and the independent evaluator. Source: `docs/history/AGE-KEY-DECISIVE.md`, `tools/delayed_recall_agekey.py`, `lens/runs/AGEKEY-PROBE.txt`.
