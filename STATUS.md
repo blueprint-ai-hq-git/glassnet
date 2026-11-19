@@ -6757,3 +6757,33 @@ resumed (FIXED)   4.7316   3.9774   44.12%   2.95   0.0116
 Found by a resume disagreeing with its own checkpoint: the learning rate was proven equal and the weights were loaded, so an offline replay of the same 25 steps was run - it reproduced the **original** exactly, proving the checkpoint faithful and the *process* wrong. Fixing it turned up a **second** defect: guarding the init block on the set of restored tensors did nothing, because that set was built by iterating `p`, which does not yet contain `mem_*`; the "fixed" run produced numbers **identical to the buggy one**. The restore loop now iterates the checkpoint's keys. A resume is now a true continuation, and `ema` is saved and restored as well.
 
 **Blast radius, 8 runner scripts.** `td16` and `td4` resumed from a **bankless** base, so a fresh bank was correct - those arms are clean. **`td16x` and `td4x` resumed from banked checkpoints and wiped the bank those arms had just trained for 7000 steps**, so the "extension" arms were not extensions: they were a new bank trained from scratch for 1500 steps on carried-over language weights. **The earlier conclusion "more delay-16 training erodes the middle band" is therefore confounded and is withdrawn pending the corrected re-run** (`td16xf_r090`, running now, predictions written before launch). Source: `docs/history/RESUME-WIPED-THE-BANK.md`, `lens/scripts/train_scan9.py`.
+
+### The model is 1.3% computation and 93% lookup table (2026-11-19)
+
+A parameter audit of the shipped checkpoint, measured rather than assumed:
+
+```
+parameter  what it is                size        share
+Wa         answer table H x V        3,072,512   62.3%
+emb        token embeddings V x D    1,536,256   31.1%
+Wh         THE recurrent core           65,536    1.3%
+Wx         input projection              32,768    0.7%
+Wd         direct path                   16,384    0.3%
+mem_*      memory bank                  196,616    4.0%
+```
+
+**Wh is the only tensor that mixes information between tokens: 1.3% of the model computes, 93.4% is a table mapping a state to a vocabulary entry.** That is why held-out accuracy stalls near 25% however long it trains - it is a shape problem, and no training length fixes a shape problem. The repair is quantified: tying the answer table to the token embeddings through a small H->D bottleneck (32,768 params) deletes the H x V table, taking the model from **4,735,970 to 1,684,224 parameters**, and the freed budget is worth **46 recurrent layers** of the current size. Both paths pass their finite-difference gates (untied 2.576e-10, tied 2.142e-10). Source: `docs/ARCHITECTURE-FLAWS.md`.
+
+### tanh saturation DISMISSED by measurement; the real memory limiter found (2026-11-19)
+
+The audit listed tanh saturation as a flaw. Measured over 2,560 positions on a trained checkpoint: **0.00%** of preactivations exceed 2.0 and **0.00%** exceed 3.0, mean |preactivation| 0.248. **Saturation is not real and the activation is untouched.**
+
+The same probe found the actual limiter:
+
+```
+Wh spectral radius 0.9000 | largest singular value 2.1763 | mean singular value 0.6153
+memory operator diag(1-tanh^2) @ Wh : mean singular value 0.5613
+0.5613^16 = 0.000097  ->  0.01% retention at 16 steps
+```
+
+The operator carrying information from one step to the next has a **mean singular value of 0.5613**, so the average direction loses **44% of its perturbation every step**. Wh's largest singular value is **2.1763** against a spectral radius of 0.9000 - strongly non-normal, a few directions explode while the average shrinks. **This is the mechanism behind the whole memory line failing**: not saturation, capacity or training length, but a recurrence that physically cannot carry a fact 16 steps. It also explains why clamping the radius to 0.9 helped the original forgetting while still leaving the 16-step gate at 4.73%: radius governs the largest eigenvalue, retention depends on the average of the singular values. Repair: drive the **mean** toward 1.0 - measured achievable at **0.9500** with the largest capped at 2.0. Source: `tools/saturation_probe.py`, `docs/ARCHITECTURE-FLAWS.md`.
