@@ -40,7 +40,7 @@ routes:
 ## The strategic conclusion
 
 **The memory bank should be judged by the delayed-recall probe, not by next-token accuracy.** Every arm today graded memory on a metric whose noise floor is
-11x the effect size, which is why the results kept landing on "indistinguishable from zero" - partly the mechanism, but partly the instrument. The probe is
+10x the effect size, which is why the results kept landing on "indistinguishable from zero" - partly the mechanism, but partly the instrument. The probe is
 already certified (BPTT 6.789e-08) and already measured at four delays.
 
 That does not excuse the mechanism: on the probe, the bank holds a fact for 8 steps perfectly and 16 steps at 81.25%, and the real-text question (does it
