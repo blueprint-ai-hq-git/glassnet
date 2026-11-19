@@ -42,7 +42,7 @@ two different draws (the trainer uses `rng(999)`, the evaluator `rng(4242)`).
 - **Unpaired single-draw comparisons** carry the full 0.93-point sd and a 2.77-point range. Any claim built that way needs to clear ~2 points to be safe.
   The absolute model-vs-constant numbers in this project are of this kind, and their margins (7.16 and 7.48 points at 6000 steps) clear it.
 - **Paired comparisons on identical windows** cancel the draw entirely. The relevant noise is the per-window paired difference: measured **sd 0.72 points**
-  over one window, so over 104 windows x 63 positions the standard error of a paired delta is **0.04 points**. That is why the window bank's paired deltas
+  over one window, so over 104 windows x 63 positions the standard error of a paired delta is **0.009 points**. That is why the window bank's paired deltas
   (+0.06 trainer, +0.32 independent) are meaningfully measured even though they are far below the unpaired noise - and why the paired design was the right
   response to the earlier withdrawal.
 
@@ -52,10 +52,13 @@ two different draws (the trainer uses `rng(999)`, the evaluator `rng(4242)`).
 |---|---|---|
 | unpaired, single draw, 104 windows, ~23% accuracy | sd 0.93, range 2.77 | ~2 points |
 | unpaired, single draw, 104 windows, ~12% accuracy | sd 0.41, range 0.96 | ~1 point |
-| paired, identical windows, 104 windows | SE 0.04 | ~0.1 points |
+| paired, identical windows, 104 windows | SE 0.009 | well under 0.05 points |
 
 ## What this does not change
 
 Every paired result today stands on its paired test, not on this floor: the window bank at 6000 steps (+0.06 trainer, +0.32 independent, both below a 0.5 bar -
 so still "buys nothing"), the age-key probe's +65.01 at delay 8 with per-seed deltas +62.1 to +69.5 (a value 70x the unpaired noise, so it never depended on
 a small margin), and the three-seed arm comparisons that were explicitly paired on seed.
+
+
+**CORRECTION (minutes later):** the first version of this page said the paired standard error was **0.04 points**. Computed from the measured per-window paired sd it is 0.72 / sqrt(104*63) = **0.009 points**. The conclusion is unchanged and in fact stronger - paired comparisons resolve effects far below 0.1 points - but the digit was wrong and is corrected here rather than quietly replaced.
