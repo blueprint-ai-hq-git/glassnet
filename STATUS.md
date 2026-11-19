@@ -7061,3 +7061,19 @@ mean paired delta +0.87   sd 0.32   se 0.19   t = 4.73 (crit 4.303 at 95%, df=2)
 ```
 
 **P2 MET - all three seeds share the same sign**, and **the paired test is significant at 95%** (t 4.73 against 4.303) with an interval that excludes zero, just barely. **This is not the claim that was withdrawn this morning:** that one was a single seed compared as arm means and an independent re-score flipped its sign; this one is three paired seeds. **Two caveats keep it small:** (1) **it is measured on ONE instrument** - the independent evaluator gave 12.19% / 12.03% on the seed-0 pair, a NEGATIVE delta, so the sign has not yet been confirmed on a second instrument for seeds 1 and 2, which is the immediate next measurement; (2) **both arms are at or below the trivial constant** on the corrected protocol at 3000 steps, so a +0.87-point gain on a model still at the level of "guess the most frequent token in the window" is real but not useful yet. **Plain terms:** at a budget where the model cannot beat a constant, adding the readable window changes its score by **+0.87 consistently across three seeds** - small, but no longer explicable as one seed's luck. Source: `docs/history/WINDOW-BANK-THREE-SEEDS.md`, `lens/runs/WINSEEDS.txt`, `lens/runs/WINS-s1off.txt`, `lens/runs/WINS-s1on.txt`, `lens/runs/WINS-s2off.txt`, `lens/runs/WINS-s2on.txt`.
+
+### The window bank effect shrinks 84% on a second instrument: +0.87 becomes +0.14 (2026-11-19 16:29)
+
+The three-seed paired result said +0.87 points on the trainer's line. A delta that lives on only one instrument is not a delta, so all six checkpoints were re-scored with `tools/eval_any.py` on the same draw, using the `<unk>`-excluded model accuracy (the matched denominator):
+
+```
+              trainer line        independent instrument
+seed 0        14.75 / 15.25       12.97 / 12.80        paired delta -0.17
+seed 1        16.03 / 17.11       13.88 / 14.01        paired delta +0.13
+seed 2        10.50 / 11.52        9.95 / 10.41        paired delta +0.46
+
+mean paired delta   trainer +0.87        independent +0.14
+independent sd 0.32, se 0.18, 95% CI [-0.65, +0.94], t = 0.74
+```
+
+**P1 MET** (sign holds on 2 of 3 seeds, not 3 of 3), **P2 MET barely** (mean +0.14), **falsifier did NOT fire** - **but the magnitude collapses by 84%** and the independent 95% interval **[-0.65, +0.94]** contains zero comfortably. **Honest conclusion: the +0.87 was mostly instrument effect.** Two facts force that reading: the trainer's line reads **~2 points higher than the independent tool on the same files** (14.75 vs 12.97, 16.03 vs 13.88, 10.50 vs 9.95) - and since the measured draw noise is **0.41 points**, a 2-point gap is not sampling - and whichever instrument is used, the effect is far below that instrument's resolution once protocols are matched. **The claim's whole history, recorded plainly: +0.50 (one seed, arm means) -> withdrawn -> +0.87 (three paired seeds, one instrument, t 4.71) -> +0.14 (three paired seeds, second instrument, t 0.74).** The direction survives; the size does not. What can be said without overreach: **adding the readable window does not measurably hurt** the language objective at 3000 steps, and **no positive claim is warranted**. Also learned: **one of three seeds clears the trivial constant** at 3000 steps (seed 1 at 13.88/14.01 against 13.14) while seeds 0 and 2 do not, so that budget is **seed-dependent** rather than uniformly below trivial. **The unexplained 2-point protocol gap is now the top instrument problem** - it is larger than every effect measured today, and until it is resolved every single-instrument delta carries a ~2-point unknown. Source: `docs/history/WINDOW-BANK-SECOND-INSTRUMENT.md`, `lens/runs/WINSEEDS-RESCORE.txt`, `lens/runs/WINSEEDS.txt`.
