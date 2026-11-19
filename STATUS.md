@@ -7186,3 +7186,23 @@ FALSIFIER: FIRED - calibration is not the lever and this line closes
 ```
 
 **The finding inside the failure:** thresholds of 1.0, 2.0, 4.0 and ungated produce **identical numbers to two decimals**, which can only happen if **essentially every scored position has a top1-top2 margin below 1.0** - so there is **no confident set to protect**, and the model is **uniformly uncertain across positions**. Tightening to 0.5 does change the numbers and makes them worse (+0.84 -> +0.76, +0.49 -> +0.41), because the positions it protects were the ones the correction was helping least. **Closed by pre-registration, not opinion:** the plan allowed three refinements (global, cross-checkpoint, gated); all three are measured and none replicates. **Two facts now constrain the next attempt:** (1) the mid band **does** gain +0.47 to +1.67 points under a prior correction on every checkpoint, so the frequency bias is real and exploitable; (2) the **top-20 band pays more than the mid band gains** on the untied model, and there is no confident subset to spare. That points away from post-hoc re-ranking and toward changing the readout's behaviour **during** training - but the honest next step is a different diagnostic first: which specific mid-frequency tokens the model gets right when it does, since that determines whether the 480-token band should be split. Source: `docs/history/CALIBRATION-CLOSED.md`, `tools/gated_replication.py`.
+
+### The cliff is at rank 50, not 500 - and the 8-window figures are corrected by the full sample (2026-11-19 20:00)
+
+Running the mid-band diagnostic at the full **104 windows** and splitting the band produced two things, one of which corrects numbers I published an hour ago from 8 windows.
+
+**1. The published 8-window figures are superseded:** r21-500 accuracy 14.58% -> **8.13%**; predicts a top-20 token 74.48% -> **84.12%**; median rank of the correct token 34 -> **63**; top-100 hit rate 66.67% -> **59.22%**. Every number moved the same way and the conclusion is unchanged and stronger - the failure is frequency bias, not ignorance - but the magnitudes were optimistic and are replaced here.
+
+**2. The band is NOT homogeneous - the cliff is at rank 50:**
+
+```
+sub-band   n      accuracy   predicts top-20
+20-50      786    24.05%     71.88%
+50-100     451     0.22%     95.12%
+100-250    690     0.00%     91.45%
+250-500    410     0.00%     83.17%
+
+weighted check: (786 x 24.05 + 451 x 0.22) / 2337 = 8.13%   <- reproduces the band figure exactly
+```
+
+**Ranks 21-50 sit at 24.05%** - nearly two-thirds of the top-20 rate, so the model is genuinely a **top-50 predictor**; **ranks 50-100 collapse to 0.22%** and 100-500 are **exactly zero** across 1,100 positions. That is a cliff, not a gradient. So the "36.08% of positions in r21-500 worth +4.3 points" framing was too coarse: the headroom is concentrated in ranks 21-50 where the model already works, and in the **cliff at 50+** (1,551 positions, 66% of the band) where it scores nothing. **The top-20 default rate is highest exactly where accuracy is lowest** (95.12% at ranks 50-100) - the signature of a model that answers "a frequent word" whenever it does not know. **Why this kills calibration more completely than the failed replication did:** the prior correction moved the mid band +1.5 points, but 66% of that band sits at **zero** accuracy, and a global re-ranking cannot lift a sub-population at 0.00% - it can only shuffle which frequent token wins. The earlier result is now explained rather than merely observed. **Next target: ranks 50+ specifically** - a per-frequency-band loss re-weighting that EXCLUDES the top-50 (unlike the rarity arms, which re-weighted the whole vocabulary and were refuted), or an untied readout with frequency-tiered capacity; predictions written before launch either way. Source: `docs/history/CLIFF-AT-RANK-50.md`, `tools/midband_split.py`, `lens/runs/MIDBAND-DIAG.txt`.
