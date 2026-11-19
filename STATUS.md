@@ -6860,3 +6860,18 @@ window at the end: ` | class | for | a | library | management | ` | book
 **P1 FAILED** (both far below the 14.70% trivial constant), **P2 FAILED** (window 0.03 points *below* control), **P3 MET** (eight distinct real words - the readability problem is solved). **The pre-registered falsifier fired.**
 
 **The diagnosis this forces:** both arms sit at ~6% while the per-window constant scores **14.70%**, so the model is *worse than guessing the most frequent token* - and a mechanism that supplies context cannot help a model that has not learned to use the context it already has. **The experiment was mis-designed, by me:** at 1,200 steps this trainer produces a model below trivial, so no memory mechanism could have shown anything. The base models that reach 21.74% needed **6,000** steps, and every memory arm today used 600-1,500. **The memory question has never been tested at a budget where the model can answer it.** Established: the window is readable, its gradient exact (4.334e-10), its batched path equivalent to the certified one (1e-16), and it does not collapse (slot-to-slot cosine -0.081 vs 0.864). Not established: that it helps. **Next:** window vs no-window at 3,000-4,000 steps where models clear the constant, plus the delayed-recall probe as a sharper instrument. Source: `docs/history/WINDOW-BANK-NO-BENEFIT.md`, `lens/runs/WIN-winon.txt`, `lens/runs/WIN-winoff.txt`.
+
+### Readable window bank at 3000 steps: +0.50 points, exactly at the bar, not yet proven (2026-11-19)
+
+The first fair asking of the memory question, at a budget where the model is no longer far below trivial. Predictions and falsifier written before the run.
+
+```
+arm            params      HELD-OUT              train ema   gap
+winoff (K=0)   1,684,224   14.75%  (loss 5.8357)   6.4652    -0.6294
+winon  (K=8)   1,848,320   15.25%  (loss 5.8194)   6.4538    -0.6344
+difference                                        +0.50 points
+
+window at the end: ` | class | for | a | library | management | ` | book   (8 distinct real words)
+```
+
+**P1 MET barely** (both clear the 14.70% constant; the control by 0.05), **P2 MET exactly** (+0.50 against a +0.5 bar), **P3 MET**, and the **pre-registered falsifier did NOT fire - by 0.00 points**. **Why this is not a win yet:** a 0.50-point difference on **one seed** with a 104-window evaluation is inside the noise of the instrument (single-number SE ~1.5 points), so one seed cannot distinguish +0.50 from 0. The correct statement is that **the point estimate lands exactly on the pre-registered threshold**. It is the first time a memory mechanism has not been measurably negative - the slot bank gave +0.06 with collapsed slots, and this same window gave -0.03 at 1200 steps while the model was below trivial - but that is not evidence memory works. **The only thing that would settle it:** the same comparison at **3 seeds**, scoring the paired per-seed difference rather than arm means; if the mean paired delta stays near +0.50 with an interval excluding zero, the window earns its place, and if the interval straddles zero the honest conclusion is that a 1.68M model at 3000 steps cannot demonstrate a memory benefit and the line stops. Source: `docs/history/WINDOW-BANK-3K.md`, `lens/runs/WIN3K-winoff.txt`, `lens/runs/WIN3K-winon.txt`.
