@@ -7515,3 +7515,15 @@ delta                     +8.24 points -> BEATS the constant
 ```
 
 Loss fell 9.4038 -> 5.4656 with no divergence; train ended 12.18% so held-out is not below train (no overfit signal). **P1 MET** (+8.24 against a +1.0 bar), **P2 MET** (largest upward step +0.60, under the 1.0 rule), **falsifier not triggered**. **Does not say:** it is competitive with anything - 600 steps at d=64 on 20k windows is not the same budget as the project's 6000-step arms, and no such comparison is claimed. **The flag that became the next job: E is 768,128 of 836,352 parameters = 92%** - the same lookup-table dominance the anatomy scan found (69% in the old shape). A 92%-table model can only memorise, so the next piece is a **factored embedding** (E = A @ B, rank r) with its own gradient check. Source: `docs/history/GLASS-LM-FIRST-RUN.md`, `lens/runs/GLASSLM.txt`.
+
+### Factored embedding: 3.2x fewer parameters for 1.47 points - P1 missed, falsifier not fired, one retry owed - 2026-11-20 16:23
+
+Both arms on the current code, same seed, same 20k windows, same 600 steps:
+
+```
+embedding              params     table share   held-out acc   delta vs 4.08% constant
+full table E          836,352        91.8%         12.33%            +8.25
+factored A @ B r=16   261,280        73.9%         10.86%            +6.78
+```
+
+**P2 MET** (params fall **3.20x**). **P1 NOT MET** (bar >= 11.32%, actual **10.86%** - missing by 0.46, i.e. 1.47 below the table). **FALSIFIER DID NOT FIRE** (needed below 10.32%), so the pre-registered action is **one retry at rank 32** - not a new idea, not a sweep. **The number that matters more:** even factored, the output table is still **73.9% of the model** (was 91.8%). Cutting rank moved the share the right way but nowhere near enough - the layers still hold a quarter of the capacity, and rank 32 would push the share back toward 85%, so it can rescue the accuracy question but **cannot** shift capacity into the layers. Both are recorded so the retry cannot be mistaken for progress on the real goal. Source: `docs/history/FACTORED-EMBED-R16.md`, `lens/runs/GLASSLM-EMBED.txt`, `lens/runs/chain_glasslm_emb0.out`, `chain_glasslm_emb16.out`.
