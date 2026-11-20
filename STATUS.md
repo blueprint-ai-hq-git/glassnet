@@ -7407,3 +7407,22 @@ POSITIVE SUPPLY               38.051x margin        19.839x margin          -47.
 ```
 
 **P1 MET** (bar was <=30.44x; actual **19.839x**), falsifier did **not** fire, line stays open. **P2 PASSED** (+0.18 points). First time three things moved the right way together: cancellation nearly halved, **every** concept passes audit (9/9 vs 25/36), and accuracy did not pay. **Three caveats:** perplexity is **33% worse** (956.79 -> 1275.33) while accuracy is flat-to-better, so the honest summary is accuracy flat / calibration worse; the concentration test is **vacuous at 9 concepts** (its top-8 bar is the whole layer when only 5 units are positive - the tool's "MET" means nothing and the bar needs restating as a fraction); and count and breadth are **confounded**, so this is "fewer, wider" as specified, not a pure count effect. **Verified not inferred:** the log prints `concepts 9/9`, so the arm really did load the 9-concept catalogue. Source: `docs/history/FEWER-CONCEPTS-HALVES-CANCELLATION.md`, `lens/runs/CONCEPT-COUNT.txt`, `lens/runs/chain_narrow.out`, `lens/runs/CONCEPT-COUNT.json`.
+
+### One count-invariant scale for every concept arm - and it corrects the previous claim - 2026-11-20 13:15
+
+The "top-8 >= 80%" concentration bar is **vacuous at 9 concepts** (top-8 of 5 positive units is the whole layer), so the instrument now reports **top-half share** and **supply entropy / log(n_pos)** (1.00 = perfectly spread). Every arm re-scored from saved JSON, no retraining:
+
+```
+result file                   n   n+    supply  top-half entropy   recon
+CONCEPT-EXACT-100K-ON        36   20     8.48x    79.6%   0.903   4.63e+00
+CONCEPT-EXACT-OFF            36   17     9.45x    74.2%   0.950   4.13e-02
+CONCEPT-EXACT-ON             36   17    16.43x    74.6%   0.949   3.45e-01
+CONCEPT-COUNT  (9 concepts)   9    5    19.84x    79.7%   0.927   7.10e-01
+DECORR-SWEEP-d05             36   17    38.05x    76.6%   0.943   2.53e-01
+DECORR-SWEEP-d10             36   19    38.36x    81.2%   0.906   2.50e-01
+DECORR-SUPPLY-d02            36   17    62.60x    76.7%   0.943   2.54e-01
+CONCEPT-EXACT-100K-OFF       36   19   236.03x    81.6%   0.906   2.56e-01
+DECORR-SUPPLY-ctrl           36   19   236.04x    81.6%   0.906   2.56e-01
+```
+
+**Concentration is FLAT across every configuration: top-half 74.2-81.6%, entropy 0.906-0.950.** **Correction to the previous entry:** "fewer concepts cuts cancellation 48%" is true as a statement about **volume** (38.05x -> 19.84x), but the 9-concept arm's distribution shape (79.7% / 0.927) sits **inside the same band** as the 36-concept arms. Fewer concepts reduced **how much** the units push, not **how concentrated** the push is. Since the goal is "a human reads a few rules and knows the answer", **no configuration measured so far produces that**, at any count or strength. Two JSONs from the non-additive path are labelled **not quotable** and kept, not deleted. Source: `docs/history/CONCENTRATION-IS-INVARIANT.md`.
