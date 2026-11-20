@@ -7290,3 +7290,19 @@ four real launchers (rank50, rank50resume, untied6k, agekey) -> 0 dead flags
 ```
 
 The negative control matters as much as the positive one: a checker that flags everything is as useless as one that flags nothing. **Honest limit:** it is a name-based heuristic - it proves a name is never mentioned, not that a value is used correctly. That is exactly enough to catch all three incidents, because in each case the name appeared nowhere. Source: `docs/history/DEAD-FLAG-GUARD.md`, `tools/check_env_wiring.py`.
+
+### Untied readout, clean test: the falsifier fired, and this corrects this morning's claim (2026-11-20 12:10)
+
+This morning I published "the untied readout is the first thing to ever move the tail", with its confound stated. The clean one-change test has finished and **the confound was the cause**. `win6kon` (tied) vs `untied6k` (identical config, `TIE=0`, nothing else changed; same seed, batch order, 6000 steps, draw seed 4242, same 104 windows):
+
+```
+                          tied control    untied (only change)
+ranks 20-50                25.19%          21.25%     -3.94
+ranks 50-100                0.22%           0.00%     -0.22   <- the band the whole idea rested on
+ranks 100-250               0.00%           0.00%      0.00
+r21-500 overall             8.52%           7.15%     -1.37
+top-20 accuracy            35.81%          34.79%     -1.02
+trainer vs constant        22.88% BEATS    22.40% BEATS (+7.93)
+```
+
+**P1 FAILED** (ranks 50-100 at **0.00%**, at or below the 0.22% baseline), **P2 FAILED** (top-20 fell 1.02 points), **P3 PASSED** (22.40% is inside the 21.88% floor and beats the constant by 7.93, so the arm trained properly), **FALSIFIER FIRED exactly as pre-registered**. **The correction:** the tail movement I attributed to untying came from **the rarity-weighted setting and the extra parameters** - untying by itself makes every band slightly worse. **Where the lever is not:** loss weighting (14.23% vs a 14.47% trivial constant), calibration (+0.84/+0.49/+0.00, no replication), readout shape (today), depth (5.68/5.08 vs 6.07). All four changed the *strength* or *post-processing* of learning; none changed **what is supervised at each position**. The measured reason to expect something there is the delayed-recall probe: with a target that genuinely requires memory, the readable bank plus its age key lifted recall **20.61% -> 85.61%** over three seeds. So the next arm trains with the target at **offset 2**, with and without the readable bank. Source: `docs/history/UNTIED-READOUT-CLEAN-TEST.md`, `lens/runs/chat/untied6k_K8_ep6000.npz`, `lens/runs/chat/win6kon_K8_ep6000.npz`.
