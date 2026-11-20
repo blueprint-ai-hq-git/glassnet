@@ -2,6 +2,11 @@
   <img src="docs/assets/architecture.png" alt="GlassNet architecture: tokens and position feed a named concept layer, a sparse rule layer and a tied answer layer" width="820">
 </p>
 
+<p align="center">
+  <img src="docs/assets/model-card.png" alt="GlassNet model card: a readable language model, measured not claimed, with its four failed hypotheses attached" width="100%">
+</p>
+
+
 <h1 align="center">GlassNet</h1>
 
 <p align="center"><b>A language model you can read.</b><br>
@@ -26,6 +31,8 @@ through a thin rule layer. Because the answer is a weighted sum of named concept
 can check to six decimal places. This repository is the honest record of what that buys, and where it breaks.
 
 ---
+
+
 
 ## At a glance
 
