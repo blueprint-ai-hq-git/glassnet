@@ -7590,3 +7590,17 @@ momentum (hand-set)        lr 0.50       DIVERGED
 ```
 
 **P1 FAILED** (gain@0.50 is **3.61** below 12.51), **P2 FAILED** (gain@0.005 is **6.62** below), **FALSIFIER FIRED on both** - so by pre-registration **step-size automation is abandoned**, hand-set lr 0.05 is the documented shipping choice, and work moves to capacity allocation. **Why:** the gain rule accepts a step if the loss on **that batch** fell - a greedy myopic test, which can accept steps that help the batch and not the objective; its size climbed to 1.11-1.58 and stayed. **The ordering is the lesson:** measuring a step's effect beats rescaling the gradient (the normalisation family cannot train at all) but loses to a constant chosen against the real objective - automation bought robustness at an accuracy cost too large to ship. **Untouched and next:** capacity allocation and the memorise-vs-generalise switch; neither is affected by any of this. Source: `docs/history/STEP-SIZE-AUTOMATION-CLOSED.md`, `lens/runs/GLASSLM-GAIN-r4.txt`.
+
+### Capacity allocation: a 30%-table config beats the 85%-table default with 29% fewer parameters - 2026-11-20 19:12
+
+**The first measurement in this programme that moves capacity out of the lookup table.** All four configs, 300 steps, seed 0, momentum lr 0.05:
+
+```
+config                     params     table share   held-out acc   vs default
+A  default  rank32 d64  L2   454,336      85.0%         10.29%          -
+B           rank8  d96  L3   322,384      30.0%         10.74%       +0.45
+C           rank16 d96  L2   345,056      56.1%         10.87%       +0.58
+D           rank8  d128 L2   364,560      26.6%          5.47%       -4.82
+```
+
+**P1 MET** (best beats default by **+0.58** vs a +0.5 bar). **P2 MET** (config **B** is **29% smaller** and still beats the default). **Why B is the interesting row:** it moved capacity from the table (**85.0% -> 30.0%**) into blocks and depth while using fewer parameters and scoring higher - the first evidence that the layers are where capacity belongs. **D shows the limit:** width 128 at 300 steps collapses to 5.47%. **What may NOT be claimed:** +0.58 and +0.45 are **one seed** and this project has measured paired delta sd **0.35**, so both are inside one sd - a direction, not a result; 3 paired seeds are the next run. **Is:** measurement-driven selection of where a fixed budget sits. **Is not:** growth or pruning during training (still unbuilt). Source: `docs/history/CAPACITY-ALLOCATION-SWEEP.md`, `lens/runs/ALLOC-SWEEP-r5.txt`, `lens/runs/chain_alloc_*_r5.out`.
