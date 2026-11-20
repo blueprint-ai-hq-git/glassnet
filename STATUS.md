@@ -7487,3 +7487,19 @@ tokmem + readable window bank       1,848,064      83.1     16.9       -       2
 ```
 
 **The readable part is 1.7% of the model** (0.5% at 9 concepts). **69.0%** of `arch_direct_on` is the token lookup table (1,536,000 of `emb`), 20.0% the answer matrix, 9.4% the direct shortcut, and the entire named concept layer is **36,900 parameters**. The honest anatomy of the readable model is a word table with a small concept hat. **Two self-catches:** my role map was too thin and reported 208,384 params as OPAQUE (`dout`/`dproj` are the direct path under another name) - now **100.0% named**, because "transparent" must mean "we found everything"; and **state per token is none for LensNet** (no carried state at all, the 8-token window is the whole context) vs **256 floats + bank** for tokmem - so own-KV-cache work belongs to the recurrent family or a new attention block, not to LensNet. Source: `docs/history/ANATOMY-SCAN.md`, `lens/runs/ANATOMY.json`.
+
+### Our own block, with our own cache, and three proofs it is right - 2026-11-20 15:08
+
+`lens/glass_block.py`: LayerNorm, multi-head causal attention, MLP, residuals, and **our own KV cache** - **544 named parameters and nothing else to learn**; LayerNorm exposes the mean/variance it used; the causal mask is an explicit object; the cache prints its exact shape and byte cost.
+
+```
+TEST 1  attention + residual vs HAND reference (python loops, math.exp, no shared code)
+  max |difference| = 4.441e-16   PASS
+TEST 2  KV-cache equivalence: 4 tokens all-at-once vs one-at-a-time
+  max |difference| over all 4 prefix positions = 1.192e-07   PASS (float32 rounding)
+  KV cache: 1 layer x 2 heads x 4 tokens x 4 wide x 2 x 4 bytes = 256 bytes
+TEST 3  LayerNorm vs hand computation (mean 3.000000, var 3.500000)
+  max |difference| = 0.000e+00   PASS
+```
+
+**Two defects fixed in my own test first:** the hand reference omitted LayerNorm the block applies (TEST 1 would have failed on correct code) - fixed with an explicit `norm=False` switch so each test verifies ONE mechanism, and LayerNorm got its own hand test; and the cache byte report printed **0 bytes** because it read an outer cache never appended to - now reports the final stepped cache and **asserts** its token count. **Honest status: forward is proven, BACKWARD DOES NOT EXIST**, so the block cannot be trained yet - that is the next piece, gated on finite-difference checks with worst error < 1e-8. The "10x smarter per layer" gate was written first: **10x fewer parameters at equal accuracy, or 10x less compute at equal accuracy**. Source: `docs/history/GLASS-BLOCK-PROVEN.md`, `lens/glass_block.py`.
