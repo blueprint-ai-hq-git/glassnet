@@ -7224,3 +7224,35 @@ The 2026-11-19 memory-line closure (age key end-to-end: trainer **+0.14**, indep
 **The finding nobody ordered - the retrain did NOT reproduce the first run:** same seed, same config, same data order, and the trainer line reproduces to a hundredth (**23.02 -> 23.03**) while the independent evaluator moves a full point (**20.56 -> 19.55**). The only difference is thread count: multithreaded BLAS reduction order changes the last bits of every matmul, so an unpinned run is a **different model**, not the same model computed faster. **Consequence: a "same seed, same config" reproduction must also pin the same core count, or it is not a reproduction** - thread count joins draws, windows and denominators as something a paired comparison must hold fixed.
 
 **The published conclusion stands and does not depend on the lost bytes:** trainer **23.02 vs 22.88 (+0.14)** then **23.03**; independent **20.56 vs 20.62 (-0.06)** then **19.55 vs 20.62 (-1.07)** - every version far below the +0.5 bar, the independent sign negative in both, the falsifier still fires. What is lost is exact byte-level reproducibility of the first run's independent figure, and this page now says so rather than citing a file that no longer holds those bytes. Source: `docs/history/PROVENANCE-OVERWRITE-CORRECTION.md`.
+
+### Rank-boost verdict (falsifier fired on all three) and the untied readout is the first thing to ever move the tail (2026-11-20 09:52)
+
+**Part 1 - `boost50` failed decisively** at its pre-registered 6000-step endpoint, against `win6kon`:
+
+```
+                          win6kon (control)   boost50      delta
+ranks 20-50               25.19%              0.00%        -25.19
+ranks 50-100               0.22%              1.33%        +1.11
+ranks 100-250              0.00%              0.00%         0.00
+ranks 250-500              0.00%              0.00%         0.00
+r21-500 overall            8.52%              0.26%        -8.26
+top-20 accuracy           35.81%             24.22%       -11.59
+trainer line vs constant  22.88% (BEATS)     14.23% vs 14.47% = -0.24 -> BELOW
+```
+
+**P1 FAILED** (band fell 8.26 points; ranks 20-50, the only sub-band that ever worked, went to **exactly zero**), **P2 FAILED** (overall -11.59 against a 2-point allowance), **P3 FAILED** (on the trainer's own matched constant the arm scores **below a trivial predictor**). **The falsifier fired exactly as written:** weighting the loss cannot teach the long tail, so the limiter is the **readout**. 4x weight on half of all training positions starved the head so completely the model never beat a frequency table - it bought +1.11 in the 50-100 band for everything else.
+
+**Part 2 - the untied readout moves the tail, which nothing else has.** Prediction written before the measurement: *if the limiter is readout capacity, the untied 6000-step checkpoint must show ranks 50-500 above the 0.22% tied baseline.* Measured on `scan12_r090_6k_ep6000` (untied table, 104 windows):
+
+```
+                          tied control   UNTIED      delta
+ranks 20-50               25.19%         35.24%      +10.05
+ranks 50-100               0.22%          2.66%      +2.44  (12x the tied rate)
+ranks 100-250              0.00%          0.29%      +0.29  (from exactly zero)
+ranks 250-500              0.00%          0.00%       0.00
+r21-500 overall            8.52%         12.45%      +3.93
+top-20 accuracy           35.81%         41.61%      +5.80
+top-20 default rate        94.90%         70.73%     -24.17  (far less head-biased)
+```
+
+**Prediction MET.** First configuration in the entire memory/readout line where the mid band moves up **and** the head improves at the same time; the frequency bias drops 24 points. **The confound, stated before anyone quotes it:** `scan12_r090_6k` is **not** a clean one-change control - untied readout **and** ~3.07M answer-table parameters against the tied arm's 32,768 bottleneck (~2.8x params) **and** a rarity-weighted setting. So this shows capacity in the readout is **sufficient** to move the tail, not that tying alone was the cause. **Launched `untied6k`** - `win6kon`'s exact config with TIE=0 and nothing else changed: **P1** ranks 50-100 above 0.22%; **P2** top-20 no lower than 35.81%; **P3** overall at or above 21.88% on the trainer line; **falsifier:** ranks 50-100 at or below 0.22% -> the scan12 result was its config, not the readout, and capacity is not the lever either. Source: `docs/history/RANK-BOOST-VERDICT-AND-UNTIED-TAIL.md`.
