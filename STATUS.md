@@ -7503,3 +7503,15 @@ TEST 3  LayerNorm vs hand computation (mean 3.000000, var 3.500000)
 ```
 
 **Two defects fixed in my own test first:** the hand reference omitted LayerNorm the block applies (TEST 1 would have failed on correct code) - fixed with an explicit `norm=False` switch so each test verifies ONE mechanism, and LayerNorm got its own hand test; and the cache byte report printed **0 bytes** because it read an outer cache never appended to - now reports the final stepped cache and **asserts** its token count. **Honest status: forward is proven, BACKWARD DOES NOT EXIST**, so the block cannot be trained yet - that is the next piece, gated on finite-difference checks with worst error < 1e-8. The "10x smarter per layer" gate was written first: **10x fewer parameters at equal accuracy, or 10x less compute at equal accuracy**. Source: `docs/history/GLASS-BLOCK-PROVEN.md`, `lens/glass_block.py`.
+
+### Our own block learns real text: held-out 12.32% vs a 4.08% matched constant - 2026-11-20 16:05
+
+600 steps, 286 s, 20,000 real-text windows. **836,352 parameters in 24 named tensors** (E 768,128 + P 2,048 + 2 blocks), tied output (`logits = h @ E.T`), our own momentum SGD, forward proven against a hand reference and backward certified at **8.815e-07**.
+
+```
+matched constant          4.08%   (most frequent TRAIN target after excluding <unk>: token 3)
+HELD-OUT  loss 5.5956     acc 12.32%
+delta                     +8.24 points -> BEATS the constant
+```
+
+Loss fell 9.4038 -> 5.4656 with no divergence; train ended 12.18% so held-out is not below train (no overfit signal). **P1 MET** (+8.24 against a +1.0 bar), **P2 MET** (largest upward step +0.60, under the 1.0 rule), **falsifier not triggered**. **Does not say:** it is competitive with anything - 600 steps at d=64 on 20k windows is not the same budget as the project's 6000-step arms, and no such comparison is claimed. **The flag that became the next job: E is 768,128 of 836,352 parameters = 92%** - the same lookup-table dominance the anatomy scan found (69% in the old shape). A 92%-table model can only memorise, so the next piece is a **factored embedding** (E = A @ B, rank r) with its own gradient check. Source: `docs/history/GLASS-LM-FIRST-RUN.md`, `lens/runs/GLASSLM.txt`.
