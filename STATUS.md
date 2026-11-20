@@ -7369,3 +7369,17 @@ budget            --direct ON            --direct OFF            gap
 ```
 
 **Correction 1:** P2's bar is 2.0 points; at 100k the shortcut costs **4.87**, so "readability is nearly free" was a 20k-budget artefact. On this architecture removing the direct path costs real accuracy; both arms do reach **25/36** concepts with budget. **Correction 2:** cancellation gets worse, not better - positive supply **16.43x -> 8.476x** for the direct-path arm as it gains accuracy (4.11 -> 12.18%), but **9.45x -> 236.032x** for the bottlenecked arm as its accuracy falls to 7.31%, with `mentions_technology +3579.2%` and `mentions_sport +2599.5%`. Forcing the answer through the concepts makes them **fight harder**, which is the strongest evidence against a concept bottleneck and for the direct path. **Provenance damage, mine:** the arm tag carried no budget, so the 100k run **overwrote** the 20k checkpoints at 12:44/12:49; the 20k attribution survives only in `CONCEPT-EXACT-ON/OFF.json`. Tag now carries the budget (`arch_$1_m${MAXW}w`). Source: `docs/history/BUDGET-REVERSAL-AND-CANCELLATION.md`, `lens/runs/chain_arch_direct_on.out`, `chain_arch_direct_off.out`, `lens/runs/CONCEPT-EXACT-100K-ON.json`.
+
+### Decorrelation removes 73.5% of the cancellation, for free - 2026-11-20 12:56
+
+```
+                        control (lam_decorr 0)   decorrelated (0.2)     delta
+held-out accuracy       7.31%                    7.25%                  -0.06
+perplexity              953.87                   955.09                 +1.22
+concepts passing audit  25 of 36                 25 of 36               0
+POSITIVE SUPPLY         236.039x margin          62.600x margin         -73.5%
+top-8 share of positive 72.3%                   70.7%                  -1.6
+reconstruct residual    2.556e-01                2.544e-01              closes
+```
+
+**The arm's P1 is MET:** cancellation falls **236.039x -> 62.600x (-73.5%)** against a 20% bar, for **-0.06 points** of accuracy (P2 PASSED). **My own script hid this** by labelling two different predictions "P1" - the arm's supply test and the tool's top-8 concentration test - and the log printed only the tool's, so a working result read as a failure. **Concentration is still NOT MET** (top-8 = 70.7% vs 80%). The control **reproduces the independent 100k arm exactly** (953.87 ppl / 7.31% / 236.03x), so the cancellation is a stable property of the architecture. **Residual resolved:** `sum(contribution)` can only reconstruct `(h@W)[pred]-(h@W)[runner]`, so the remainder is the class-dependent `(b+direct)` term; the 236x figure comes from the arm whose decomposition closes to **0.256**, so it is trustworthy while the `--direct` 8.476x carries that caveat. Source: `docs/history/DECORRELATION-REMOVES-CANCELLATION.md`, `lens/runs/DECORR-CANCEL.txt`, `lens/runs/DECORR-SUPPLY-ctrl.json`, `lens/runs/DECORR-SUPPLY-d02.json`.
