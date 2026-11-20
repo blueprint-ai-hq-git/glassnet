@@ -7383,3 +7383,15 @@ reconstruct residual    2.556e-01                2.544e-01              closes
 ```
 
 **The arm's P1 is MET:** cancellation falls **236.039x -> 62.600x (-73.5%)** against a 20% bar, for **-0.06 points** of accuracy (P2 PASSED). **My own script hid this** by labelling two different predictions "P1" - the arm's supply test and the tool's top-8 concentration test - and the log printed only the tool's, so a working result read as a failure. **Concentration is still NOT MET** (top-8 = 70.7% vs 80%). The control **reproduces the independent 100k arm exactly** (953.87 ppl / 7.31% / 236.03x), so the cancellation is a stable property of the architecture. **Residual resolved:** `sum(contribution)` can only reconstruct `(h@W)[pred]-(h@W)[runner]`, so the remainder is the class-dependent `(b+direct)` term; the 236x figure comes from the arm whose decomposition closes to **0.256**, so it is trustworthy while the `--direct` 8.476x carries that caveat. Source: `docs/history/DECORRELATION-REMOVES-CANCELLATION.md`, `lens/runs/DECORR-CANCEL.txt`, `lens/runs/DECORR-SUPPLY-ctrl.json`, `lens/runs/DECORR-SUPPLY-d02.json`.
+
+### Decorrelation saturates at 0.5 and the falsifier fired - 2026-11-20 13:02
+
+```
+                                    accuracy   ppl      positive supply
+control            lam_decorr 0     7.31%      953.87   236.039x
+d02                lam_decorr 0.2   7.25%      955.09    62.600x
+d05                lam_decorr 0.5   7.19%      956.79    38.051x
+d10                lam_decorr 1.0   7.13%      959.33    38.356x
+```
+
+**P2 PASSED everywhere** (accuracy within 0.18 points). **P1 FAILED**: supply(1.0) is **+0.8% above** supply(0.5), not 20% below. **FALSIFIER FIRED as written** - decorrelation **saturates at 0.5** and the line **CLOSES**: 236.039x -> 62.600x -> 38.051x -> 38.356x, so the first two steps do all the work and the third does nothing. The remaining **38x** cancellation is **structural, not a tuning problem**, and the pre-registered remedy is **FEWER, WIDER concepts** - which needs a code change, because `--help` exposes no concept-count knob. **Instrument note:** for `d10` the log printed CONCENTRATION **MET** from the non-additive re-computed-runner path and **NOT MET (72.5%)** from `--fixed-runner`; only the fixed-runner number counts, and it says concentration is **not** met. Source: `docs/history/DECORRELATION-SATURATES.md`, `lens/runs/DECORR-SWEEP.txt`, `lens/runs/DECORR-SWEEP-d05.json`, `DECORR-SWEEP-d10.json`.
