@@ -7617,3 +7617,14 @@ sd                                                      0.31      1.67
 ```
 
 **P1 NOT MET** (mean C-A **+0.27** vs a +0.5 bar, sd **0.31** - inside one sd). **P2 FAILED** (mean B-A **-0.94**; the "29% smaller and still better" was **seed 0 being lucky**, and on seed 1 that config is **3.29 below** the default). **P3 MET** (every arm beat the constant). **Falsifier did NOT fire, by 0.07.** **What is actually true:** capacity did **not** move; the 30%-table shape is **unstable** (paired-delta sd **1.67**, five times the default's spread) and the accuracy winner is **+0.27 +- 0.31 = indistinguishable from zero**. Not a training failure - B on seed 1 fell 9.41 -> 6.26 and still ended worse, so this is genuine seed sensitivity of the rank-8/3-layer shape. **My message an hour ago said "capacity finally moves"; that sentence was wrong, and three seeds caught it** - which is why the 3-seed rule exists even when one seed looks exciting. Next is the untouched third ask: **memorise versus generalise** with a trap dataset that separates them by construction. Source: `docs/history/CAPACITY-CORRECTION-3SEED.md`, `lens/runs/ALLOC-3SEED-r6.txt`, `lens/runs/chain_alloc3_*_r6.out`.
+
+### Memorise vs generalise: the switch works on all 3 seeds, and the generalisation half is still weak - 2026-11-20 20:31
+
+```
+seed   rule acc (held-out)   with switch   fact acc (unique keys)   collisions
+ 0          23.33%             23.33%        13.50% -> 100.00%        0.00%
+ 1          26.33%             26.33%        11.75% -> 100.00%        0.00%
+ 2          25.33%             25.33%         8.00% -> 100.00%        0.00%
+```
+
+**P1 MET on all three seeds** (facts **8.00-13.50% -> 100.00%**; the model cannot generalise a unique key, as the trap intends). **P2 MET on all three** (held-out rule accuracy **+0.00** exactly). **P3 MET** (**0 of 600** held-out rule tokens matched a stored fact context). Falsifier not fired. **P2 is trivially true by construction** - an exact-match store cannot collide with held-out rule contexts, so it is a structural property of exact matching, not evidence the switch shares capacity cleverly; P3 checks it independently. **The weak half, stated before any win is claimed:** held-out rule accuracy is only **23-26%** while train accuracy is **49.7-52.5%**, so the model has **not learned two-digit addition** - the **memorise** half is demonstrated (**11.08% -> 100.00%** mean) but the **generalise** half is **not**. Honest sentence: the switch separates the two correctly; the model's ability to generalise is unproven at 1500 steps. **Scope:** inference-time decision rule with an exact store, not weight-integrated memory (already falsified at +0.49 vs a +1.0 bar). Source: `docs/history/MEMG-SWITCH-3SEED.md`, `lens/runs/MEMG-r7.txt`, `lens/runs/chain_memg_s{0,1,2}_r7.out`.
