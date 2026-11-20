@@ -2,9 +2,6 @@
   <img src="docs/assets/architecture.png" alt="GlassNet architecture: tokens and position feed a named concept layer, a sparse rule layer and a tied answer layer" width="820">
 </p>
 
-<p align="center">
-  <img src="docs/assets/model-card.png" alt="GlassNet model card: a readable language model, measured not claimed, with its four failed hypotheses attached" width="100%">
-</p>
 
 
 <h1 align="center">GlassNet</h1>
@@ -20,6 +17,11 @@ Built from scratch in NumPy - own tensors, own backward pass, own optimiser, own
   <img alt="accuracy" src="https://img.shields.io/badge/next--token%20accuracy-24.58%25%20%C2%B1%200.055-success">
   <img alt="explain" src="https://img.shields.io/badge/explain()%20residual-2.4e--06-brightgreen">
 </p>
+
+<p align="center">
+  <img src="docs/assets/model-card.png" alt="GlassNet model card: a readable language model, measured not claimed, with its four failed hypotheses attached" width="100%">
+</p>
+
 
 ---
 
