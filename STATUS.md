@@ -7575,3 +7575,18 @@ adaptive per-ELEMENT             5.00           0.01%      sank
 ```
 
 **Falsifier fired in its strongest form:** per-element is broken at **every** lr, including **0.05 where plain momentum reaches 12.51%** - not knob-insensitivity but an optimiser that cannot train this model at any setting. **Why:** per-element normalisation turns the update into sign-like steps of uniform magnitude, so unimportant coordinates move as far as critical ones; all three arms converge to the same loss ~27.6. **Gradient-magnitude normalisation is CLOSED** - no third variant, as pre-registered. **The mechanism the evidence demands:** choose the step by **measuring its effect on the loss** (one global direction `-g/||g||`, take the step, keep it if the loss fell else halve, up to 4 tries; grow 1.3x after a first-try accept), so the initial value is a guess, not a setting. Smoke: loss **9.38 -> 8.10**, step self-adjusted **0.5 -> 2.0 -> 1.25**, beat its constant. Real test running on the two initial values that defeated everything else (**0.50** and **0.005**) vs the 12.51% reference; both must land within 1.0 point, falsifier at 2.0 below (which would abandon step-size automation and move to capacity allocation). Source: `docs/history/GAIN-RULE-NEXT.md`, `lens/runs/GLASSLM-OPT-r3.txt`, `lens/runs/GLASSLM-GAIN-r4.txt`.
+
+### Step-size automation is abandoned: it trains, but gives up 3.6-6.6 points to a hand-set constant - 2026-11-20 18:44
+
+```
+optimiser                  setting      held-out acc
+momentum (hand-set)        lr 0.05        12.51%     <- shipping choice
+gain (loss response)       start 0.50      8.90%     beat constant, 3.61 below reference
+gain (loss response)       start 0.005     5.89%     beat constant, 6.62 below reference
+adaptive per-element       lr 0.50         0.26%
+adaptive per-tensor        lr 0.50         0.03%
+adaptive per-element       lr 0.05         0.00%
+momentum (hand-set)        lr 0.50       DIVERGED
+```
+
+**P1 FAILED** (gain@0.50 is **3.61** below 12.51), **P2 FAILED** (gain@0.005 is **6.62** below), **FALSIFIER FIRED on both** - so by pre-registration **step-size automation is abandoned**, hand-set lr 0.05 is the documented shipping choice, and work moves to capacity allocation. **Why:** the gain rule accepts a step if the loss on **that batch** fell - a greedy myopic test, which can accept steps that help the batch and not the objective; its size climbed to 1.11-1.58 and stayed. **The ordering is the lesson:** measuring a step's effect beats rescaling the gradient (the normalisation family cannot train at all) but loses to a constant chosen against the real objective - automation bought robustness at an accuracy cost too large to ship. **Untouched and next:** capacity allocation and the memorise-vs-generalise switch; neither is affected by any of this. Source: `docs/history/STEP-SIZE-AUTOMATION-CLOSED.md`, `lens/runs/GLASSLM-GAIN-r4.txt`.
