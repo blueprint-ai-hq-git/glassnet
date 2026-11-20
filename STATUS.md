@@ -7306,3 +7306,14 @@ trainer vs constant        22.88% BEATS    22.40% BEATS (+7.93)
 ```
 
 **P1 FAILED** (ranks 50-100 at **0.00%**, at or below the 0.22% baseline), **P2 FAILED** (top-20 fell 1.02 points), **P3 PASSED** (22.40% is inside the 21.88% floor and beats the constant by 7.93, so the arm trained properly), **FALSIFIER FIRED exactly as pre-registered**. **The correction:** the tail movement I attributed to untying came from **the rarity-weighted setting and the extra parameters** - untying by itself makes every band slightly worse. **Where the lever is not:** loss weighting (14.23% vs a 14.47% trivial constant), calibration (+0.84/+0.49/+0.00, no replication), readout shape (today), depth (5.68/5.08 vs 6.07). All four changed the *strength* or *post-processing* of learning; none changed **what is supervised at each position**. The measured reason to expect something there is the delayed-recall probe: with a target that genuinely requires memory, the readable bank plus its age key lifted recall **20.61% -> 85.61%** over three seeds. So the next arm trains with the target at **offset 2**, with and without the readable bank. Source: `docs/history/UNTIED-READOUT-CLEAN-TEST.md`, `lens/runs/chat/untied6k_K8_ep6000.npz`, `lens/runs/chat/win6kon_K8_ep6000.npz`.
+
+### Custom architecture, concepts load-bearing (scoped: 20k windows, 1 epoch) - 2026-11-20 12:33
+
+`--direct` ON vs OFF, both arms identical otherwise, `--method ours`:
+
+```
+arm A  --direct ON    final VAL ppl 3841.51   acc 4.11%   concepts 13/36
+arm B  --direct OFF   final VAL ppl 4520.79   acc 3.95%   concepts 14/36
+```
+
+**P2 PASSED** - removing the shortcut costs **0.16 points** (4.11 -> 3.95), far inside the 2.0 bar, with perplexity rising 3841.51 -> 4520.79 as the counterweight. **P3 PASSED** - passing concepts **13/36 -> 14/36** and seven of eight listed AUROCs improve (body 0.63923->0.65524, is_a_list 0.62948->0.63468, politics 0.55818->0.57263, a_size 0.57875->0.58962, law 0.54896->0.55316, colour 0.56389->0.56521, quantity 0.52239->0.52508). **P1 UNMEASURED and my pre-registration was flawed:** `train_chat.py` prints no concept-share metric, so the run could not answer its own primary question; and my script passed no `--out`, so both arms wrote `run1` and the second **overwrote** the first's checkpoint. Fixed with per-arm `--out`, clobbered file kept as `lens/runs/chat/ARCH-SMOKE-UNTAGGED-run1_ep1.npz` (sha256 171350909327a865), pair re-launched as `customarch2`. **The one thing this establishes:** removing the shortcut makes concept labels **more honest** while costing 0.16 points - the first time readability and accuracy moved the same way instead of trading off. Scoped to 20k windows; the full corpus under this recipe is 10.8-13.8 h per arm. Source: `docs/history/CUSTOM-ARCH-DIRECT-SCOPED.md`, `lens/runs/chain_arch_direct_on.out`, `lens/runs/chain_arch_direct_off.out`.
