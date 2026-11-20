@@ -7538,3 +7538,15 @@ factored r=32     454,336        85.0%         12.51%      +0.18
 ```
 
 **P1 MET** (12.51% vs a >= 11.33% bar, and 0.18 above the full table). **P2 MET** (454,336 params, **1.84x smaller**). **Falsifier not triggered** - factored embeddings work at rank 32. **May be said:** a factored output table reaches the same held-out accuracy with **1.84x fewer total parameters**. **May NOT be said:** that it is more accurate - **+0.18 on one seed at 600 steps is inside noise** (this project measured sd 0.93 draw noise on a neighbouring task, and no seed sweep has run here), so the supported claim is "equal within noise". **Capacity question still unanswered, as predicted before the run:** table share went **73.9% -> 85.0%**, the wrong direction - the model got *smaller*, not *more layer-heavy*. "Smaller at equal accuracy" achieved; "capacity in the layers" not advanced by this mechanism. Source: `docs/history/FACTORED-EMBED-R32.md`, `lens/runs/GLASSLM-R32.txt`, `lens/runs/chain_glasslm_r32.out`.
+
+### Three seeds: equal within noise at 1.84x fewer params, and the +0.18 was a lucky draw - 2026-11-20 17:20
+
+```
+seed   full table   factored r=32   paired delta
+ 0       12.33%        12.51%          +0.18
+ 1       12.68%        12.05%          -0.63
+ 2       13.27%        12.78%          -0.49
+mean     12.76%        12.45%          -0.31   (sd of deltas 0.35)
+```
+
+**P1 MET** (mean delta **-0.31**, inside -1.0..+1.0), **P2 MET** (every seed of both arms lands 11.3-13.5%, no collapse), falsifier not triggered. **Correction to the single-seed message:** rank 32 looked **+0.18** better; three seeds show that was **seed 0 being lucky** - the next two seeds are both negative. Defensible claim: a factored output table reaches the **same held-out accuracy within noise** (mean **-0.31 +- 0.35**) with **1.84x fewer total parameters** (454,336 vs 836,352). It is **not** more accurate. **Programme state:** scan / block / certificate / training / factored embedding all done; **capacity in the layers, automatic allocation, and the memorise-vs-generalise switch are not started** - and those three are what was actually asked for. Source: `docs/history/FACTORED-3SEED.md`, `lens/runs/GLASSLM-3SEED.txt`, `lens/runs/chain_gl3_s*_r*.out`.
