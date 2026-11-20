@@ -7337,3 +7337,25 @@ reconstruct |error|       1.076              1.083
 for 90% of the margin are identical at **22 of 36**. Raising share does not make concepts more *specifically* responsible. **Caveat:**
 `C + D` misses the real predicted logit by up to **1.076/1.083**, so the split is approximate and no sharper claim is supported.
 Source: `docs/history/CONCEPT-SHARE-MEASURED.md`, `lens/runs/chat/arch_direct_on_ep1.npz`, `lens/runs/chat/arch_direct_off_ep1.npz`.
+
+### The concept layer answers by cancellation - 2026-11-20 13:35
+
+Exact attribution (`contribution_i = h_i * (W[i,pred] - W[i,runner])`, runner-up held fixed so the split is additive and checkable;
+residual 4.134e-02 OFF / 3.445e-01 ON, equal to the class-bias difference and named as such):
+
+```
+                                    --direct ON        --direct OFF
+concepts supplying POSITIVE margin  17 of 36           17 of 36
+positive supply vs the net margin   16.43x             9.45x
+top-8 of the positive suppliers     68.7% of positive   67.4% of positive
+strongest supplier                  is_a_request +223.8% is_a_request +123.9%
+strongest opposer                  mentions_technology -262.0%  -153.7%
+```
+
+**P1 NOT MET both arms** (68.7%/67.4% against an 80% bar - attribution is spread over 17 concepts). **P2 MET**: the same concepts
+lead in both arms, so the load-bearing set belongs to the architecture and data, not the arm. **The finding:** the concepts supply
+**9.4x to 16.4x** the net margin - the answer is the small **residue of large opposing pushes**, with 19 of 36 concepts opposing and
+`mentions_technology` alone at **-262%**. This is the structural explanation for the earlier 60x share overstatement and for
+`explain()` being exact on 0 of 200 windows. **My first instrument was invalid, not the prediction:** ablating against a
+re-computed runner-up gave -302%/-204% and is non-additive because ablation can change which class is second. Source:
+`docs/history/CONCEPT-CANCELLATION.md`, `lens/runs/CONCEPT-EXACT-ON.json`, `lens/runs/CONCEPT-EXACT-OFF.json`.
