@@ -7438,3 +7438,14 @@ configuration                          acc      ppl      audit     supply
 ```
 
 **narrowdir P1 FAILED** (9.35% is 2.83 below 12.18, audit 5/9 vs required 8/9), **P2 FAILED** (80.896x vs required <8.476x), **FALSIFIER FIRED** by its own condition (acc >2.0 below AND audit <6/9). The two good properties **refuse to combine**: narrowing buys honesty only in the bottlenecked shape (9/9) and destroys it with the direct path present (5/9, worse than 69%); the direct path buys accuracy and the least cancellation but leaves concepts a passenger. **Closes:** concept count is not the lever; **no configuration at 100k is both honest and accurate**; concentration never moved. **This is the honest answer to "is our readable architecture better than a regular model": at this scale it is not, and there is still **no plain matched control for the chat architecture** to measure that comparison - gap recorded in QUEUE.txt. One arm left open: the winner (36+direct) was only ever trained at `lam_decorr 0`, so it is tested at 0.5; if it loses more than 1.0 point, no further concept arm of any kind runs. Source: `docs/history/CONCEPT-LINE-CLOSED.md`, `lens/runs/NARROW-DIRECT.txt`, `lens/runs/NARROW-DIRECT.json`.
+
+### Decorrelation is a no-op on the winner, and the plain control is blocked by design - 2026-11-20 13:15
+
+```
+                              reference (decorr 0)     windec (decorr 0.5)    delta
+held-out accuracy             12.18%                   12.10%                 -0.08
+perplexity                    712.92                   714.51                 +1.59
+POSITIVE SUPPLY               8.476x                   10.107x                +19%
+```
+
+**P1 NOT MET** (accuracy within 0.5 is fine but supply went 19% the wrong way), **falsifier did NOT fire** (drop only 0.08). The reading is **"decorrelation does nothing here"**, not "it hurts": it is a lever only on the bottlenecked shape (236x -> 38x) and a no-op on the configuration that performs. Best setting stays `lam_decorr 0` by parsimony. **Concept line closed with full accounting** - count is not the lever, decorrelation is not the lever on the winner, concentration never moves (top-half 74-82%, entropy 0.906-0.950), and no configuration is both honest and accurate. **Plain control blocked by design, verified not assumed:** `lens.Net(vocab=100, concepts=[], ...)` raises `ValueError: LensNet needs at least one named concept; the concept layer IS the architecture.` So a regular-model control is a **new model class**, not a flag - queued with that spec and evidence rather than rushed. **Until it exists, no custom-vs-regular claim has been measured on the chat task**; the only matched figure is the image model's **-0.08 = parity**. Source: `docs/history/WINDEC-NOOP-AND-PLAIN-CONTROL-BLOCKER.md`, `lens/runs/WINNER-DECORR.txt`, `lens/runs/WINNER-DECORR.json`.
