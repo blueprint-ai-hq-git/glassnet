@@ -1,7 +1,7 @@
 # The separated memorisation store works: 96.1 points of forgetting -> 0.0 (2026-11-13)
 
 The problem in the project's own record: copy ability peaked at **70.2%** held-out at step 1000 and decayed to **46.5%** by step
-4000 while language kept improving, and no checkpoint had both. Yahya's proposal was to keep memorised facts in their own part of
+4000 while language kept improving, and no checkpoint had both. The project owner's proposal was to keep memorised facts in their own part of
 the model so that training the language part cannot overwrite them. This is the smallest experiment that can settle it.
 
 ## Setup
@@ -50,7 +50,7 @@ or a setup where the outcome is guaranteed.
 - **Does not prove:** that this scales to the real corpus copy task (70.2% -> 46.5%), or that an isolated store helps *language*
   in any way - language is identical between arms here. Porting this to the real copy task, with its measured 70.2% peak, is the
   next experiment.
-- The store also costs parameters that do nothing for language, which is exactly the trade Yahya described: a part of the model
+- The store also costs parameters that do nothing for language, which is exactly the trade the project owner described: a part of the model
   that exists to remember, and a part that exists to learn.
 
 ## Reproduction

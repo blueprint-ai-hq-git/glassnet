@@ -43,7 +43,7 @@ reported.
 ## What follows
 1. **`explain()` must state the split.** Any explanation that omits "the decision came from the copy path" is
    misleading, even when every individual number in it is correct.
-2. **The architecture has a choice to make, and it is a design decision for Yahya, not a tuning knob:** either the
+2. **The architecture has a choice to make, and it is a design decision for the project owner, not a tuning knob:** either the
    concept path is given the decision (and accuracy is paid for it), or it stays an accurate monitor of a decision
    it does not make (and the project stops calling itself readable at the answer level).
 3. Nothing here changes the accuracy work. It changes what the words "readable" and "explain" are allowed to mean

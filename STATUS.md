@@ -841,7 +841,7 @@ same 4,000 steps with taught accuracy near 83%, on a 15.5M-parameter model with 
 
 ## The separated memorisation store works: 96.1 points of forgetting -> 0.0
 
-Yahya's proposal tested directly. 128 key->value facts trained to 100%, then **language-only** training (no rehearsal), which is
+The project owner's proposal tested directly. 128 key->value facts trained to 100%, then **language-only** training (no rehearsal), which is
 the situation behind the project's measured 70.2% -> 46.5% copy decay. Three seeds each:
 
 ```

@@ -31,7 +31,7 @@ Every figure this project has reported until today was next-token accuracy on it
 number was never comparable to anything, and it concealed the fact that the model cannot perform a single checkable
 task. A next-word predictor at 25% is not a weak assistant; on this evidence it is not an assistant at all.
 
-This also puts Yahya's target in measurable terms: being better than an average model at 512 on every benchmark starts
+This also puts The project owner's target in measurable terms: being better than an average model at 512 on every benchmark starts
 from **zero on all six**, and the distance is now visible instead of assumed.
 
 ## What the suite is not

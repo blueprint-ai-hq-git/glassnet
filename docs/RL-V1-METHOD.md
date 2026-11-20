@@ -1,6 +1,6 @@
 # Our own RL trainer, built properly this time: still does not beat supervised (2026-11-13)
 
-Yahya's instruction: the custom RL training method comes first, done properly, and the memory/judge work follows. This is the
+The project owner's instruction: the custom RL training method comes first, done properly, and the memory/judge work follows. This is the
 first honest measurement of a from-scratch RL method with a **verifiable** reward.
 
 ## What was built (all our own code, `glassnet/rl.py`)
