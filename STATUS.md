@@ -7604,3 +7604,16 @@ D           rank8  d128 L2   364,560      26.6%          5.47%       -4.82
 ```
 
 **P1 MET** (best beats default by **+0.58** vs a +0.5 bar). **P2 MET** (config **B** is **29% smaller** and still beats the default). **Why B is the interesting row:** it moved capacity from the table (**85.0% -> 30.0%**) into blocks and depth while using fewer parameters and scoring higher - the first evidence that the layers are where capacity belongs. **D shows the limit:** width 128 at 300 steps collapses to 5.47%. **What may NOT be claimed:** +0.58 and +0.45 are **one seed** and this project has measured paired delta sd **0.35**, so both are inside one sd - a direction, not a result; 3 paired seeds are the next run. **Is:** measurement-driven selection of where a fixed budget sits. **Is not:** growth or pruning during training (still unbuilt). Source: `docs/history/CAPACITY-ALLOCATION-SWEEP.md`, `lens/runs/ALLOC-SWEEP-r5.txt`, `lens/runs/chain_alloc_*_r5.out`.
+
+### CORRECTION: three seeds refute the capacity signal I reported an hour ago - 2026-11-20 20:13
+
+```
+seed   A default   B (30% table)   C (accuracy winner)   C - A     B - A
+ 0      10.29%        10.74%           10.87%           +0.58     +0.45
+ 1      10.88%         7.59%           10.73%           -0.15     -3.29
+ 2      10.72%        10.73%           11.09%           +0.37     +0.01
+mean                                                  +0.27     -0.94
+sd                                                      0.31      1.67
+```
+
+**P1 NOT MET** (mean C-A **+0.27** vs a +0.5 bar, sd **0.31** - inside one sd). **P2 FAILED** (mean B-A **-0.94**; the "29% smaller and still better" was **seed 0 being lucky**, and on seed 1 that config is **3.29 below** the default). **P3 MET** (every arm beat the constant). **Falsifier did NOT fire, by 0.07.** **What is actually true:** capacity did **not** move; the 30%-table shape is **unstable** (paired-delta sd **1.67**, five times the default's spread) and the accuracy winner is **+0.27 +- 0.31 = indistinguishable from zero**. Not a training failure - B on seed 1 fell 9.41 -> 6.26 and still ended worse, so this is genuine seed sensitivity of the rank-8/3-layer shape. **My message an hour ago said "capacity finally moves"; that sentence was wrong, and three seeds caught it** - which is why the 3-seed rule exists even when one seed looks exciting. Next is the untouched third ask: **memorise versus generalise** with a trap dataset that separates them by construction. Source: `docs/history/CAPACITY-CORRECTION-3SEED.md`, `lens/runs/ALLOC-3SEED-r6.txt`, `lens/runs/chain_alloc3_*_r6.out`.
