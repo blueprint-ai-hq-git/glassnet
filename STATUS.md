@@ -7359,3 +7359,13 @@ lead in both arms, so the load-bearing set belongs to the architecture and data,
 `explain()` being exact on 0 of 200 windows. **My first instrument was invalid, not the prediction:** ablating against a
 re-computed runner-up gave -302%/-204% and is non-additive because ablation can change which class is second. Source:
 `docs/history/CONCEPT-CANCELLATION.md`, `lens/runs/CONCEPT-EXACT-ON.json`, `lens/runs/CONCEPT-EXACT-OFF.json`.
+
+### A bigger budget reverses the verdict, and cancellation gets worse - 2026-11-20 12:49
+
+```
+budget            --direct ON            --direct OFF            gap
+20k windows    acc 4.11%  (13/36)     acc 3.95%  (14/36)      -0.16   <- P2 'passed'
+100k windows   acc 12.18% (25/36)     acc 7.31%  (25/36)      -4.87   <- P2 FAILS
+```
+
+**Correction 1:** P2's bar is 2.0 points; at 100k the shortcut costs **4.87**, so "readability is nearly free" was a 20k-budget artefact. On this architecture removing the direct path costs real accuracy; both arms do reach **25/36** concepts with budget. **Correction 2:** cancellation gets worse, not better - positive supply **16.43x -> 8.476x** for the direct-path arm as it gains accuracy (4.11 -> 12.18%), but **9.45x -> 236.032x** for the bottlenecked arm as its accuracy falls to 7.31%, with `mentions_technology +3579.2%` and `mentions_sport +2599.5%`. Forcing the answer through the concepts makes them **fight harder**, which is the strongest evidence against a concept bottleneck and for the direct path. **Provenance damage, mine:** the arm tag carried no budget, so the 100k run **overwrote** the 20k checkpoints at 12:44/12:49; the 20k attribution survives only in `CONCEPT-EXACT-ON/OFF.json`. Tag now carries the budget (`arch_$1_m${MAXW}w`). Source: `docs/history/BUDGET-REVERSAL-AND-CANCELLATION.md`, `lens/runs/chain_arch_direct_on.out`, `chain_arch_direct_off.out`, `lens/runs/CONCEPT-EXACT-100K-ON.json`.
