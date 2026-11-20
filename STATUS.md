@@ -7550,3 +7550,14 @@ mean     12.76%        12.45%          -0.31   (sd of deltas 0.35)
 ```
 
 **P1 MET** (mean delta **-0.31**, inside -1.0..+1.0), **P2 MET** (every seed of both arms lands 11.3-13.5%, no collapse), falsifier not triggered. **Correction to the single-seed message:** rank 32 looked **+0.18** better; three seeds show that was **seed 0 being lucky** - the next two seeds are both negative. Defensible claim: a factored output table reaches the **same held-out accuracy within noise** (mean **-0.31 +- 0.35**) with **1.84x fewer total parameters** (454,336 vs 836,352). It is **not** more accurate. **Programme state:** scan / block / certificate / training / factored embedding all done; **capacity in the layers, automatic allocation, and the memorise-vs-generalise switch are not started** - and those three are what was actually asked for. Source: `docs/history/FACTORED-3SEED.md`, `lens/runs/GLASSLM-3SEED.txt`, `lens/runs/chain_gl3_s*_r*.out`.
+
+### Per-tensor adaptive step sizes do NOT remove the learning-rate knob - 2026-11-20 17:56
+
+```
+arm                        lr      held-out acc   outcome
+momentum (one lr)          0.05      12.51%       reference
+momentum (one lr)          0.50       0.00%       DIVERGED, loss nan by step 300
+adaptive (per-tensor)      0.50       0.03%       sank instead (loss 9.41 -> 27.57)
+```
+
+**P1 CONFIRMED** (a constant 10x too high destroys the model). **P2 FAILED** - the adaptive rule was meant to land within 1.0 of 12.51% and landed **12.48 below**. **FALSIFIER FIRED**, so the owed per-element retry is running. **Diagnosis that decides what's next:** normalising a gradient by its magnitude controls direction and relative scale, but not the **absolute** effect of a step - with gradients at order 1, `lr = 0.5` still means moving half a unit in every coordinate, which is why the arm sank instead of diverging. **Gradient-magnitude normalisation is the wrong family**; removing a learning-rate knob needs a rule that measures the loss's **response** to the step and grows/shrinks it (a gain rule), pre-registered separately. **Two runner defects, both mine, fixed:** a diverged arm aborted the run, and then a completed-but-bad arm aborted it too - one nonzero exit code covered both "bad result" and "crash". The trainer now prints an explicit **`OUTCOME:`** line and the runner aborts **only when it is missing**. Source: `docs/history/ADAPTIVE-STEPS-FAILED.md`, `lens/runs/chain_glopt_*_r2.out`.
