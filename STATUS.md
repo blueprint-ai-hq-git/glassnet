@@ -7426,3 +7426,15 @@ DECORR-SUPPLY-ctrl           36   19   236.04x    81.6%   0.906   2.56e-01
 ```
 
 **Concentration is FLAT across every configuration: top-half 74.2-81.6%, entropy 0.906-0.950.** **Correction to the previous entry:** "fewer concepts cuts cancellation 48%" is true as a statement about **volume** (38.05x -> 19.84x), but the 9-concept arm's distribution shape (79.7% / 0.927) sits **inside the same band** as the 36-concept arms. Fewer concepts reduced **how much** the units push, not **how concentrated** the push is. Since the goal is "a human reads a few rules and knows the answer", **no configuration measured so far produces that**, at any count or strength. Two JSONs from the non-additive path are labelled **not quotable** and kept, not deleted. Source: `docs/history/CONCENTRATION-IS-INVARIANT.md`.
+
+### The falsifier fired: the concept line closes at this scale - 2026-11-20 13:12
+
+```
+configuration                          acc      ppl      audit     supply
+36 concepts + direct (decorr 0)     12.18%   712.92  25/36 (69%)    8.476x   <- most accurate
+36 concepts, no direct (decorr 0)    7.31%   953.87  25/36 (69%)  236.039x
+9 concepts, no direct (decorr 0.5)   7.37%  1275.33   9/9 (100%)   19.839x   <- most honest
+9 concepts + direct (decorr 0.5)     9.35%  1269.90    5/9 (56%)   80.896x   <- neither
+```
+
+**narrowdir P1 FAILED** (9.35% is 2.83 below 12.18, audit 5/9 vs required 8/9), **P2 FAILED** (80.896x vs required <8.476x), **FALSIFIER FIRED** by its own condition (acc >2.0 below AND audit <6/9). The two good properties **refuse to combine**: narrowing buys honesty only in the bottlenecked shape (9/9) and destroys it with the direct path present (5/9, worse than 69%); the direct path buys accuracy and the least cancellation but leaves concepts a passenger. **Closes:** concept count is not the lever; **no configuration at 100k is both honest and accurate**; concentration never moved. **This is the honest answer to "is our readable architecture better than a regular model": at this scale it is not, and there is still **no plain matched control for the chat architecture** to measure that comparison - gap recorded in QUEUE.txt. One arm left open: the winner (36+direct) was only ever trained at `lam_decorr 0`, so it is tested at 0.5; if it loses more than 1.0 point, no further concept arm of any kind runs. Source: `docs/history/CONCEPT-LINE-CLOSED.md`, `lens/runs/NARROW-DIRECT.txt`, `lens/runs/NARROW-DIRECT.json`.
