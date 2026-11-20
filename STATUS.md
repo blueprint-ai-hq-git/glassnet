@@ -7628,3 +7628,15 @@ seed   rule acc (held-out)   with switch   fact acc (unique keys)   collisions
 ```
 
 **P1 MET on all three seeds** (facts **8.00-13.50% -> 100.00%**; the model cannot generalise a unique key, as the trap intends). **P2 MET on all three** (held-out rule accuracy **+0.00** exactly). **P3 MET** (**0 of 600** held-out rule tokens matched a stored fact context). Falsifier not fired. **P2 is trivially true by construction** - an exact-match store cannot collide with held-out rule contexts, so it is a structural property of exact matching, not evidence the switch shares capacity cleverly; P3 checks it independently. **The weak half, stated before any win is claimed:** held-out rule accuracy is only **23-26%** while train accuracy is **49.7-52.5%**, so the model has **not learned two-digit addition** - the **memorise** half is demonstrated (**11.08% -> 100.00%** mean) but the **generalise** half is **not**. Honest sentence: the switch separates the two correctly; the model's ability to generalise is unproven at 1500 steps. **Scope:** inference-time decision rule with an exact store, not weight-integrated memory (already falsified at +0.49 vs a +1.0 bar). Source: `docs/history/MEMG-SWITCH-3SEED.md`, `lens/runs/MEMG-r7.txt`, `lens/runs/chain_memg_s{0,1,2}_r7.out`.
+
+### The generalisation half failed: 4x training bought +11.7 points and the rule is still not learned - 2026-11-20 21:07
+
+```
+seed   held-out rule acc   train acc   gap      fact acc (with switch)   collisions
+ 0          35.00%           52.50%    17.5          100.00%              0.00%
+ 1          34.33%           53.44%    19.1          100.00%              0.00%
+ 2          40.83%           55.94%    15.1          100.00%              0.00%
+mean        36.72%           53.96%    17.2
+```
+
+**P1 FAILED** (bar was above **60%** on all three seeds; actual **34.33-40.83%**). Against 1500 steps (mean 25.00%) four times the training bought **+11.72 points**. **Falsifier:** written as "below 40% even at 6000 steps" - two of three seeds are below 40 and the **mean 36.72% is below it**, so its substance is met but not its strictest reading (seed 2 reached 40.83%); both recorded. **The switch still behaves everywhere:** facts **10.00-12.75% -> 100.00%**, collisions **0 of 600**, rule accuracy **+0.00**. **Verdict without softening: the memorize half is demonstrated, the generalise half is NOT** - ~37% held-out against ~54% train is a 17-point gap, the signature of fitting 600 pairs rather than learning a rule. **Diagnosis setting the next single change:** 10,000 possible pairs, 600 given - data-starved, not obviously capacity-starved, and only raising the data with nothing else changed distinguishes them. **What this does NOT license:** widening the model to move the number; the pre-registration forbade that rescue. Source: `docs/history/MEMG-GENERALISATION-FAILED.md`, `lens/runs/MEMG-LONG-r8.txt`, `lens/runs/chain_memglong_s{0,1,2}_r8.out`.
