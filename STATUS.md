@@ -7474,3 +7474,16 @@ mean: -1.53 points, sd 0.44   |  params 16,665 vs 16,705 (0.24% apart = matched)
 ```
 
 **P1/P2/P3 HOLD, falsifier not triggered.** So at matched parameters over 3 seeds the readable architecture is **1.53 points worse** than a plain network while being **97.4% honest**. **Honest is not better.** "10x better than a normal model" measures at **-15% relative** on the only matched task available. Chat has **no plain control** (refused by design, verified), so no chat claim exists. Source: `docs/history/TWO-CLOSURES-MEMORY-AND-MATCHED-GAP.md`, `lens/runs/OFF2-PAIR.txt`, `lens/runs/MATCHED-GAP-3SEED.txt`, `lens/runs/image/**/match3_s*_log.json`.
+
+### Anatomy scan: what is actually inside, tensor by tensor - 2026-11-20 14:45
+
+`tools/anatomy.py` inventories a checkpoint with no training and no data. Every number summed from the models own arrays; full inventory in `lens/runs/ANATOMY.json`.
+
+```
+architecture                          params      table%  compute%  concept%   state per token
+LensNet 36 concepts + direct        2,225,284      89.0     11.0       1.7     none (window only)
+LensNet  9 concepts + direct        1,873,609      88.4     11.6       0.5     none
+tokmem + readable window bank       1,848,064      83.1     16.9       -       256 floats + bank
+```
+
+**The readable part is 1.7% of the model** (0.5% at 9 concepts). **69.0%** of `arch_direct_on` is the token lookup table (1,536,000 of `emb`), 20.0% the answer matrix, 9.4% the direct shortcut, and the entire named concept layer is **36,900 parameters**. The honest anatomy of the readable model is a word table with a small concept hat. **Two self-catches:** my role map was too thin and reported 208,384 params as OPAQUE (`dout`/`dproj` are the direct path under another name) - now **100.0% named**, because "transparent" must mean "we found everything"; and **state per token is none for LensNet** (no carried state at all, the 8-token window is the whole context) vs **256 floats + bank** for tokmem - so own-KV-cache work belongs to the recurrent family or a new attention block, not to LensNet. Source: `docs/history/ANATOMY-SCAN.md`, `lens/runs/ANATOMY.json`.
