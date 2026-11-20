@@ -7527,3 +7527,14 @@ factored A @ B r=16   261,280        73.9%         10.86%            +6.78
 ```
 
 **P2 MET** (params fall **3.20x**). **P1 NOT MET** (bar >= 11.32%, actual **10.86%** - missing by 0.46, i.e. 1.47 below the table). **FALSIFIER DID NOT FIRE** (needed below 10.32%), so the pre-registered action is **one retry at rank 32** - not a new idea, not a sweep. **The number that matters more:** even factored, the output table is still **73.9% of the model** (was 91.8%). Cutting rank moved the share the right way but nowhere near enough - the layers still hold a quarter of the capacity, and rank 32 would push the share back toward 85%, so it can rescue the accuracy question but **cannot** shift capacity into the layers. Both are recorded so the retry cannot be mistaken for progress on the real goal. Source: `docs/history/FACTORED-EMBED-R16.md`, `lens/runs/GLASSLM-EMBED.txt`, `lens/runs/chain_glasslm_emb0.out`, `chain_glasslm_emb16.out`.
+
+### Factored rank 32: equal accuracy at 1.84x fewer parameters - 2026-11-20 16:32
+
+```
+embedding          params     table share   held-out acc   vs full table
+full table E      836,352        91.8%         12.33%         -
+factored r=16     261,280        73.9%         10.86%      -1.47
+factored r=32     454,336        85.0%         12.51%      +0.18
+```
+
+**P1 MET** (12.51% vs a >= 11.33% bar, and 0.18 above the full table). **P2 MET** (454,336 params, **1.84x smaller**). **Falsifier not triggered** - factored embeddings work at rank 32. **May be said:** a factored output table reaches the same held-out accuracy with **1.84x fewer total parameters**. **May NOT be said:** that it is more accurate - **+0.18 on one seed at 600 steps is inside noise** (this project measured sd 0.93 draw noise on a neighbouring task, and no seed sweep has run here), so the supported claim is "equal within noise". **Capacity question still unanswered, as predicted before the run:** table share went **73.9% -> 85.0%**, the wrong direction - the model got *smaller*, not *more layer-heavy*. "Smaller at equal accuracy" achieved; "capacity in the layers" not advanced by this mechanism. Source: `docs/history/FACTORED-EMBED-R32.md`, `lens/runs/GLASSLM-R32.txt`, `lens/runs/chain_glasslm_r32.out`.
