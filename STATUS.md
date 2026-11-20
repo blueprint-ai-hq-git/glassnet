@@ -7395,3 +7395,15 @@ d10                lam_decorr 1.0   7.13%      959.33    38.356x
 ```
 
 **P2 PASSED everywhere** (accuracy within 0.18 points). **P1 FAILED**: supply(1.0) is **+0.8% above** supply(0.5), not 20% below. **FALSIFIER FIRED as written** - decorrelation **saturates at 0.5** and the line **CLOSES**: 236.039x -> 62.600x -> 38.051x -> 38.356x, so the first two steps do all the work and the third does nothing. The remaining **38x** cancellation is **structural, not a tuning problem**, and the pre-registered remedy is **FEWER, WIDER concepts** - which needs a code change, because `--help` exposes no concept-count knob. **Instrument note:** for `d10` the log printed CONCENTRATION **MET** from the non-additive re-computed-runner path and **NOT MET (72.5%)** from `--fixed-runner`; only the fixed-runner number counts, and it says concentration is **not** met. Source: `docs/history/DECORRELATION-SATURATES.md`, `lens/runs/DECORR-SWEEP.txt`, `lens/runs/DECORR-SWEEP-d05.json`, `DECORR-SWEEP-d10.json`.
+
+### Fewer concepts cuts cancellation ~48% and every concept passes audit - 2026-11-20 13:09
+
+```
+                              36 concepts (d05)     9 concepts (narrow)     delta
+held-out accuracy             7.19%                 7.37%                   +0.18
+perplexity                    956.79                1275.33                 +318.54   <- worse
+concepts passing audit        25 of 36  (69%)       9 of 9  (100%)          +31 points
+POSITIVE SUPPLY               38.051x margin        19.839x margin          -47.9%
+```
+
+**P1 MET** (bar was <=30.44x; actual **19.839x**), falsifier did **not** fire, line stays open. **P2 PASSED** (+0.18 points). First time three things moved the right way together: cancellation nearly halved, **every** concept passes audit (9/9 vs 25/36), and accuracy did not pay. **Three caveats:** perplexity is **33% worse** (956.79 -> 1275.33) while accuracy is flat-to-better, so the honest summary is accuracy flat / calibration worse; the concentration test is **vacuous at 9 concepts** (its top-8 bar is the whole layer when only 5 units are positive - the tool's "MET" means nothing and the bar needs restating as a fraction); and count and breadth are **confounded**, so this is "fewer, wider" as specified, not a pure count effect. **Verified not inferred:** the log prints `concepts 9/9`, so the arm really did load the 9-concept catalogue. Source: `docs/history/FEWER-CONCEPTS-HALVES-CANCELLATION.md`, `lens/runs/CONCEPT-COUNT.txt`, `lens/runs/chain_narrow.out`, `lens/runs/CONCEPT-COUNT.json`.
