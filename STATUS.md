@@ -7561,3 +7561,17 @@ adaptive (per-tensor)      0.50       0.03%       sank instead (loss 9.41 -> 27.
 ```
 
 **P1 CONFIRMED** (a constant 10x too high destroys the model). **P2 FAILED** - the adaptive rule was meant to land within 1.0 of 12.51% and landed **12.48 below**. **FALSIFIER FIRED**, so the owed per-element retry is running. **Diagnosis that decides what's next:** normalising a gradient by its magnitude controls direction and relative scale, but not the **absolute** effect of a step - with gradients at order 1, `lr = 0.5` still means moving half a unit in every coordinate, which is why the arm sank instead of diverging. **Gradient-magnitude normalisation is the wrong family**; removing a learning-rate knob needs a rule that measures the loss's **response** to the step and grows/shrinks it (a gain rule), pre-registered separately. **Two runner defects, both mine, fixed:** a diverged arm aborted the run, and then a completed-but-bad arm aborted it too - one nonzero exit code covered both "bad result" and "crash". The trainer now prints an explicit **`OUTCOME:`** line and the runner aborts **only when it is missing**. Source: `docs/history/ADAPTIVE-STEPS-FAILED.md`, `lens/runs/chain_glopt_*_r2.out`.
+
+### The owed retry failed too: gradient-normalisation closed, gain rule is next - 2026-11-20 18:20
+
+```
+optimiser                     lr / start    held-out acc   verdict
+momentum (one lr)                0.05          12.51%      reference
+momentum (one lr)                0.50           0.00%      DIVERGED, loss nan by step 300
+adaptive per-tensor              0.50           0.03%      sank, 9.41 -> 27.57
+adaptive per-ELEMENT             0.50           0.26%      sank, ~27.6
+adaptive per-ELEMENT             0.05           0.00%      sank  <- broken at the lr that WORKS for plain momentum
+adaptive per-ELEMENT             5.00           0.01%      sank
+```
+
+**Falsifier fired in its strongest form:** per-element is broken at **every** lr, including **0.05 where plain momentum reaches 12.51%** - not knob-insensitivity but an optimiser that cannot train this model at any setting. **Why:** per-element normalisation turns the update into sign-like steps of uniform magnitude, so unimportant coordinates move as far as critical ones; all three arms converge to the same loss ~27.6. **Gradient-magnitude normalisation is CLOSED** - no third variant, as pre-registered. **The mechanism the evidence demands:** choose the step by **measuring its effect on the loss** (one global direction `-g/||g||`, take the step, keep it if the loss fell else halve, up to 4 tries; grow 1.3x after a first-try accept), so the initial value is a guess, not a setting. Smoke: loss **9.38 -> 8.10**, step self-adjusted **0.5 -> 2.0 -> 1.25**, beat its constant. Real test running on the two initial values that defeated everything else (**0.50** and **0.005**) vs the 12.51% reference; both must land within 1.0 point, falsifier at 2.0 below (which would abandon step-size automation and move to capacity allocation). Source: `docs/history/GAIN-RULE-NEXT.md`, `lens/runs/GLASSLM-OPT-r3.txt`, `lens/runs/GLASSLM-GAIN-r4.txt`.
