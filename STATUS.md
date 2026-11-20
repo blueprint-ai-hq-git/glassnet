@@ -7256,3 +7256,21 @@ top-20 default rate        94.90%         70.73%     -24.17  (far less head-bias
 ```
 
 **Prediction MET.** First configuration in the entire memory/readout line where the mid band moves up **and** the head improves at the same time; the frequency bias drops 24 points. **The confound, stated before anyone quotes it:** `scan12_r090_6k` is **not** a clean one-change control - untied readout **and** ~3.07M answer-table parameters against the tied arm's 32,768 bottleneck (~2.8x params) **and** a rarity-weighted setting. So this shows capacity in the readout is **sufficient** to move the tail, not that tying alone was the cause. **Launched `untied6k`** - `win6kon`'s exact config with TIE=0 and nothing else changed: **P1** ranks 50-100 above 0.22%; **P2** top-20 no lower than 35.81%; **P3** overall at or above 21.88% on the trainer line; **falsifier:** ranks 50-100 at or below 0.22% -> the scan12 result was its config, not the readout, and capacity is not the lever either. Source: `docs/history/RANK-BOOST-VERDICT-AND-UNTIED-TAIL.md`.
+
+### The untied-readout finding survives a different draw - and a silently ignored seed was caught by identical numbers (2026-11-20 10:17)
+
+**The tool could not be re-drawn and said so silently:** `tools/midband_split.py` had `rr = np.random.default_rng(4242)` hardcoded, so `DRAW_SEED=777` was **ignored** and both checkpoints returned identical numbers to the last decimal - that identity is what exposed it, since a genuine re-draw cannot produce the same digits. (My first patch attempt also applied nothing at all: the regex looked for `rng` while the variable is `rr`.) Fixed properly - `DRAW_SEED` is read from the environment **and printed with every run**, so a reader can always see which draw produced a number. This is the fifth silently-ignored flag in this project, and the rule that catches all of them is already written: **a flag that does nothing must make the tool refuse to run, and every tool must print the settings that shaped its output.**
+
+**The finding survives the re-draw** (different windows: sub-band counts 786/451/690/410 become 777/541/656/422):
+
+```
+draw 4242        tied     UNTIED      draw 777      tied     UNTIED
+ranks 20-50      25.19%    35.24%      ranks 20-50  21.62%    31.02%
+ranks 50-100      0.22%     2.66%      ranks 50-100  0.18%     2.77%
+ranks 100-250     0.00%     0.29%      ranks 100-250 0.00%     0.76%
+r21-500 overall   8.52%    12.45%      r21-500       7.05%    10.89%
+top-20 accuracy  35.81%    41.61%      top-20       34.78%    43.07%
+top-20 default   94.90%    70.73%      default      85.64%    71.83%
+```
+
+Both draws agree in sign and rough magnitude on every band, including the decisive one: the tail rate goes from **~1 position in ~500 to 12-15 positions in ~500** under an untied readout (1 of 451 -> 12 of 451; 1 of 541 -> 15 of 541). Absolute numbers move a point or two between draws - the measured draw noise (sd 0.93) - but **the sign never flips**. The claim stands with its confound still attached: capacity in the readout is **sufficient** to move the tail, on two independent draws; the clean attribution test `untied6k` is running. Source: `docs/history/UNTIED-TAIL-SURVIVES-REDRAW.md`.
