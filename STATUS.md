@@ -7449,3 +7449,28 @@ POSITIVE SUPPLY               8.476x                   10.107x                +1
 ```
 
 **P1 NOT MET** (accuracy within 0.5 is fine but supply went 19% the wrong way), **falsifier did NOT fire** (drop only 0.08). The reading is **"decorrelation does nothing here"**, not "it hurts": it is a lever only on the bottlenecked shape (236x -> 38x) and a no-op on the configuration that performs. Best setting stays `lam_decorr 0` by parsimony. **Concept line closed with full accounting** - count is not the lever, decorrelation is not the lever on the winner, concentration never moves (top-half 74-82%, entropy 0.906-0.950), and no configuration is both honest and accurate. **Plain control blocked by design, verified not assumed:** `lens.Net(vocab=100, concepts=[], ...)` raises `ValueError: LensNet needs at least one named concept; the concept layer IS the architecture.` So a regular-model control is a **new model class**, not a flag - queued with that spec and evidence rather than rushed. **Until it exists, no custom-vs-regular claim has been measured on the chat task**; the only matched figure is the image model's **-0.08 = parity**. Source: `docs/history/WINDEC-NOOP-AND-PLAIN-CONTROL-BLOCKER.md`, `lens/runs/WINNER-DECORR.txt`, `lens/runs/WINNER-DECORR.json`.
+
+### Two closures: memory bank worth +0.49, and readable is 1.53 points worse at matched params - 2026-11-20 14:26
+
+**1. Memory bank, decisive offset-2 test** (the target moves 2 ahead so the preceding token cannot answer it; arms differ only in K):
+
+```
+                          held-out acc   vs constant 14.47%
+bank    K=8               16.57%         +2.10  BEATS
+no bank K=0               16.08%         +1.60  BEATS
+paired delta              +0.49
+```
+
+**P1 (+1.0 bar) NOT MET**, **FALSIFIER FIRED** (0.49 <= 0.5 by its own condition), **P2 PASSED** (both beat the constant, so the comparison is valid). By its pre-registered rule the **memory line is closed permanently** - no further seed or weight. It retains content in isolation (81.25% at delay 16 vs 3.22%) and does not convert it to next-token accuracy at any offset tested.
+
+**2. Custom vs regular at matched parameters - readable LOSES.** The 3-seed run had already finished; its summary was **stale and wrong** ("NO RESULTS - every arm failed" from a pre-2026-11-18 glob). Recomputed from the per-seed JSONs and **deduplicated** (the `recovered/` copies are byte-identical, sha256 confirmed, so 3 seeds not 6):
+
+```
+seed   readable    plain     gap
+ 0     84.36%     86.42%   -2.06
+ 1     84.27%     85.81%   -1.54
+ 2     83.69%     84.67%   -0.98
+mean: -1.53 points, sd 0.44   |  params 16,665 vs 16,705 (0.24% apart = matched)  |  honesty 97.4%
+```
+
+**P1/P2/P3 HOLD, falsifier not triggered.** So at matched parameters over 3 seeds the readable architecture is **1.53 points worse** than a plain network while being **97.4% honest**. **Honest is not better.** "10x better than a normal model" measures at **-15% relative** on the only matched task available. Chat has **no plain control** (refused by design, verified), so no chat claim exists. Source: `docs/history/TWO-CLOSURES-MEMORY-AND-MATCHED-GAP.md`, `lens/runs/OFF2-PAIR.txt`, `lens/runs/MATCHED-GAP-3SEED.txt`, `lens/runs/image/**/match3_s*_log.json`.
