@@ -7274,3 +7274,19 @@ top-20 default   94.90%    70.73%      default      85.64%    71.83%
 ```
 
 Both draws agree in sign and rough magnitude on every band, including the decisive one: the tail rate goes from **~1 position in ~500 to 12-15 positions in ~500** under an untied readout (1 of 451 -> 12 of 451; 1 of 541 -> 15 of 541). Absolute numbers move a point or two between draws - the measured draw noise (sd 0.93) - but **the sign never flips**. The claim stands with its confound still attached: capacity in the readout is **sufficient** to move the tail, on two independent draws; the clean attribution test `untied6k` is running. Source: `docs/history/UNTIED-TAIL-SURVIVES-REDRAW.md`.
+
+### A guard against dead flags - and building it took two bugs in the guard itself (2026-11-20 10:32)
+
+Three incidents today had one shape: a launcher passes a setting and the code never reads it (`RESUME=` ignored by the trainer so a "continuation" restarted from step 0; `DRAW_SEED=` ignored by midband_split so a "re-draw" measured the same windows, with identical digits the only clue; and my own patch matching `rng` while the variable is `rr`, applying nothing and reporting success). So `tools/check_env_wiring.py` takes a launcher, finds every UPPERCASE variable in the **env prefix of a python invocation**, and checks the target file (plus one or two hops of project-local imports) actually mentions the name - anything set but never read is DEAD, with a non-zero exit so a launcher can gate on it.
+
+**It took two bugs of its own, caught by controls rather than by reading it:** (1) it first flagged shell bookkeeping (`RC=$?`, `CK=`, `FAIL=`) as dead flags - **12 false positives** across four launchers; (2) after restricting it to the env prefix, it reported **0 flags on everything including a planted dead flag**, because the preceding continuation lines were appended to the END of the joined string so `split(".py")[0]` cut off exactly the prefix being searched for. **A guard that silently never fires is worse than no guard, because it manufactures confidence.**
+
+**Validated both ways before trusting it:**
+
+```
+planted dead flag  TOTALLY_DEAD_FLAG=1  -> DEAD FLAGS TOTAL: 1, exit 1   (caught)
+live flag          RANK_BOOST=1.0       -> DEAD FLAGS TOTAL: 0, exit 0   (no false positive)
+four real launchers (rank50, rank50resume, untied6k, agekey) -> 0 dead flags
+```
+
+The negative control matters as much as the positive one: a checker that flags everything is as useless as one that flags nothing. **Honest limit:** it is a name-based heuristic - it proves a name is never mentioned, not that a value is used correctly. That is exactly enough to catch all three incidents, because in each case the name appeared nowhere. Source: `docs/history/DEAD-FLAG-GUARD.md`, `tools/check_env_wiring.py`.
