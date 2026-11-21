@@ -7668,3 +7668,14 @@ seed  arm          head AUROC   free confidence   margin
 ```
 
 **P1 MET on all six arms** (head ranks its own correctness, AUROC 0.79-0.91). **P2 NOT MET on all three seeds** - the margin against free confidence is negative every time (mean **-0.0806**), against a +0.02 gate. Falsifier did not fire. **OUTCOME: SELF_THINKING_FAILED on all six arms.** **P4 is UNMEASURED**, not passed: the script never printed held-out language accuracy, so "thinking costs nothing" was never checked. **The finding that matters:** the model already knows when it is right - max-softmax confidence ranks correctness at **0.93** mean AUROC for zero extra parameters, and on seed 1 an **untrained random** linear projection of the hidden state scored **0.7850**, so the information sits openly in the final hidden state. **Closes** self-assessment as a new tensor; **opens** the common-sense loop on the free signal (6.2 already runs that way). Source: `docs/history/SELF-ASSESSMENT-3SEED.md`, `lens/runs/SELFTHINK-r1.txt`.
+
+### The ladder: selection and comparison work, arithmetic does not - 2026-11-21 12:20
+
+```
+rung        what it requires                                          answer accuracy   verdict
+copy1       find the ONE digit among 7 decoys and copy it                  98.0%        LEARNED
+sum2fixed   two digits handed at positions 0 and 1, output their sum        2.0%        NOT LEARNED
+max2        find TWO digits among 8 decoys, output the larger              92.0%        LEARNED
+```
+
+**The pipeline works** (copy1 98.0% as positive control). **Content-based selection works** (max2 finds two digits among eight decoys with no positional cue, 92.0%). **Comparison works** (max2 emits the larger of the two). **Arithmetic does not**: sum2fixed puts the digits at positions **0 and 1** - no selection needed at all - and scores **2.0%**, below the 10% chance line. **This overturns the week's attributions:** data (+6.11 from 8.3x pairs), capacity (+0.27+-0.31, unstable) and probe difficulty were all wrong; the model can select, can compare, and cannot add even when handed the operands. The missing piece is a **structure for computation**, and this is the first diagnosis here supported by a controlled contrast rather than a correlation. **Applied immediately:** L3's certificate moves to max2 (running, 3 seeds); the self-cleaning run on sum2fixed was **stopped** because its three arms sat at 9.0/10.0/7.5% - all at chance, so the comparison was meaningless - and will be re-run on max2. **My prediction R3 (a monotonic ladder) was WRONG**: sum2fixed at 2.0% sits far below max2 at 92.0% even though it removes a requirement. The inversion is the finding. Source: `docs/history/LEARNABILITY-LADDER.md`, `lens/runs/SALIENCE-LADDER-r2.txt`.
