@@ -14,7 +14,7 @@ rung        what it requires                                          answer acc
 copy1       find the ONE digit among 7 decoys and copy it                  98.0%        LEARNED
 sum2fixed   two digits handed at positions 0 and 1, output their sum        2.0%        NOT LEARNED
 max2        find TWO digits among 8 decoys, output the larger              92.0%        LEARNED
-sum2        two digits among 8 decoys, output their sum mod 10             (running)
+sum2        two digits among 8 decoys, output their sum mod 10               8.0%        NOT LEARNED
 ```
 
 ## What this settles, and it is worth more than the probe
@@ -39,6 +39,8 @@ is the first diagnosis in this project that is supported by a controlled contras
   noise. Running now with three seeds.
 - **The self-cleaning run on `sum2fixed` was stopped**, not because it failed but because it was measuring a task the model cannot learn:
   its three arms sat at **9.0% / 10.0% / 7.5%**, all at chance, so the comparison was meaningless. It will be re-run on `max2`.
+- **Both arithmetic rungs fail BELOW chance:** sum2finished **2.0%**, sum2 **8.0%**, against 10% chance. Selection and
+  comparison reach **98.0%** and **92.0%**. The contrast is complete and the conclusion does not depend on one rung.
 - **The structural change this justifies** is a loop over output tokens (a scratchpad), because selection and comparison already work
   and only the computation is missing.
 
