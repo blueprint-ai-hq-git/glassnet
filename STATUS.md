@@ -7640,3 +7640,16 @@ mean        36.72%           53.96%    17.2
 ```
 
 **P1 FAILED** (bar was above **60%** on all three seeds; actual **34.33-40.83%**). Against 1500 steps (mean 25.00%) four times the training bought **+11.72 points**. **Falsifier:** written as "below 40% even at 6000 steps" - two of three seeds are below 40 and the **mean 36.72% is below it**, so its substance is met but not its strictest reading (seed 2 reached 40.83%); both recorded. **The switch still behaves everywhere:** facts **10.00-12.75% -> 100.00%**, collisions **0 of 600**, rule accuracy **+0.00**. **Verdict without softening: the memorize half is demonstrated, the generalise half is NOT** - ~37% held-out against ~54% train is a 17-point gap, the signature of fitting 600 pairs rather than learning a rule. **Diagnosis setting the next single change:** 10,000 possible pairs, 600 given - data-starved, not obviously capacity-starved, and only raising the data with nothing else changed distinguishes them. **What this does NOT license:** widening the model to move the number; the pre-registration forbade that rescue. Source: `docs/history/MEMG-GENERALISATION-FAILED.md`, `lens/runs/MEMG-LONG-r8.txt`, `lens/runs/chain_memglong_s{0,1,2}_r8.out`.
+
+### More data does not fix generalisation: 8.3x the pairs bought +6.1 points - 2026-11-21 11:50
+
+```
+seed   rule pairs   held-out rule acc   train acc   gap
+ 0       5000            38.17%            -          -
+ 1       5000            44.83%          55.00%     10.2
+ 2       5000            45.50%          54.37%      8.9
+mean     5000            42.83%          54.69%      9.5
+      (600 pairs)        36.72%          53.96%     17.2
+```
+
+**P1 FAILED** (bar: above **60%** on all seeds; actual **38.17-45.50%**). **P2 FAILED but improved** (gap fell **17.24 -> 9.5**, bar was under 10). **Falsifier:** written as "below 45% even with 5000 pairs" - mean **42.83%** is below and two of three seeds are, so its substance is met (one seed reached 45.50%, recorded not hidden). **The switch still works:** facts **9.25% / 11.50% -> 100.00%**. **Settled: data is NOT the binding constraint** - 8.3x the pairs bought **+6.11 points**, so the limit is architectural. Next change on this line must be structural (a loop over output digits). Source: `docs/history/DATA-SCALING-3SEED.md`, `lens/runs/MEMG-DATA-r9.txt`, `lens/runs/MEMG-DATA-r10.txt`.
