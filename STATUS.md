@@ -7719,3 +7719,15 @@ sum2        find two digits, ADD mod 10                              8.0%       
 ```
 
 **P1-P4 all MET: on a clean instrument every selection and comparison task is 100.0%**, and **arithmetic is unchanged at 2.0%** - below the 10% chance line, on a model that scores 100% everywhere else. The falsifier (either arithmetic rung >= 80%) did not fire. **This is stronger than before the fix:** the leak could only have HELPED the model (up to 256 tokens of context instead of 8), so doing better on four rungs and identically on arithmetic makes the contrast clean in both directions - *this model can select, copy and compare perfectly, and cannot add.* **L3 salience is FAILED as specified, on nine arms:** with the better-trained head (1500 steps on 3,200 points) AUROC was **0.7599 / 0.8058 / 0.7755** - P1 (0.90) missed on all three while P2 is met consistently. A better-fit head made the margin bigger (+0.17/+0.17) and the ranking worse, and the free baseline's own AUROC fell to 0.61-0.70, so part of the bigger margin is a weaker baseline. Caveat: all nine arms ran on the leaky instrument; a fixed-instrument re-run is in progress, but the leak could only have helped, so it is unlikely to rescue the bar. Source: `docs/history/DIAGNOSIS-SURVIVES-INSTRUMENT-FIX.md`.
+
+### L3 salience closes as FAILED on a clean instrument - 2026-11-21 14:40
+
+```
+seed   AUROC    free norm   margin    Spearman   probe acc   verdict
+ 0     0.7409    0.4682    +0.2727    0.2996     100.0%      SALIENCE_FAILED
+ 1     0.7922    0.6351    +0.1570    0.3276     100.0%      SALIENCE_FAILED
+ 2     0.7655    0.6062    +0.1593    0.3989     100.0%      SALIENCE_FAILED
+mean   0.7662    0.5698    +0.1963    0.3420
+```
+
+**P1 (AUROC >= 0.90) missed on all three seeds** - across **twelve arms and two instrument versions L3 cleared 0.90 exactly once** (0.9542, leaky instrument). **P2 met on all three decisively** (+0.16 to +0.27, the layer does carry information the norm baseline does not). **P3 missed** (0.30-0.40). The probe was solved **100.0%** on every seed, so this is not a broken instrument: the model answers right and still cannot expose through a linear read which position decided its answer. **The reason, named: importance is present in the hidden state but not linearly readable from it.** The earlier confusion where "a bigger margin" looked like progress is explained too - the free baseline fell to 0.47-0.64, so part of that margin was the baseline getting worse. **Verdict:** L3 as specified is FAILED and is **not being re-tuned**. The honest redesign is architectural - salience must be **inside the forward path and the loss**, jointly trained and used by the model rather than inspected afterwards, because a probe can only report what the network happened to encode. **A layer that is a probe is not a layer.** Source: `docs/history/L3-SALIENCE-CLOSED.md`.
