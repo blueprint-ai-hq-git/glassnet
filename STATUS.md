@@ -7697,7 +7697,7 @@ max2        find TWO digits among 8 decoys, output the larger              92.0%
 ```
 rung        where the informative digit sits          answer accuracy
 copylast    the LAST position, 7 decoys before it      100.0% (seed 0)  100.0% (seed 1)
-copyfirst   position 0, 7 decoys after it               80.0% (seed 0)  (seed 1 running)
+copyfirst   position 0, 7 decoys after it               80.0% (seed 0)  100.0% (seed 1)
 ```
 
 **Reading by position works at both ends of an 8-token context.** Therefore **L1 CLOSES as "not needed at this scale"** - the readable memory bank has been HANGING on +0.49 against a +1.0 bar, and the promise of memory was that it would extend reach; at 8 tokens attention already reads every position, so a bank that re-stores the same tokens has nothing to add. L1 reopens only when context length exceeds what attention reaches - a condition that can be stated and tested. **The corrected capability map:** read recent (100%), read distant (80%), select by content (98%), select+compare (92%) all **WORK**; **add two digits fails (2.0% / 8.0%, below chance)** and **decode a query symbol into an offset fails** (flat at chance, 3 seeds). Both failures need **computation over values**; the missing layer is a **carrier for computation**, not memory and not attention. Source: `docs/history/L1-CLOSED-COMPUTATION-IS-THE-GAP.md`, `lens/runs/POSITION-LADDER-r1.txt`.

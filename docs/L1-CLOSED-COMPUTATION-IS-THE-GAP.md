@@ -12,11 +12,11 @@ needed and never had.
 ```
 rung        where the informative digit sits          answer accuracy
 copylast    the LAST position, 7 decoys before it      100.0%  (seed 0)   100.0%  (seed 1)
-copyfirst   position 0, 7 decoys after it               80.0%  (seed 0)   (seed 1 running)
+copyfirst   position 0, 7 decoys after it               80.0%  (seed 0)   100.0%  (seed 1)
 ```
 
-Both are far above the 10% chance line. **Reading by position works at both ends of an 8-token context** - perfectly at the recent end,
-80% at the far end.
+Both rungs are far above the 10% chance line on both seeds (mean **90.0%** at position 0, **100.0%** at the last position). **Reading by
+position works at both ends of an 8-token context** - so distance is not what the model is failing at, at this size.
 
 ## Therefore L1 closes - honestly, and for a reason
 
