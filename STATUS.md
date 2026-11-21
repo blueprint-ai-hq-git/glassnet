@@ -7819,3 +7819,15 @@ HELD-OUT pairs  100.0% exact   (2,000 unseen, 195 requiring carries)
 ```
 
 **10^16 possible pairs** - a lookup table would need ten quadrillion entries, so this is a procedure by any measure. **The 4,000-step run had already been recorded as INVALID-AS-A-BOUNDARY before this existed**, on the strength of its own training curve, and that call was right. It establishes the rule worth keeping: **training-set accuracy is the tell** - if the model cannot reproduce what it was trained on, the run says nothing about generalisation or architecture, only that it has not converged, and the training curve is what separates the two. Same distinction as today's other defects (the padding mask that faked a 0.387 loss, the decode offset that faked 0.0%): **in every case the number was testable against a second measurement, and the second measurement won.** **The complete arithmetic line, all on 2,000 held-out pairs:** addition 2/3/4/5/8 digits **100.0%**, subtraction with borrow 3 and 5 digits **100.0%**, the same tasks asked in ONE token **2.0-7.0%**, the same tasks with a LOOP R=1/4/8 **7.0% at any depth**. Source: `docs/history/EIGHT-DIGITS-SOLVED.md`, `lens/runs/D8-FAIR-r1.txt`.
+
+### Focusing on uncertainty is not just useless, it destroys the model - 2026-11-21 19:57
+
+```
+seed   arm          steps to 90% token acc   final exact held-out
+ 0     A_uniform            500                    100.00%
+ 0     B_focus              500                      4.50%
+ 1     A_uniform            350                    100.00%
+ 1     B_focus              400                      0.00%
+```
+
+**P1 NOT MET** (no speed-up), **P2 NOT MET catastrophically** (-95.50 and -100.00 points), falsifier fired on both seeds. **Why it destroyed the model:** the weight `(1 - p_max)` upweights tokens the model is unsure about and downweights the ones it is confident about - and on a carry chain **the tokens already learned are exactly the confident ones**, so it starved consolidated material and chased only the hardest token. Training token accuracy still reached 90% while exact whole-answer accuracy collapsed to 0-4.5%. **The failure mode named: "focus on what is hard" and "forget what is easy" are the same instruction, and this architecture obeys both at once.** **What this settles about the 10x goal:** the loss is not where the speed is; the baseline is already fast (**350-500 steps** to 90% token accuracy, then 100.0% exact); and every cheap lever is now eliminated - loss weighting (harmful), more compute passes (**0.0 points**), more data (**+6.11**, bar missed), more capacity (**+0.27 +- 0.31**, unstable). **The last obvious lever is the order and mixture of the data** - a curriculum - which is the next pre-registration with its falsifier written first. Source: `docs/history/FOCUS-HURTS.md`, `lens/runs/FOCUS-r1.txt`.
