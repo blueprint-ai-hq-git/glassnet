@@ -7653,3 +7653,18 @@ mean     5000            42.83%          54.69%    11.85
 ```
 
 **P1 FAILED** (bar: above **60%** on all seeds; actual **38.17-45.50%**). **P2 FAILED but improved** (seed-matched gap fell **17.24 -> 11.85**, bar was under 10). **Falsifier:** written as "below 45% even with 5000 pairs" - mean **42.83%** is below and two of three seeds are, so its substance is met (one seed reached 45.50%, recorded not hidden). **The switch still works:** facts **9.25% / 11.50% -> 100.00%**. **Settled: data is NOT the binding constraint** - 8.3x the pairs bought **+6.11 points**, so the limit is architectural. Next change on this line must be structural (a loop over output digits). *CORRECTION 11:58: an earlier version reported a mean gap of 9.5; that mixed a 3-seed held-out mean with a 2-seed train mean. Seed 0's train figure (54.69%) was in `chain_memgdata_s0_r9.out` all along. Seed-matched the gap is **11.85**, so P2 is met on neither the mean nor two of three seeds. P1 and the falsifier are unchanged.* Source: `docs/history/DATA-SCALING-3SEED.md`, `lens/runs/MEMG-DATA-r9.txt`, `lens/runs/MEMG-DATA-r10.txt`.
+
+### Self-assessment head fails, and the reason is the finding: the model already knows when it is right - 2026-11-21 12:18
+
+```
+seed  arm          head AUROC   free confidence   margin
+ 0    A_headoff      0.1049         0.9423       -0.8374
+ 0    B_headon       0.8517         0.9418       -0.0901
+ 1    A_headoff      0.7850         0.9384       -0.1534
+ 1    B_headon       0.7900         0.9140       -0.1239
+ 2    A_headoff      0.8173         0.9392       -0.1219
+ 2    B_headon       0.9122         0.9399       -0.0278
+                    mean 0.8513     mean 0.9319   -0.0806
+```
+
+**P1 MET on all six arms** (head ranks its own correctness, AUROC 0.79-0.91). **P2 NOT MET on all three seeds** - the margin against free confidence is negative every time (mean **-0.0806**), against a +0.02 gate. Falsifier did not fire. **OUTCOME: SELF_THINKING_FAILED on all six arms.** **P4 is UNMEASURED**, not passed: the script never printed held-out language accuracy, so "thinking costs nothing" was never checked. **The finding that matters:** the model already knows when it is right - max-softmax confidence ranks correctness at **0.93** mean AUROC for zero extra parameters, and on seed 1 an **untrained random** linear projection of the hidden state scored **0.7850**, so the information sits openly in the final hidden state. **Closes** self-assessment as a new tensor; **opens** the common-sense loop on the free signal (6.2 already runs that way). Source: `docs/history/SELF-ASSESSMENT-3SEED.md`, `lens/runs/SELFTHINK-r1.txt`.
