@@ -7808,3 +7808,14 @@ arm                    TRAIN pairs    HELD-OUT pairs     no-borrow        WITH-b
 ```
 
 **The mechanism is not tuned to addition.** Borrowing is a **different intermediate** (`d = da - db - borrow`, and a negative result must tell the next column). The model writes `[diff0][borrow0][diff1][borrow1]...`, decoded `741 - 269` -> 2,1,7,1,4,0 -> **472**. **The finding:** give an intermediate value a token to live in and this architecture performs multi-digit addition **and subtraction** on unseen operands, every step readable. **The 8-digit arm failed and it is MY mistake, not a boundary:** training token accuracy peaked at **67.5%** (every successful arm hit **100.0%**), I gave it **4,000 steps** against **6,000** for the arms it is compared with, on a task with 16 written tokens and a 36-token context, and the output is structurally right with wrong digits - **not** the decode-offset bug from earlier. **Recorded as INVALID-AS-A-BOUNDARY.** The fair re-test (10,000 steps, nothing else changed) is pre-registered: P1 converge (train >= 80%), P2 held-out >= 50%; **honest falsifier:** if training plateaus below 90% at 10,000 steps the limit is capacity per written token at this size, and that is stated as the boundary with the training curve as evidence. Source: `docs/history/SUBTRACTION-TRANSFERS.md`, `lens/runs/BOUNDARY-TRANSFER-r2.txt`.
+
+### 8-digit addition solved at a fair budget: the "boundary" was my budget, confirmed - 2026-11-21 19:52
+
+```
+8-digit addition, 10,000 steps, 16 written tokens, 7-intermediate chain, 36-token context
+training token accuracy:   100.0% at step 8,800   (vs a 67.5% plateau at 4,000 steps)
+TRAIN pairs     100.0% exact
+HELD-OUT pairs  100.0% exact   (2,000 unseen, 195 requiring carries)
+```
+
+**10^16 possible pairs** - a lookup table would need ten quadrillion entries, so this is a procedure by any measure. **The 4,000-step run had already been recorded as INVALID-AS-A-BOUNDARY before this existed**, on the strength of its own training curve, and that call was right. It establishes the rule worth keeping: **training-set accuracy is the tell** - if the model cannot reproduce what it was trained on, the run says nothing about generalisation or architecture, only that it has not converged, and the training curve is what separates the two. Same distinction as today's other defects (the padding mask that faked a 0.387 loss, the decode offset that faked 0.0%): **in every case the number was testable against a second measurement, and the second measurement won.** **The complete arithmetic line, all on 2,000 held-out pairs:** addition 2/3/4/5/8 digits **100.0%**, subtraction with borrow 3 and 5 digits **100.0%**, the same tasks asked in ONE token **2.0-7.0%**, the same tasks with a LOOP R=1/4/8 **7.0% at any depth**. Source: `docs/history/EIGHT-DIGITS-SOLVED.md`, `lens/runs/D8-FAIR-r1.txt`.
