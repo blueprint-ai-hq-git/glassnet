@@ -7645,11 +7645,11 @@ mean        36.72%           53.96%    17.2
 
 ```
 seed   rule pairs   held-out rule acc   train acc   gap
- 0       5000            38.17%            -          -
- 1       5000            44.83%          55.00%     10.2
- 2       5000            45.50%          54.37%      8.9
-mean     5000            42.83%          54.69%      9.5
-      (600 pairs)        36.72%          53.96%     17.2
+ 0       5000            38.17%          54.69%     16.52
+ 1       5000            44.83%          55.00%     10.17
+ 2       5000            45.50%          54.37%     8.87
+mean     5000            42.83%          54.69%    11.85
+      (600 pairs)        36.72%         53.96%    17.24
 ```
 
-**P1 FAILED** (bar: above **60%** on all seeds; actual **38.17-45.50%**). **P2 FAILED but improved** (gap fell **17.24 -> 9.5**, bar was under 10). **Falsifier:** written as "below 45% even with 5000 pairs" - mean **42.83%** is below and two of three seeds are, so its substance is met (one seed reached 45.50%, recorded not hidden). **The switch still works:** facts **9.25% / 11.50% -> 100.00%**. **Settled: data is NOT the binding constraint** - 8.3x the pairs bought **+6.11 points**, so the limit is architectural. Next change on this line must be structural (a loop over output digits). Source: `docs/history/DATA-SCALING-3SEED.md`, `lens/runs/MEMG-DATA-r9.txt`, `lens/runs/MEMG-DATA-r10.txt`.
+**P1 FAILED** (bar: above **60%** on all seeds; actual **38.17-45.50%**). **P2 FAILED but improved** (seed-matched gap fell **17.24 -> 11.85**, bar was under 10). **Falsifier:** written as "below 45% even with 5000 pairs" - mean **42.83%** is below and two of three seeds are, so its substance is met (one seed reached 45.50%, recorded not hidden). **The switch still works:** facts **9.25% / 11.50% -> 100.00%**. **Settled: data is NOT the binding constraint** - 8.3x the pairs bought **+6.11 points**, so the limit is architectural. Next change on this line must be structural (a loop over output digits). *CORRECTION 11:58: an earlier version reported a mean gap of 9.5; that mixed a 3-seed held-out mean with a 2-seed train mean. Seed 0's train figure (54.69%) was in `chain_memgdata_s0_r9.out` all along. Seed-matched the gap is **11.85**, so P2 is met on neither the mean nor two of three seeds. P1 and the falsifier are unchanged.* Source: `docs/history/DATA-SCALING-3SEED.md`, `lens/runs/MEMG-DATA-r9.txt`, `lens/runs/MEMG-DATA-r10.txt`.
