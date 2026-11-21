@@ -7731,3 +7731,14 @@ mean   0.7662    0.5698    +0.1963    0.3420
 ```
 
 **P1 (AUROC >= 0.90) missed on all three seeds** - across **twelve arms and two instrument versions L3 cleared 0.90 exactly once** (0.9542, leaky instrument). **P2 met on all three decisively** (+0.16 to +0.27, the layer does carry information the norm baseline does not). **P3 missed** (0.30-0.40). The probe was solved **100.0%** on every seed, so this is not a broken instrument: the model answers right and still cannot expose through a linear read which position decided its answer. **The reason, named: importance is present in the hidden state but not linearly readable from it.** The earlier confusion where "a bigger margin" looked like progress is explained too - the free baseline fell to 0.47-0.64, so part of that margin was the baseline getting worse. **Verdict:** L3 as specified is FAILED and is **not being re-tuned**. The honest redesign is architectural - salience must be **inside the forward path and the loss**, jointly trained and used by the model rather than inspected afterwards, because a probe can only report what the network happened to encode. **A layer that is a probe is not a layer.** Source: `docs/history/L3-SALIENCE-CLOSED.md`.
+
+### L7 loop fails: repeated passes change nothing (7.0% at R=1, R=4, R=8) - 2026-11-21 14:45
+
+```
+task       R=1     R=4     R=8
+sum2fixed  7.0%    7.0%    7.0%      <- identical to the last decimal
+sum2         -     15.0%    -
+copy1        -    100.0%  100.0%     <- the loop runs correctly and costs nothing that works
+```
+
+**P1 control MET** (R=1 = 7.0% in-configuration). **P2 NOT MET** (expected >= 50%; the loop moved arithmetic by **0.0 points**). **P3 MET** (copy1 stays 100.0% at R=4 and R=8). **FALSIFIER FIRED.** Certified before use: FD worst **2.141e-07**, isolation **0.000e+00**, **zero extra parameters** - so this was genuinely compute passes, not capacity. **Eliminations now:** memory not needed (L1); selection/routing already perfect (copy1/max2 100.0%); capacity no reliable gain (+0.27+-0.31); data +6.11 bar missed; **compute passes 0.0 points**. **Honest caveat:** at this budget R=1 never learns the task either (7.0% is chance), so the loop was asked to improve something never learned - recorded as a limitation. But the pre-registered rule was explicit, so the next attempt is the **scratchpad** (`lens/scratchpad.py`: addition becomes counting - write (d1+d2) ONE tokens then STOP). Re-running the loop with longer training would be a rescue that needs its own pre-registration. Source: `docs/history/L7-LOOP-FAILED.md`.
