@@ -7742,3 +7742,15 @@ copy1        -    100.0%  100.0%     <- the loop runs correctly and costs nothin
 ```
 
 **P1 control MET** (R=1 = 7.0% in-configuration). **P2 NOT MET** (expected >= 50%; the loop moved arithmetic by **0.0 points**). **P3 MET** (copy1 stays 100.0% at R=4 and R=8). **FALSIFIER FIRED.** Certified before use: FD worst **2.141e-07**, isolation **0.000e+00**, **zero extra parameters** - so this was genuinely compute passes, not capacity. **Eliminations now:** memory not needed (L1); selection/routing already perfect (copy1/max2 100.0%); capacity no reliable gain (+0.27+-0.31); data +6.11 bar missed; **compute passes 0.0 points**. **Honest caveat:** at this budget R=1 never learns the task either (7.0% is chance), so the loop was asked to improve something never learned - recorded as a limitation. But the pre-registered rule was explicit, so the next attempt is the **scratchpad** (`lens/scratchpad.py`: addition becomes counting - write (d1+d2) ONE tokens then STOP). Re-running the loop with longer training would be a rescue that needs its own pre-registration. Source: `docs/history/L7-LOOP-FAILED.md`.
+
+### The scratchpad works: addition becomes counting and reaches 100.0% - with a memorisation test now running - 2026-11-21 14:25
+
+```
+task                                   exact-count accuracy   within +-1
+single-token answer (sum2fixed)               2.0%                -
+single-token answer, wider model (sum2)        6.0%                -
+LOOP R=1 / R=4 / R=8                          7.0% each           -
+SCRATCHPAD (write the count, then STOP)     100.0% / 100.0%     100.0% / 100.0%
+```
+
+**P1 MET** (>= 50% exact) and **P2 MET** (>= 80% within +-1) on both seeds; falsifier not fired. **Why this differs from the loop:** the loop transformed the same hidden state more times; the scratchpad changes **what the model writes** - to answer 3+4 it emits seven ONE tokens then STOP, one step per token, with the count carried in the open sequence where a human can check it. This explains the day's whole pattern: selection, copying and comparison are **one-step** operations and attention does them perfectly (100.0% on four rungs); addition is the first task needing **more than one step**, and the only thing that helped was more steps **in the output**, not in the depth. **The objection that must be answered first:** there are only **100 possible digit pairs**, and 80,000 training examples means every pair was seen hundreds of times, so a lookup table keyed on (d1,d2) would give this same 100% without computing anything. **The 100% is therefore not yet evidence of computation.** Two generalisation tests now running with predictions written first: **held-out pairs** (20 of 100 never in training) and **unseen sum range** (sums 13-18 never in training). P4 held-out >= 80%; P5 unseen range >= 60%. **MEMORISATION FALSIFIER: held-out <= 30% -> the 100% was a lookup table in the output format, not computation, and the claim is withdrawn in public.** Source: `docs/history/SCRATCHPAD-ADDTION-WORKS.md`.
