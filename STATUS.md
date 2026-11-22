@@ -8005,3 +8005,17 @@ OUTCOME: LAYER_LACKS_ANSWER
 ```
 
 Two repairs were possible after the direct ablation: the head is wired wrong, or the layer is too thin. The test is **generous to the head hypothesis** - a brand-new linear readout from the 36 concepts to the model's **own logits**, fitted on 600 windows and tested on 600. It reaches **24.0%**, statistically indistinguishable from the head the model already has (**23.2%**) - the extra 0.8 points is noise. **So the repair is NOT a head repair:** re-wiring the answer head cannot fix this because the information is not in the concepts. **The readable middle layer must itself change** - wider or built differently, so its activations determine the next token instead of describing the sentence while the answer travels elsewhere. **The readable path's ceiling right now is ~24%, a property of the layer, not the readout.** **Why it is the most useful result of the day even though negative:** before it, the obvious next step was rebuilding the answer head - a day of work that would have produced a few points and looked like progress. **The falsifier cost twelve seconds and saved it.** **The gate is now unambiguous:** `tools/direct_ablation.py` must show the concept route reproducing the model's answer at **100%**, and `tools/concept_holds_answer.py` must show a fitted readout **at or above 90%**, before any head change is attempted. Source: `docs/history/IT-IS-NOT-THE-HEAD-THE-CONCEPTS-LACK-THE-ANSWER.md`.
+
+### Not a linearity artefact: the concepts really do not carry the answer - 2026-11-22 15:50
+
+```
+windows 1200 (fit 600, test 600) | concepts 36
+the model's own concept head:                        23.2%
+nearest neighbour in concept space (nonlinear):       10.7%
+wider ridge (100x less regularisation):              22.8%
+P1 nearest neighbour below 40%: MET
+FALSIFIER not fired
+OUTCOME: LAYER_REALLY_LACKS_ANSWER
+```
+
+The objection that a linear probe might miss a curved encoding is now tested with readouts carrying **no linearity assumption and no fitting**: **nearest neighbour gets 10.7%** - windows with nearly identical concept values do **not** share the next token, which is the most direct possible statement of "the concept state does not determine the answer"; **wider ridge gets 22.8%**, so the earlier 24.0% was not suppressed by over-regularisation; the model's own head is **23.2%**. **The best of every readout is the head the model already has.** **Conclusion anchored three ways** (linear fit, wider fit, nearest neighbour) on 1,200 windows: **the readable middle layer does not encode the next token**, so any explanation built from these 36 concepts describes the sentence, not the decision. **Gate unchanged:** concept route must reproduce the answer at **100%** (now 5.5-18.0%); a readout must reach **>= 90%** before any head work (now 24.0% / 10.7-23.2%). Source: `docs/history/NOT-A-LINEARITY-ARTEFACT.md`, `tools/concept_readout_nonlinear.py`.
