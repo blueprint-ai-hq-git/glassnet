@@ -8072,3 +8072,15 @@ seed 2: consistency 100.0% | reason 100.0% | position 100.0% | value 100.0% | al
 | 7 | four rules with **more distractors** | 16 positions instead of 12 | **100.0%** (2 seeds) |
 
 Every row is a separate trained model, separate held-out set, pre-registered bar, none tuned afterwards, and every one also passes a **perturbation test** where the input is changed and the right answer is known in advance. **The failing side, measured just as carefully:** 36 concepts I chose reproduce **5.5-18.0%** of the answer; best-possible fitted readout **24.0%** (own head 23.2%); nearest neighbour **10.7%**; concept layers of width 8-72 **never beat the 16.32% baseline**; readable-layer share of the margin **14.8-18.2%**. **The one sentence this day produced: a reason the model WRITES is exact, honest, and survives more items, more rules and more distractors; a concept layer I ATTACH is a side channel - it describes the sentence, it does not decide the answer, and no width or readout rescues it.** The architecture decision follows directly: **readability must be an output of the model, not a label attached to its insides.** Source: `docs/history/WRITTEN-REASON-LADDER-COMPLETE.md`.
+
+### The readable route holds at 500 windows: 4.2-21.6% versus 64.4-81.6% - 2026-11-22 19:37
+
+```
+checkpoint                     windows   concept route alone   direct route alone   mean rank of the model's own token
+d1024_s1_best                    500          21.6%                 64.4%              1,021 of 12,002
+d1024_e9_s1_best                 500          18.6%                 81.6%              1,995
+direct1024_d512_s0_best          500           4.2%                 70.0%              2,092
+P1 MET   P2 MET   FALSIFIER not fired   OUTCOME: DIRECT_PATH_CARRIES_THE_ANSWER
+```
+
+At 200 windows it was 5.5-18.0% / 65.0-84.5%; at **500 windows** it is **4.2-21.6% / 64.4-81.6%** - the same conclusion inside the same small band. **The readable layer on its own does not reproduce the model's answer; the unreadable path does.** This number now rests on **three checkpoints, two sample sizes, three readouts (linear, wider, nearest neighbour)** all agreeing - and it is the number any future claim about the readable middle layer must be quoted against. **Launched next (`trigword`)**: every written-reason success so far used a **cue token I provided** - a dedicated id nothing else resembles, which is a hint in itself. `trigword` draws the trigger word from the **same id pool as the decoys**, so the model must find the one meaningful word among identical-looking noise, act on it, and **name it as its reason**. Bars: reason >= 95%, all three >= 90%, honesty >= 95%; falsifier reason < 80% means the perfect scores depended on the cue being special. Source: `docs/history/READABLE-ROUTE-HOLDS-AT-500.md`, `lens/runs/chain_ablate500.out`.
