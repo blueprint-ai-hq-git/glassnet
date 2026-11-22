@@ -8058,3 +8058,17 @@ seed 2: consistency 100.0% | reason 100.0% | position 100.0% | value 100.0% | al
 ```
 
 **The reason is honest against the act in all 600 examples**, so it is not reciting the cue - it reports the rule it actually followed, out of four. **Why it matters:** two rules could have been a coincidence; **four rules at 100% with verified honesty is a capability**, and it is the one the project was chartered to build - a model whose reason for an answer is visible, exact and checkable, **because the model writes it**. **The two-sided ledger, measured repeatedly today:** reasons the model **writes** - **100.0%** on every test and every seed; concepts **I attach** - **5.5-24.0%** of the answer reproduced, never beating the model's own head. Still queued: `cuewide` (16 input positions) and `ablate500` (readable-route ablation at 500 windows). Source: `docs/history/FOUR-RULES-STILL-HONEST.md`, `lens/runs/CUE-RULES4-20261122-1911.txt`.
+
+### The complete written-reason ladder - seven tests, all 100.0% - 2026-11-22 19:33
+
+| # | what the model must do | extra difficulty | result |
+|---|---|---|---|
+| 1 | report a position and a value (one item) | 12 positions | **100.0%** |
+| 2 | write the comparison, then answer (two items) | 6 written tokens | **100.0%** |
+| 3 | write the comparison, then answer (three items) | 8 written tokens | **100.0%** |
+| 4 | say WHICH of TWO rules it used | rule varies per example | **100.0%** |
+| 5 | say WHICH of **FOUR** rules it used | larger/smaller/first/last | **100.0%** |
+| 6 | be **honest** about which rule it used | reason vs digit written, 600 examples | **100.0%** |
+| 7 | four rules with **more distractors** | 16 positions instead of 12 | **100.0%** (2 seeds) |
+
+Every row is a separate trained model, separate held-out set, pre-registered bar, none tuned afterwards, and every one also passes a **perturbation test** where the input is changed and the right answer is known in advance. **The failing side, measured just as carefully:** 36 concepts I chose reproduce **5.5-18.0%** of the answer; best-possible fitted readout **24.0%** (own head 23.2%); nearest neighbour **10.7%**; concept layers of width 8-72 **never beat the 16.32% baseline**; readable-layer share of the margin **14.8-18.2%**. **The one sentence this day produced: a reason the model WRITES is exact, honest, and survives more items, more rules and more distractors; a concept layer I ATTACH is a side channel - it describes the sentence, it does not decide the answer, and no width or readout rescues it.** The architecture decision follows directly: **readability must be an output of the model, not a label attached to its insides.** Source: `docs/history/WRITTEN-REASON-LADDER-COMPLETE.md`.
