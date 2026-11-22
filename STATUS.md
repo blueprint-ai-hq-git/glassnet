@@ -8048,3 +8048,13 @@ P3 HONEST about the act (>= 95%): MET (100.0%) on every seed
 ```
 
 **In all 600 held-out examples across three seeds, the reason it wrote matched the digit it wrote - it is not parroting the cue; the rule it names is the rule it followed.** **What the readable layer can now do, measured:** add/subtract multi-digit with written working **100.0%** on unseen operands; choose between one/two/three items **100.0%** (verified against perturbed inputs); state WHICH rule it used **100.0%**; **reason honest about what it did 100.0%**. **And what still fails:** 36 concepts chosen by me reproduce the model's answer only **5.5-18%**; three different readouts land at **10.7-24.0%**, all at or below the existing head; concept layers of width 8-72 never beat the **16.32%** baseline; margin share **14.8-18.2%**. **The split is unambiguous: reasons the model WRITES are exact and honest; concepts I ATTACH are neither where the answer comes from nor sufficient to reconstruct it.** Next rung queued: four rules (larger/smaller/first/last). Source: `docs/history/REASON-IS-HONEST-ABOUT-THE-ACT.md`, `lens/runs/CUE-HONESTY-*.txt`.
+
+### Four rules, not two: still 100.0% and still honest - 2026-11-22 19:21
+
+The two-rule result could have been a special case, so the cue now selects one of **four** rules - *larger*, *smaller*, *first*, *last* - and the model must still write `[which rule it used] [position of the digit that rule picks] [that digit]`. ```
+seed 0: consistency 100.0% | reason 100.0% | position 100.0% | value 100.0% | all three 100.0%
+seed 1: consistency 100.0% | reason 100.0% | position 100.0% | value 100.0% | all three 100.0%
+seed 2: consistency 100.0% | reason 100.0% | position 100.0% | value 100.0% | all three 100.0%
+```
+
+**The reason is honest against the act in all 600 examples**, so it is not reciting the cue - it reports the rule it actually followed, out of four. **Why it matters:** two rules could have been a coincidence; **four rules at 100% with verified honesty is a capability**, and it is the one the project was chartered to build - a model whose reason for an answer is visible, exact and checkable, **because the model writes it**. **The two-sided ledger, measured repeatedly today:** reasons the model **writes** - **100.0%** on every test and every seed; concepts **I attach** - **5.5-24.0%** of the answer reproduced, never beating the model's own head. Still queued: `cuewide` (16 input positions) and `ablate500` (readable-route ablation at 500 windows). Source: `docs/history/FOUR-RULES-STILL-HONEST.md`, `lens/runs/CUE-RULES4-20261122-1911.txt`.
