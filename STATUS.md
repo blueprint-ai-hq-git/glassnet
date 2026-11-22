@@ -7902,3 +7902,15 @@ value SWAPPED -> correct POSITION   88.0%     94.0%     <- the flip case
 ```
 
 Two digits at random positions, report **where the larger one is** and **what it is**: the headline is perfect (**position 100.0%, value 100.0%, both 100.0%** on 200 held-out samples, **two seeds**). **The perturbation check is where it breaks:** the hard case is the flip - swap the larger digit's value so the *other* becomes larger, and the model must move its pointer to a position it was ignoring. It gets the value right **98.0%** but the **position only 88.0% / 94.0%**. **Verdict against the bar set before running (95% on all three): NOT MET** - and the bar is not being moved afterwards. So **ONE item: the reason is reliable (100.0%, three seeds)**; **TWO items: 88-94% when the answer flips, better than chance, mostly right, not yet trustworthy** - the headline 100.0% alone would have been a false claim. **And my test was wrong the first time:** it reported "position unchanged 66.5%" and blamed the model, when swapping the larger digit can make the other one larger so the correct position changes too; expected answers are now **computed from the perturbed tokens** and unit-checked (`after 7 becomes 4, the larger is 5 at position 1`), which moved the number from 66.5% to 88-94%. **Third time today the second measurement caught a defect - and the first time the defect was in the TEST rather than the model or the target.** Source: `docs/history/TWO-ITEMS-EXPLANATION-88-94.md`, `lens/runs/EXPLAIN-EMIT-TWO-r2.txt`.
+
+### It is not capacity: the 88-94% survives 3.3x more room - 2026-11-22 14:31
+
+```
+                       params     clean sample        flip-case position
+seed 0 (before)        67,588     pos/val/both 100%   88.0%
+seed 0 (after)        224,484     pos/val/both 100%   92.5%
+seed 1 (before)        67,588     pos/val/both 100%   94.0%
+seed 1 (after)        224,484     pos/val/both 100%   89.5%
+```
+
+One change only: **d 64 -> 96, layers 2 -> 3** (**67,588 -> 224,484 parameters, 3.3x**), same task, steps, seeds and bar. **FALSIFIER FIRED:** more room did **not** bring the flip case to 95% - 92.5/89.5 against 88.0/94.0 is the same thing twice, inside noise. **P1 NOT MET, P2 MET** (the clean headline stayed perfect, so the extra room was not needed for the easy part). **The boundary, closed:** **one item - the reason is reliable** ([position][digit] **100.0%** on three seeds, surviving every perturbation); **two items - 88-94% when the answer flips**, at either size, **not trustworthy, and NOT a capacity limit** - so it is a limit of how the choice is represented. One-line boundary: **this architecture can say why it picked ONE thing, perfectly; it cannot yet reliably say why it picked one of TWO.** The next attack is representation (how the choice between two items is written), not more parameters or steps. Source: `docs/history/NOT-CAPACITY-TWO-ITEM-BOUNDARY.md`, `lens/runs/EXPLAIN-TWO-BIG-r1.txt`.
