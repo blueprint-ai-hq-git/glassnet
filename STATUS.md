@@ -8019,3 +8019,17 @@ OUTCOME: LAYER_REALLY_LACKS_ANSWER
 ```
 
 The objection that a linear probe might miss a curved encoding is now tested with readouts carrying **no linearity assumption and no fitting**: **nearest neighbour gets 10.7%** - windows with nearly identical concept values do **not** share the next token, which is the most direct possible statement of "the concept state does not determine the answer"; **wider ridge gets 22.8%**, so the earlier 24.0% was not suppressed by over-regularisation; the model's own head is **23.2%**. **The best of every readout is the head the model already has.** **Conclusion anchored three ways** (linear fit, wider fit, nearest neighbour) on 1,200 windows: **the readable middle layer does not encode the next token**, so any explanation built from these 36 concepts describes the sentence, not the decision. **Gate unchanged:** concept route must reproduce the answer at **100%** (now 5.5-18.0%); a readout must reach **>= 90%** before any head work (now 24.0% / 10.7-23.2%). Source: `docs/history/NOT-A-LINEARITY-ARTEFACT.md`, `tools/concept_readout_nonlinear.py`.
+
+### The width question is unanswered, and the reason redirects it - 2026-11-22 16:18
+
+```
+windows 22000 (train 17600, test 4400) | window 16 | most-frequent-answer baseline 16.32%
+      K     params    test acc  vs baseline
+      8     154200      16.32%     +0.00
+     16     178400      16.34%     +0.02
+     36     238900      16.36%     +0.05
+     72     347800      16.36%     +0.05
+OUTCOME: INVALID_INSTRUMENT - nothing learned
+```
+
+`lens/width_trained.py` trains the shape the repair needs (in `lens/api.py` the answer head is `Dense(K,V)` on the concepts, **no bypass** - concepts are the only route). K = 8/16/36/72, task = next-token on real corpus windows. **Every width sits at the most-frequent baseline**, and the 300-window smoke run reproduced it, which is what triggered the **no-learning guard** that refused the verdict. **A flat line at the baseline is not evidence that width does not matter - it is evidence that this model did not learn this task.** **The redirect:** a layer of 8-72 word-presence concepts cannot predict real-text next tokens at all, because "does token X appear" says almost nothing about which of 2,000 tokens comes next - **the concept vocabulary is wrong for the job, not too narrow.** **Where the repair now points:** there is already a case where the readable route carries the answer perfectly - the written-working models at **100.0% on one, two and three items**, verified against perturbed inputs. The difference is not width: in those, **the model writes the intermediate and chooses what to write**; in the concept layer, a fixed list chosen by me. **Next real experiment: let the model choose and write the concepts it uses** - until it does, the count of my concepts is a number about my list, not about the model. Source: `docs/history/WIDTH-UNANSWERED-REDIRECT.md`, `lens/runs/WIDTH-TRAINED-20261122-1535.txt`.
