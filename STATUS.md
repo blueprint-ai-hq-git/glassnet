@@ -7866,3 +7866,14 @@ seed   final training token acc   TRAIN exact   HELD-OUT exact
 ```
 
 With the carry target **fixed**, three-addend addition **FAILS** - a valid verdict, not a budget artefact (6,000 and 12,000 steps, three seeds). **Only seed 2 counts and it fails at 13.0% exact** - but it reaches **94.2% token accuracy**, and that gap is the diagnostic: evenly-spread errors at 94.2% per token would give ~70% exact, so its mistakes sit **exactly on the columns where the carry reaches 2** - the one thing a ternary column has that a binary column does not. **Settled:** the written-out mechanism does **not** extend to three addends; the digits are read and written correctly and the **carry value itself** is the blocker; and the earlier "100.0% on triples" measured an easier target (carry as a yes/no flag), which is exactly why that bug mattered - the flag version removes the only hard part. **The boundary, with evidence behind every clause:** reads/selects/compares at **100.0%**; adds and subtracts **two** numbers at **100.0%** on 2,000 unseen pairs each (2-8 digits); adds **three** numbers at **13.0%** and fails; answers arithmetic without working out at **2-7%**; learn-faster goal **not achieved**. Source: `docs/history/BOUNDARY-TWO-NUMBERS-NOT-THREE.md`, `lens/runs/chain_naryfix2.out`.
+
+### Distraction does not hurt it at all, so importance needs a different test - 2026-11-22 13:55
+
+```
+ 8 positions   accuracy 100.0%   (chance 10%)
+16 positions   accuracy 100.0%   (chance 10%)
+32 positions   accuracy 100.0%   (chance 10%)
+64 positions   accuracy 100.0%   (chance 10%)
+```
+
+**P1's condition met exactly:** accuracy never fell below 95%, so the model **already ignores distractors perfectly** and an importance gate would have nothing to improve - recorded as **IMPORTANCE IS NOT THE BOTTLENECK for behaving correctly**. **But two facts now sit side by side:** it **behaves** as if it knows what matters (100.0% with 64 junk positions around the single real digit), and it **cannot report** what mattered (the read-out probe scored **77/100** against a bar of 90). So it *acts* on importance and cannot *say* what it acted on - and for a project whose whole purpose is that a person can read why an answer was given, that gap is the real problem, not accuracy. **Next test, built on this project's own discovery** (the machine could not add until it could write the working out): do not bolt on a probe head - **ask it to write down which position it used, as part of its answer**: output = **[position of the digit] [the digit]**. If it can, the explanation is the model's own answer, in the open, checkable. Bars: position >= 90%, digit >= 95%, both >= 85%; falsifier position < 80%. Source: `docs/history/DISTRACTION-DOES-NOT-HURT.md`, `lens/runs/DISTRACTOR-r2.txt`.
