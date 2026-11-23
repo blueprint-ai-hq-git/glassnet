@@ -32,7 +32,7 @@ run_arm() {   # label initial_step
   local LOG="lens/runs/chain_gain_${1}_${RUN_TAG}.out"
   echo "--- $1 (opt=gain start=$2) ---" | tee -a "$OUT"
   env -u PYTHONPATH -u PYTHONHOME PYTHONPATH=. nice -n 19 ionice -c3 taskset -c 6,7 \
-    .venv-gpu/bin/python3 -u lens/glass_lm.py \
+    ${PYTHON:-python3} -u lens/glass_lm.py \
     --steps 600 --batch 16 --T 32 --d 64 --layers 2 --heads 4 --d-mlp 128 --windows 20000 \
     --emb-rank 32 --seed 0 --opt gain --lr "$2" --log-every 150 > "$LOG" 2>&1
   local RC=$?

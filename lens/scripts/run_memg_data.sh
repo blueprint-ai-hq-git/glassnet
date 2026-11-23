@@ -27,7 +27,7 @@ for S in 0 1 2; do
   LOG="lens/runs/chain_memgdata_s${S}_${RUN_TAG}.out"
   echo "--- seed $S ---" | tee -a "$OUT"
   env -u PYTHONPATH -u PYTHONHOME PYTHONPATH=. nice -n 19 ionice -c3 taskset -c 6,7 \
-    .venv-gpu/bin/python3 -u lens/memg.py --steps 6000 --batch 32 --d 64 --layers 2 --heads 4 --seed "$S" \
+    ${PYTHON:-python3} -u lens/memg.py --steps 6000 --batch 32 --d 64 --layers 2 --heads 4 --seed "$S" \
     --n-rule-train 5000 > "$LOG" 2>&1
   RC=$?
   OUTCOME=$(grep -m1 'OUTCOME:' "$LOG" | sed 's/.*OUTCOME: //')

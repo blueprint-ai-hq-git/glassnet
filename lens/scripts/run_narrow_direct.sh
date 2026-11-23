@@ -25,7 +25,7 @@ echo "=== narrow concepts + direct path, $(date '+%F %T') MAXW=$MAXW ===" | tee 
 echo "reference: 36 concepts + direct = acc 12.18%, ppl 712.92, audit 25/36, supply 8.476x" | tee -a "$OUT"
 
 env -u PYTHONPATH -u PYTHONHOME TC_WIDE=0 nice -n 19 ionice -c3 taskset -c 8,9 \
-  .venv-gpu/bin/python3 -u lens/scripts/train_chat.py \
+  ${PYTHON:-python3} -u lens/scripts/train_chat.py \
   --d 128 --window 8 --epochs "$EPOCHS" --batch 256 --lr 0.4 --lam-concept 0.3 --lam-decorr 0.5 \
   --concept-target window --method ours --seed 0 --max-windows "$MAXW" --direct --out "narrowdir_m${MAXW}w" \
   >> lens/runs/chain_narrowdir.out 2>&1
@@ -35,7 +35,7 @@ echo "  rc=$RC" | tee -a "$OUT"
 grep -E 'final VAL' lens/runs/chain_narrowdir.out | tail -1 | tee -a "$OUT"
 grep -oE 'concepts [0-9]+/[0-9]+' lens/runs/chain_narrowdir.out | tail -1 | tee -a "$OUT"
 env -u PYTHONPATH -u PYTHONHOME nice -n 19 ionice -c3 taskset -c 8,9 \
-  .venv-gpu/bin/python3 tools/concept_rank.py --ckpt "lens/runs/chat/narrowdir_m${MAXW}w_ep${EPOCHS}.npz" \
+  ${PYTHON:-python3} tools/concept_rank.py --ckpt "lens/runs/chat/narrowdir_m${MAXW}w_ep${EPOCHS}.npz" \
   --windows 100 --fixed-runner --out "lens/runs/NARROW-DIRECT.json" 2>&1 \
   | grep -E 'positive supply|max \|sum|windows:' | tee -a "$OUT"
 echo "NARROW-DIRECT COMPLETE" | tee -a "$OUT"

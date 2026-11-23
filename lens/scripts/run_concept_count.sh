@@ -29,7 +29,7 @@ echo "=== is cancellation a function of concept count? $(date '+%F %T') MAXW=$MA
 echo "reference (d05, 36 concepts, lam_decorr 0.5): acc 7.19%, supply 38.051x" | tee -a "$OUT"
 
 env -u PYTHONPATH -u PYTHONHOME TC_WIDE=0 nice -n 19 ionice -c3 taskset -c 8,9 \
-  .venv-gpu/bin/python3 -u lens/scripts/train_chat.py \
+  ${PYTHON:-python3} -u lens/scripts/train_chat.py \
   --d 128 --window 8 --epochs "$EPOCHS" --batch 256 --lr 0.4 --lam-concept 0.3 --lam-decorr 0.5 \
   --concept-target window --method ours --seed 0 --max-windows "$MAXW" --out "narrow_m${MAXW}w" \
   >> lens/runs/chain_narrow.out 2>&1
@@ -41,7 +41,7 @@ echo "  concept count actually used:" | tee -a "$OUT"
 grep -oE 'concepts [0-9]+/[0-9]+' lens/runs/chain_narrow.out | tail -1 | tee -a "$OUT"
 
 env -u PYTHONPATH -u PYTHONHOME nice -n 19 ionice -c3 taskset -c 8,9 \
-  .venv-gpu/bin/python3 tools/concept_rank.py --ckpt "lens/runs/chat/narrow_m${MAXW}w_ep${EPOCHS}.npz" \
+  ${PYTHON:-python3} tools/concept_rank.py --ckpt "lens/runs/chat/narrow_m${MAXW}w_ep${EPOCHS}.npz" \
   --windows 100 --fixed-runner --out "lens/runs/CONCEPT-COUNT.json" 2>&1 \
   | grep -E 'positive supply|CONCENTRATION|max \|sum|windows:' | tee -a "$OUT"
 echo "CONCEPT-COUNT COMPLETE" | tee -a "$OUT"

@@ -48,7 +48,7 @@ echo "=== custom architecture: concepts load-bearing vs bypassed, $(date '+%F %T
 run_arm() {  # $1 = label, $2 = "" or "--direct"
   echo "--- $1 ---" | tee -a "$OUT"
   env -u PYTHONPATH -u PYTHONHOME nice -n 19 ionice -c3 taskset -c 6,7 \
-    .venv-gpu/bin/python3 -u lens/scripts/train_chat.py \
+    ${PYTHON:-python3} -u lens/scripts/train_chat.py \
     --d 128 --window 8 --epochs "$EPOCHS" --batch 256 --lr 0.4 --lam-concept 0.3 \
     --concept-target window --method ours --seed 0 --max-windows "$MAXW" --out "arch_$1_m${MAXW}w" $2 \
     >> "lens/runs/chain_arch_$1.out" 2>&1

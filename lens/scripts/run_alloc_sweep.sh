@@ -31,7 +31,7 @@ run_cfg() {   # label rank d layers
   local LOG="lens/runs/chain_alloc_${1}_${RUN_TAG}.out"
   echo "--- $1 (rank=$2 d=$3 layers=$4) ---" | tee -a "$OUT"
   env -u PYTHONPATH -u PYTHONHOME PYTHONPATH=. nice -n 19 ionice -c3 taskset -c 6,7 \
-    .venv-gpu/bin/python3 -u lens/glass_lm.py \
+    ${PYTHON:-python3} -u lens/glass_lm.py \
     --steps 300 --batch 16 --T 32 --d "$3" --layers "$4" --heads 4 --d-mlp "$((2*$3))" --windows 20000 \
     --emb-rank "$2" --seed 0 --opt momentum --lr 0.05 --log-every 300 > "$LOG" 2>&1
   local RC=$?

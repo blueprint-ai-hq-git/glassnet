@@ -23,7 +23,7 @@ OUT=lens/runs/GLASSLM.txt
 : > "$OUT"
 echo "=== first real training run of our own block, $(date '+%F %T') ===" | tee -a "$OUT"
 env -u PYTHONPATH -u PYTHONHOME PYTHONPATH=. nice -n 19 ionice -c3 taskset -c 6,7 \
-  .venv-gpu/bin/python3 -u lens/glass_lm.py \
+  ${PYTHON:-python3} -u lens/glass_lm.py \
   --steps 600 --batch 16 --T 32 --d 64 --layers 2 --heads 4 --d-mlp 128 --windows 20000 --lr 0.05 --log-every 50 \
   2>&1 | tee -a "$OUT"
 RC=${PIPESTATUS[0]}

@@ -12,7 +12,7 @@ Falsifier: if held-out accuracy is at or below the constant, the block does not 
 architecture work continues - the numbers are printed for every checkpointed step, and the constant is printed beside them.
 
 Usage:
-  PYTHONPATH=. .venv-gpu/bin/python3 -u lens/glass_lm.py --steps 400 --d 64 --layers 2 --T 32 --windows 20000
+  PYTHONPATH=. ${PYTHON:-python3} -u lens/glass_lm.py --steps 400 --d 64 --layers 2 --T 32 --windows 20000
 """
 import argparse
 import math

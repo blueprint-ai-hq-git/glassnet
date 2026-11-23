@@ -33,7 +33,7 @@ echo "=== does the optimiser set its own step sizes? $(date '+%F %T') ===" | tee
 run_arm() {   # label opt lr
   echo "--- $1 (opt=$2 lr=$3) ---" | tee -a "$OUT"
   env -u PYTHONPATH -u PYTHONHOME PYTHONPATH=. nice -n 19 ionice -c3 taskset -c 6,7 \
-    .venv-gpu/bin/python3 -u lens/glass_lm.py \
+    ${PYTHON:-python3} -u lens/glass_lm.py \
     --steps 600 --batch 16 --T 32 --d 64 --layers 2 --heads 4 --d-mlp 128 --windows 20000 \
     --emb-rank 32 --seed 0 --opt "$2" --lr "$3" --log-every 300 \
     >> "lens/runs/chain_glopt_${1}_${RUN_TAG}.out" 2>&1

@@ -27,7 +27,7 @@ for S in 0 1 2; do
     TAG="s${S}_r${RANK}"
     echo "--- seed $S emb_rank=$RANK ---" | tee -a "$OUT"
     env -u PYTHONPATH -u PYTHONHOME PYTHONPATH=. nice -n 19 ionice -c3 taskset -c 6,7 \
-      .venv-gpu/bin/python3 -u lens/glass_lm.py \
+      ${PYTHON:-python3} -u lens/glass_lm.py \
       --steps 600 --batch 16 --T 32 --d 64 --layers 2 --heads 4 --d-mlp 128 --windows 20000 --lr 0.05 \
       --seed "$S" --emb-rank "$RANK" --log-every 300 >> "lens/runs/chain_gl3_$TAG.out" 2>&1
     RC=$?

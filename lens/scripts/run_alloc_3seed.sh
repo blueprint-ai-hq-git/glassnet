@@ -22,7 +22,7 @@ echo "=== capacity allocation, 3 paired seeds, $(date '+%F %T') ===" | tee -a "$
 run_cfg() {   # label seed rank d layers
   local LOG="lens/runs/chain_alloc3_${1}_s${2}_${RUN_TAG}.out"
   env -u PYTHONPATH -u PYTHONHOME PYTHONPATH=. nice -n 19 ionice -c3 taskset -c 6,7 \
-    .venv-gpu/bin/python3 -u lens/glass_lm.py \
+    ${PYTHON:-python3} -u lens/glass_lm.py \
     --steps 300 --batch 16 --T 32 --d "$4" --layers "$5" --heads 4 --d-mlp "$((2*$4))" --windows 20000 \
     --emb-rank "$3" --seed "$2" --opt momentum --lr 0.05 --log-every 300 > "$LOG" 2>&1
   local RC=$?

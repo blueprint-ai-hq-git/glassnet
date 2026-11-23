@@ -22,7 +22,7 @@ OUT=${OUT:-lens/runs/WINNER-DECORR.txt}
 echo "=== winner + decorrelation 0.5, $(date '+%F %T') MAXW=$MAXW ===" | tee -a "$OUT"
 echo "reference: 36 concepts + direct, decorr 0 = acc 12.18%, ppl 712.92, audit 25/36, supply 8.476x" | tee -a "$OUT"
 env -u PYTHONPATH -u PYTHONHOME nice -n 19 ionice -c3 taskset -c 8,9 \
-  .venv-gpu/bin/python3 -u lens/scripts/train_chat.py \
+  ${PYTHON:-python3} -u lens/scripts/train_chat.py \
   --d 128 --window 8 --epochs "$EPOCHS" --batch 256 --lr 0.4 --lam-concept 0.3 --lam-decorr 0.5 \
   --concept-target window --method ours --seed 0 --max-windows "$MAXW" --direct --out "windec_m${MAXW}w" \
   >> lens/runs/chain_windec.out 2>&1
@@ -31,7 +31,7 @@ echo "  rc=$RC" | tee -a "$OUT"
 [ "$RC" -ne 0 ] && { echo "  ARM FAILED rc=$RC" | tee -a "$OUT"; exit 1; }
 grep -E 'final VAL' lens/runs/chain_windec.out | tail -1 | tee -a "$OUT"
 env -u PYTHONPATH -u PYTHONHOME nice -n 19 ionice -c3 taskset -c 8,9 \
-  .venv-gpu/bin/python3 tools/concept_rank.py --ckpt "lens/runs/chat/windec_m${MAXW}w_ep${EPOCHS}.npz" \
+  ${PYTHON:-python3} tools/concept_rank.py --ckpt "lens/runs/chat/windec_m${MAXW}w_ep${EPOCHS}.npz" \
   --windows 100 --fixed-runner --out "lens/runs/WINNER-DECORR.json" 2>&1 \
   | grep -E 'positive supply|COUNT-INVARIANT|entropy|max \|sum' | tee -a "$OUT"
 echo "WINNER-DECORR COMPLETE" | tee -a "$OUT"

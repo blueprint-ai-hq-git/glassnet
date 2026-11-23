@@ -100,7 +100,7 @@ def _run(cfg, data, out=None):
 
     if method == "sft":
         # REAL: the supervised trainer, the same one behind every chat run in this project.
-        cmd = [f"{ROOT}/.venv-gpu/bin/python3", "-u", f"{ROOT}/lens/scripts/train_chat.py",
+        cmd = [f"{ROOT}/${PYTHON:-python3}", "-u", f"{ROOT}/lens/scripts/train_chat.py",
                "--d", str(cfg["d"]), "--window", str(cfg["window_in"]),
                "--epochs", str(cfg["epochs"]), "--batch", str(cfg["batch"]),
                "--lr", str(cfg["lr"]), "--out", out, "--assistant-only",
@@ -111,14 +111,14 @@ def _run(cfg, data, out=None):
         # REAL: lens/methods.py, rejection sampling with an exact verifier. Its own settings are used, and
         # rl_seq_in / rl_seq_out are passed through as the sampling window and how many answer tokens are
         # produced, which is what the user asked to be able to set explicitly.
-        cmd = [f"{ROOT}/.venv-gpu/bin/python3", "-u", f"{ROOT}/lens/methods.py",
+        cmd = [f"{ROOT}/${PYTHON:-python3}", "-u", f"{ROOT}/lens/methods.py",
                "--d", str(cfg["d"]), "--samples", str(cfg["rl_samples"]),
                "--rounds", str(cfg.get("rl_rounds", 3)), "--pretrain", str(cfg.get("rl_pretrain", 300)),
                "--lr", str(cfg["lr"]), "--seq-in", str(cfg["rl_seq_in"]), "--seq-out", str(cfg["rl_seq_out"]),
                "--reward", str(cfg["rl_reward"]), "--seed", str(cfg.get("seed", 0))]
     elif method == "distill":
         # REAL: run_distill.py, with a gradient-checked KL backward and a teacher precondition.
-        cmd = [f"{ROOT}/.venv-gpu/bin/python3", "-u", f"{ROOT}/lens/scripts/run_distill.py",
+        cmd = [f"{ROOT}/${PYTHON:-python3}", "-u", f"{ROOT}/lens/scripts/run_distill.py",
                "--teacher", str(cfg["teacher"]), "--d", str(cfg["d"]), "--temp", str(cfg["distill_temp"])]
     else:
         raise NotImplementedError(

@@ -31,7 +31,7 @@ echo "=== does decorrelation remove the cancellation? $(date '+%F %T') MAXW=$MAX
 run_arm() {   # $1 label, $2 lam_decorr
   echo "--- $1 (lam_decorr=$2) ---" | tee -a "$OUT"
   env -u PYTHONPATH -u PYTHONHOME nice -n 19 ionice -c3 taskset -c 8,9 \
-    .venv-gpu/bin/python3 -u lens/scripts/train_chat.py \
+    ${PYTHON:-python3} -u lens/scripts/train_chat.py \
     --d 128 --window 8 --epochs "$EPOCHS" --batch 256 --lr 0.4 --lam-concept 0.3 --lam-decorr "$2" \
     --concept-target window --method ours --seed 0 --max-windows "$MAXW" --out "dec_$1_m${MAXW}w" \
     >> "lens/runs/chain_dec_$1.out" 2>&1
@@ -41,7 +41,7 @@ run_arm() {   # $1 label, $2 lam_decorr
   grep -E 'final VAL' "lens/runs/chain_dec_$1.out" | tail -1 | tee -a "$OUT"
   # the exact instrument that decides P1 - run on this arm's own checkpoint
   env -u PYTHONPATH -u PYTHONHOME nice -n 19 ionice -c3 taskset -c 8,9 \
-    .venv-gpu/bin/python3 tools/concept_rank.py --ckpt "lens/runs/chat/dec_$1_m${MAXW}w_ep$EPOCHS.npz" \
+    ${PYTHON:-python3} tools/concept_rank.py --ckpt "lens/runs/chat/dec_$1_m${MAXW}w_ep$EPOCHS.npz" \
     --windows 100 --fixed-runner --out "lens/runs/DECORR-SUPPLY-$1.json" 2>&1 \
     | grep -E 'positive supply|top-8|P1 verdict|max \|sum' | tee -a "$OUT"
   return 0

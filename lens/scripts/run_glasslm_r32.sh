@@ -20,7 +20,7 @@ OUT=lens/runs/GLASSLM-R32.txt
 : > "$OUT"
 echo "=== the owed retry: factored rank 32, $(date '+%F %T') ===" | tee -a "$OUT"
 env -u PYTHONPATH -u PYTHONHOME PYTHONPATH=. nice -n 19 ionice -c3 taskset -c 6,7 \
-  .venv-gpu/bin/python3 -u lens/glass_lm.py \
+  ${PYTHON:-python3} -u lens/glass_lm.py \
   --steps 600 --batch 16 --T 32 --d 64 --layers 2 --heads 4 --d-mlp 128 --windows 20000 --lr 0.05 \
   --emb-rank 32 --log-every 150 >> lens/runs/chain_glasslm_r32.out 2>&1
 RC=$?
