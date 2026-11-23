@@ -79,9 +79,11 @@
   <div class="logo">G</div>
   <div>
     <h1>GlassNet Math-1</h1>
-    <div class="sub">2-digit addition · writes its working · every number is inspectable</div>
+    <div class="sub"><span id="modelname">no model loaded</span> · writes its working · every number is inspectable</div>
   </div>
-  <div class="pill" id="pill">loading model…</div>
+  <div class="pill" id="pill">no model loaded</div>
+  <label class="pill" for="modelfile" style="cursor:pointer;margin-left:8px;color:var(--accent);border-color:var(--accent)">Open model</label>
+  <input id="modelfile" type="file" accept=".glassnet,.json" style="display:none">
 </header>
 
 <div class="card">
@@ -97,6 +99,14 @@
   <br><br><span style="color:#e8b04b">Known weakness, measured:</span> it scores <b>100.0%</b> when the four unused input slots hold a
   fixed filler token and <b>75.3%</b> when they hold varying filler — this app uses varying filler, so you may see it get one wrong.
   That gap is a real fragility, not a display bug, and it is the next thing being fixed.</div>
+</div>
+
+<div class="card" id="nodrop">
+  <h2>This app holds no model</h2>
+  <div class="muted">The app is the viewer and the runner. The model is a separate file you open — one app, any GlassNet model.
+  Nothing here talks to the internet: the app is built with no network permission, so it cannot.</div>
+  <div class="note">On a phone: tap <b>Open model</b> and pick a <code>.glassnet</code> file. On a computer: drag the file onto this page,
+  or use <b>Open model</b>.</div>
 </div>
 
 <div id="out" class="hide">
@@ -429,7 +439,8 @@ document.getElementById('rnd').onclick = ()=>{
   document.getElementById('go').click();
 };
 
-fetch('model/math1_weights.json').then(r=>r.json()).then(j=>{
+function loadModel(j){
+  W = {}; // reset so a second model replaces the first cleanly
   M = j.__meta__;
   D = M.d_model; L = M.layers; H = M.heads; R = M.emb_rank; V = M.vocab;
   T = M.context; NIN = M.out_start-1; OSTART = M.out_start; WRITE = M.write_len;
@@ -440,9 +451,34 @@ fetch('model/math1_weights.json').then(r=>r.json()).then(j=>{
   document.getElementById('pill').innerHTML = '<b>' + M.params.toLocaleString() + '</b> params · ' +
     '<b>' + M.heldout_accuracy + '%</b> fixed-filler · <b>75.3%</b> varying-filler';
   document.getElementById('go').click();
-}).catch(e=>{
-  document.getElementById('pill').textContent = 'model failed to load';
-  console.error(e);
+}
+
+function openModelFile(file){
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const j = JSON.parse(rd.result);
+      if (!j.__meta__ || !j.tensors) throw new Error('not a GlassNet model');
+      document.getElementById('nodrop').classList.add('hide');
+      document.getElementById('pill').textContent = file.name + ' · loading';
+      loadModel(j);
+      document.getElementById('modelname').textContent = file.name;
+    } catch (e) {
+      document.getElementById('pill').textContent = 'that file is not a GlassNet model';
+      console.error(e);
+    }
+  };
+  rd.readAsText(file);
+}
+
+document.getElementById('modelfile').addEventListener('change', ev => {
+  if (ev.target.files && ev.target.files[0]) openModelFile(ev.target.files[0]);
+});
+// desktop: drag a model onto the page
+document.addEventListener('dragover', e => { e.preventDefault(); });
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) openModelFile(e.dataTransfer.files[0]);
 });
 </script>
 </body>

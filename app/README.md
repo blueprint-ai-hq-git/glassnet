@@ -1,30 +1,41 @@
-# GlassNet Math-1 app
+# GlassNet Runner
 
-Runs the 67,484-parameter model entirely in the browser. No server, no install, no account, no network once the page is loaded.
+**One app. The model is a separate file.** The app contains no model and no network code path — on Android it is built without the
+INTERNET permission, so it cannot open a connection even if asked.
 
 | platform | how to run |
 |---|---|
-| Linux | `bash app/run-linux.sh` |
-| Windows | right-click `app/run-windows.ps1` -> Run with PowerShell |
-| Android / iPhone | serve the folder from the machine (`python3 -m http.server 8781`), then open `http://<machine-ip>:8781/` on the phone |
+| Android | install `GlassNet-Runner.apk`, tap **Open model**, pick a `.glassnet` file |
+| Linux | `bash app/run-linux.sh`, then **Open model** |
+| Windows | run `app/run-windows.ps1`, then **Open model** |
+
+On a computer you can also drag a `.glassnet` file onto the window.
+
+## Why it is separated
+
+A runner that carries a model can only run that one model. This one reads the model's own metadata and adapts: dimensions, layers,
+vocabulary, context length, how many tokens the written working has. So the same app runs any GlassNet model of this shape — a maths
+model today, a talking model next.
+
+## Model file format: `.glassnet`
+
+JSON, so it is readable and needs no dependencies:
+
+```
+{ "__meta__": { task, vocab, context, out_start, write_len, d_model, layers, heads, emb_rank, params, heldout_accuracy },
+  "tensors": { "A": {shape,b64}, "B": {...}, ... } }
+```
+
+The same weights are also exported as `.safetensors` and `.gguf` for standard tooling; `.glassnet` is just the form this app reads.
 
 ## What it shows
 
-* **The working** - the tokens it writes, column by column: units and carry, tens and carry, hundreds.
-* **Answer selection** - the real logits, the probabilities and the gap between the winner and the runner-up. The winner is the
-  largest number; there is no hidden step.
-* **Neurons** - the 64-number state, and the exact contribution each of the 4 rank dimensions makes to the winning score. The four
-  contributions add up to the winner's logit to the last decimal, because the output is a linear map.
-* **Attention** - which earlier tokens each head reads. Causal by construction, so no future token is available.
-* **How it learned** - the measured acquisition curve: near zero for 1400 steps, then the whole procedure on inside a 400-step window.
+* **The working** — the tokens the model writes, column by column: units and carry, tens and carry, then the leading digit.
+* **Answer selection** — the real scores, probabilities, and the gap between winner and runner-up. The winner is simply the largest.
+* **Neurons** — the exact contribution of each rank dimension to the winning score; they sum to it because the output is linear.
+* **Attention** — which earlier positions each head reads. Causal, so no future information exists for it to use.
+* **How it learned** — the measured acquisition curve.
 
-## Known weakness, stated on screen
+## Honest note
 
-100.0% with a fixed filler token in the four unused input slots, **75.3% with varying filler**. The app uses varying filler, which is
-the harder and more honest condition. Closing that gap is a training fix, not a display fix.
-
-## Files
-
-* `model/math1.safetensors` - standard container
-* `model/math1.gguf` - GGUF container
-* `model/math1_weights.json` - what the page loads (base64 float32, so the app has no dependencies)
+Math-1 scores 100.0% when the unused input slots hold a fixed filler token and 75.3% when they vary. The gap is real and is the next fix.
