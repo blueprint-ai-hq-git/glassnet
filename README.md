@@ -36,6 +36,16 @@ can check to six decimal places. This repository is the honest record of what th
 
 
 
+
+## Models
+
+Trained weights, with held-out scores recorded in the files themselves:
+
+- **math1** - two-digit addition with written working, 9,084 parameters, **100.0% held-out (300/300)**
+  - https://huggingface.co/blueprint-ai-hq-main/glassnet-math-tiny
+  - full index with container sizes and reproduction commands: [MODELS.md](MODELS.md)
+
+
 ## At a glance
 
 | What | Measured value | Where it comes from |
