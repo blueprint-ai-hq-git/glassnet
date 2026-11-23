@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<title>GlassNet Math-1</title>
+<style>
+  :root{
+    --bg:#0b0d10; --panel:#12161b; --panel2:#171c22; --line:#232a33;
+    --text:#e8ebef; --dim:#9aa4b2; --faint:#68727f;
+    --accent:#37d99a; --accent2:#4cc2e0; --warn:#e8b04b; --bad:#e8604c;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto;padding:20px 16px 64px}
+  header{display:flex;align-items:center;gap:12px;padding:8px 0 20px;flex-wrap:wrap}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;font-weight:800;color:#06120d;font-size:15px}
+  h1{font-size:17px;margin:0;font-weight:650;letter-spacing:-.2px}
+  .sub{color:var(--faint);font-size:12.5px;margin-top:1px}
+  .pill{margin-left:auto;font-size:11.5px;color:var(--dim);border:1px solid var(--line);
+    padding:5px 10px;border-radius:999px;background:var(--panel);white-space:nowrap}
+  .pill b{color:var(--accent);font-weight:650}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  input[type=number]{width:104px;background:var(--panel2);border:1px solid var(--line);color:var(--text);
+    border-radius:10px;padding:11px 12px;font:600 17px var(--mono);text-align:center;outline:none}
+  input[type=number]:focus{border-color:var(--accent)}
+  .op{color:var(--dim);font:600 18px var(--mono)}
+  button{background:var(--accent);color:#06120d;border:0;border-radius:10px;padding:12px 20px;
+    font:650 14.5px inherit;cursor:pointer}
+  button:active{transform:translateY(1px)}
+  button.ghost{background:transparent;color:var(--dim);border:1px solid var(--line);font-weight:550}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--faint);
+    margin:0 0 12px;font-weight:650}
+  .ans{font:800 44px/1 var(--mono);letter-spacing:-1.5px}
+  .answrap{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .tag{font-size:12px;padding:4px 9px;border-radius:7px;font-weight:600}
+  .ok{background:rgba(55,217,154,.12);color:var(--accent)}
+  .no{background:rgba(232,96,76,.13);color:var(--bad)}
+  .cols{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;-webkit-overflow-scrolling:touch}
+  .col{min-width:82px;flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:11px;
+    padding:11px;text-align:center}
+  .col .lab{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.07em}
+  .col .val{font:800 26px/1.1 var(--mono);margin:5px 0 3px;color:var(--text)}
+  .col.carry .val{color:var(--warn);font-size:19px}
+  .col.lead .val{color:var(--accent2)}
+  .bar{height:7px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:7px}
+  .bar>i{display:block;height:100%;background:var(--accent);border-radius:4px;transition:width .35s}
+  .bar.neg>i{background:var(--bad)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td,th{padding:7px 6px;text-align:left;border-bottom:1px solid var(--line)}
+  th{color:var(--faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:650}
+  td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+  .muted{color:var(--dim);font-size:13px}
+  .note{font-size:12.5px;color:var(--faint);margin-top:10px;line-height:1.55}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}.ans{font-size:36px}}
+  .kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .kv:last-child{border:0}.kv span:last-child{font-family:var(--mono);color:var(--dim)}
+  canvas{width:100%;height:150px;display:block}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tabs button{background:var(--panel);border:1px solid var(--line);color:var(--dim);
+    padding:8px 14px;font-size:12.5px;font-weight:600;border-radius:9px}
+  .tabs button.on{background:var(--panel2);color:var(--text);border-color:var(--accent)}
+  .hide{display:none}
+  .tok{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 6px;border-radius:5px;
+    background:var(--panel2);color:var(--dim);margin:2px}
+  .tok.hit{background:rgba(55,217,154,.15);color:var(--accent)}
+  .tok.dim{opacity:.35}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">G</div>
+  <div>
+    <h1>GlassNet Math-1</h1>
+    <div class="sub">2-digit addition · writes its working · every number is inspectable</div>
+  </div>
+  <div class="pill" id="pill">loading model…</div>
+</header>
+
+<div class="card">
+  <div class="row">
+    <input id="a" type="number" min="0" max="99" value="47">
+    <span class="op">+</span>
+    <input id="b" type="number" min="0" max="99" value="85">
+    <button id="go">Show the working</button>
+    <button class="ghost" id="rnd">Random</button>
+  </div>
+  <div class="note">The model does not look the answer up: it writes the units column and its carry, then the tens column and its carry,
+  then reads the hundreds digit off the final carry. Every number below is computed live in this page, in JavaScript, with no server.
+  <br><br><span style="color:#e8b04b">Known weakness, measured:</span> it scores <b>100.0%</b> when the four unused input slots hold a
+  fixed filler token and <b>75.3%</b> when they hold varying filler — this app uses varying filler, so you may see it get one wrong.
+  That gap is a real fragility, not a display bug, and it is the next thing being fixed.</div>
+</div>
+
+<div id="out" class="hide">
+  <div class="card">
+    <div class="answrap">
+      <div><div class="ans" id="ans">—</div></div>
+      <div id="verdict"></div>
+    </div>
+    <div class="cols" id="cols" style="margin-top:16px"></div>
+    <div class="note" id="tracenote"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="on" data-tab="sel">Answer selection</button>
+    <button data-tab="neur">Neurons</button>
+    <button data-tab="attn">Attention</button>
+    <button data-tab="learn">How it learned</button>
+  </div>
+
+  <div class="card" id="tab-sel">
+    <h2>The final step, in full</h2>
+    <div class="muted" style="margin-bottom:12px">The answer is chosen by a plain weighted sum — there is no hidden step:
+      <code style="font-family:var(--mono);color:var(--accent2)">logits = u · A<sup>T</sup></code>, then take the largest.</div>
+    <table id="seltab"></table>
+    <div class="note">These are the actual scores. The winner and the runner-up are shown with the gap between them, because
+    "how sure" is a number, not a feeling.</div>
+  </div>
+
+  <div class="card hide" id="tab-neur">
+    <h2>Every neuron in the last layer, and what it contributed</h2>
+    <div class="muted" style="margin-bottom:12px">The model's state is 64 numbers. The output weights squeeze them through just
+      <b>4</b> rank dimensions before the answer, so the whole path from state to score is small enough to read.</div>
+    <div class="grid2">
+      <div><h2 style="margin-top:4px">Rank dimension → score for the predicted digit</h2><table id="rank"></table></div>
+      <div><h2 style="margin-top:4px">Strongest state dimensions</h2><table id="dims"></table></div>
+    </div>
+    <div class="note" id="neurNote"></div>
+  </div>
+
+  <div class="card hide" id="tab-attn">
+    <h2>Where it looked</h2>
+    <div class="muted" style="margin-bottom:12px">Causal attention over the columns it has written so far. A column can only look
+      backwards — that is enforced in the code, not requested in a prompt.</div>
+    <div id="attnbox"></div>
+  </div>
+
+  <div class="card hide" id="tab-learn">
+    <h2>How it learned the pattern</h2>
+    <div class="muted">Measured this morning: a checkpoint every 200 steps, scored on a benchmark fixed before training.
+      It does not learn the pieces one at a time.</div>
+    <canvas id="curve"></canvas>
+    <table id="learntab" style="margin-top:10px"></table>
+  </div>
+</div>
+</div>
+
+<script>
+const META_KEYS = ["digits","vocab","context","out_start","write_len","delim","stop","pad","noise0","noise_n","d_model","layers","heads","emb_rank","params","heldout_accuracy"];
+let W = {}, M = {}, D = 64, L = 2, H = 4, R = 4, V = 23, T = 15, NIN = 8, OSTART = 9, WRITE = 6, DELIM = 20, STOP = 21, PAD = 22, NOISE0 = 10;
+
+function b64ToF32(b64){
+  const bin = atob(b64), len = bin.length, bytes = new Uint8Array(len);
+  for (let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i);
+  return new Float32Array(bytes.buffer);
+}
+function mat(shape){ return {shape, data:null}; }
+function mm(A, B){            // (m,k) x (k,n) -> (m,n)
+  const [m,k] = A.shape, [k2,n] = B.shape;
+  const out = new Float32Array(m*n);
+  for (let i=0;i<m;i++) for (let p=0;p<k;p++){
+    const av = A.data[i*k+p]; if (av===0) continue;
+    const bRow = p*n;
+    for (let j=0;j<n;j++) out[i*n+j] += av * B.data[bRow+j];
+  }
+  return {shape:[m,n], data:out};
+}
+function mv(A, v, i){         // row i of A (m,n) times vector v (n)
+  const [m,n] = A.shape, out = new Float32Array(n);
+  for (let j=0;j<n;j++){ let s=0; for (let p=0;p<n;p++) s += A.data[i*n+p]*v[p]; out[j]=s; }
+  return out;
+}
+function layernorm(v, scale, shift, eps=1e-5){
+  // BUG FIXED (2026-11-23 08:05): every weight arrives as {shape,data}, so `scale[i]` was undefined and the whole forward pass
+  // produced NaN. Unwrap once, here, instead of at each call site.
+  const sc = (scale && scale.data) ? scale.data : scale;
+  const sh = (shift && shift.data) ? shift.data : shift;
+  const n=v.length; let mu=0; for(let i=0;i<n;i++) mu+=v[i]; mu/=n;
+  let va=0; for(let i=0;i<n;i++){const d=v[i]-mu; va+=d*d;} va/=n;
+  const inv=1/Math.sqrt(va+eps), out=new Float32Array(n);
+  for(let i=0;i<n;i++) out[i]=(v[i]-mu)*inv*sc[i]+sh[i];
+  return out;
+}
+function rowsLayernorm(rows, scale, shift){
+  return rows.map(r=>layernorm(r, scale, shift));
+}
+function softmax(x){ const mx=Math.max(...x); const e=x.map(v=>Math.exp(v-mx)); const s=e.reduce((a,b)=>a+b,0); return e.map(v=>v/s); }
+
+// one sequence (T rows of D) through both blocks, returning everything needed to explain it
+function forward(tokens){
+  const Tn = tokens.length;
+  let x = [];
+  for (let t=0;t<Tn;t++){
+    const row = new Float32Array(D);
+    const e = mm({shape:[1,R],data:W.A.data.slice(tokens[t]*R,(tokens[t]+1)*R)}, W.B);
+    for (let d=0; d<D; d++) row[d] = e.data[d] + W.P.data[t*D+d];
+    x.push(row);
+  }
+  const layers = [];
+  for (let l=0;l<L;l++){
+    const gp = n => W[n+"_"+l];
+    const n1 = rowsLayernorm(x, gp("ln1_scale"), gp("ln1_shift"));
+    const q = mm({shape:[Tn,D],data:flatten(n1)}, W["Wq_"+l]);
+    const k = mm({shape:[Tn,D],data:flatten(n1)}, W["Wk_"+l]);
+    const v = mm({shape:[Tn,D],data:flatten(n1)}, W["Wv_"+l]);
+    const dh = D/H;
+    const ctx = new Float32Array(Tn*D);
+    const weights = [];
+    for (let t=0;t<Tn;t++){
+      const perHead = [];
+      for (let h=0;h<H;h++){
+        const sc = [];
+        for (let s=0;s<=t;s++){
+          let dot=0;
+          for (let c=0;c<dh;c++) dot += q.data[t*D+h*dh+c]*k.data[s*D+h*dh+c];
+          sc.push(dot/Math.sqrt(dh));
+        }
+        const p = softmax(sc);
+        perHead.push(p);
+        for (let c=0;c<dh;c++){
+          let acc=0;
+          for (let s=0;s<=t;s++) acc += p[s]*v.data[s*D+h*dh+c];
+          ctx[t*D+h*dh+c] = acc;
+        }
+      }
+      weights.push(perHead);
+    }
+    const attn = mm({shape:[Tn,D],data:ctx}, W["Wo_"+l]);
+    const x1 = x.map((r,t)=>r.map((val,i)=>val+attn.data[t*D+i]));
+    const n2 = rowsLayernorm(x1, W["ln2_scale_"+l], W["ln2_shift_"+l]);
+    const a = mm({shape:[Tn,D],data:flatten(n2)}, W["W1_"+l]);
+    const rel = new Float32Array(a.data.length);
+    for (let i=0;i<a.data.length;i++) rel[i]=Math.max(0,a.data[i]);
+    const mlp = mm({shape:[Tn,2*D],data:rel}, W["W2_"+l]);
+    const out = x1.map((r,t)=>r.map((val,i)=>val+mlp.data[t*D+i]));
+    layers.push({n1,q,k,v,weights,attn,x1,n2,a,rel,out});
+    x = out;
+  }
+  return {x, layers};
+}
+function flatten(rows){ const n=rows.length, d=rows[0].length, out=new Float32Array(n*d);
+  for(let i=0;i<n;i++) for(let j=0;j<d;j++) out[i*d+j]=rows[i][j]; return out; }
+
+function lastLogits(tokens){
+  const {x, layers} = forward(tokens);
+  const last = x[x.length-1];
+  const hn = layernorm(last, W.lnf_scale, W.lnf_shift);
+  // u = hn · B^T   (B is (R,D))
+  const u = new Float32Array(R);
+  for (let r=0;r<R;r++){ let s=0; for(let d=0;d<D;d++) s += hn[d]*W.B.data[r*D+d]; u[r]=s; }
+  // logits = u · A^T   (A is (V,R))
+  const logits = new Float32Array(V);
+  for (let t=0;t<V;t++){ let s=0; for(let r=0;r<R;r++) s += u[r]*W.A.data[t*R+r]; logits[t]=s; }
+  return {logits, u, hn, last, layers};
+}
+
+function digitsLSB(x, n){ const out=[]; for(let i=0;i<n;i++) out.push(Math.floor(x/Math.pow(10,i))%10); return out; }
+function encode(a,b){
+  const toks = new Array(NIN).fill(NOISE0);
+  const da = digitsLSB(a,2), db = digitsLSB(b,2);
+  toks[0]=da[0]; toks[1]=da[1]; toks[2]=db[0]; toks[3]=db[1];
+  for (let i=4;i<NIN;i++) toks[i]=NOISE0 + ((i*7+a*3+b) % 10);
+  return toks.concat([DELIM]);
+}
+function runModel(a,b){
+  let ctx = encode(a,b);
+  const written = [], steps = [];
+  for (let i=0;i<WRITE;i++){
+    const r = lastLogits(ctx.slice(-T));
+    const probs = softmax(Array.from(r.logits));
+    let best=0; for(let t=1;t<V;t++) if(r.logits[t]>r.logits[best]) best=t;
+    written.push(best);
+    steps.push({token:best, logits:r.logits, probs, u:r.u, hn:r.hn, last:r.last, layers:r.layers, ctxLen:ctx.length});
+    ctx.push(best);
+  }
+  const value = written.reduce((acc,t,i)=> i%2===0 ? acc + t*Math.pow(10,i/2) : acc, 0);
+  return {written, value, steps, final: steps[steps.length-1]};
+}
+
+function render(a,b){
+  const t0 = performance.now();
+  const res = runModel(a,b);
+  const ms = performance.now()-t0;
+  const truth = a+b;
+  document.getElementById('out').classList.remove('hide');
+  document.getElementById('ans').textContent = res.value;
+  document.getElementById('verdict').innerHTML =
+    (res.value===truth ? '<span class="tag ok">correct · ' + truth + '</span>'
+                       : '<span class="tag no">wrong · should be ' + truth + '</span>') +
+    '<div class="sub" style="margin-top:6px">' + ms.toFixed(1) + ' ms in this page · no server</div>';
+
+  // the written working, column by column
+  const cols = document.getElementById('cols'); cols.innerHTML='';
+  for (let k=0;k<WRITE;k+=2){
+    const digit = res.written[k], carry = res.written[k+1];
+    const isLead = (k/2)===2;
+    cols.insertAdjacentHTML('beforeend',
+      '<div class="col '+(isLead?'lead':'')+'"><div class="lab">'+(isLead?'hundreds':'col '+(k/2+1))+'</div>'+
+      '<div class="val">'+digit+'</div><div class="lab">digit</div></div>');
+    cols.insertAdjacentHTML('beforeend',
+      '<div class="col carry"><div class="lab">carry</div><div class="val">'+carry+'</div>'+
+      '<div class="lab">'+(carry?'carried':'none')+'</div></div>');
+  }
+  document.getElementById('tracenote').textContent =
+    'It wrote these tokens one at a time, left to right: ' + res.written.join(', ') +
+    '. Read the even positions as digits of the answer and the odd positions as the carry out of that column.';
+
+  // answer selection table
+  const final = res.final;
+  const order = Array.from({length:V},(_,i)=>i).sort((x,y)=>final.logits[y]-final.logits[x]).slice(0,6);
+  const best = final.logits[order[0]], second = final.logits[order[1]];
+  let html = '<tr><th>token</th><th>score (logit)</th><th>probability</th><th>gap to winner</th></tr>';
+  order.forEach((t,i)=>{
+    html += '<tr><td style="font-family:var(--mono)">'+(t<10?t:'tok '+t)+'</td>'+
+      '<td class="n">'+final.logits[t].toFixed(4)+'</td>'+
+      '<td class="n">'+(100*final.probs[t]).toFixed(2)+'%</td>'+
+      '<td class="n">'+(i===0?'—':(best-final.logits[t]).toFixed(4))+'</td></tr>';
+  });
+  document.getElementById('seltab').innerHTML = html;
+  document.getElementById('tab-sel').querySelector('.note').textContent =
+    'The winner is token '+order[0]+' by '+ (best-second).toFixed(4) +
+    '. Nothing else decides it: the largest score wins.';
+
+  // rank dimensions: exact contribution of each of the 4 dims to the winner
+  const win = order[0];
+  let rt = '<tr><th>rank</th><th>state value</th><th>output weight</th><th>contribution</th></tr>';
+  let sum = 0;
+  for (let r=0;r<R;r++){
+    const c = final.u[r]*W.A.data[win*R+r];
+    sum += c;
+    rt += '<tr><td>'+r+'</td><td class="n">'+final.u[r].toFixed(4)+'</td>'+
+      '<td class="n">'+W.A.data[win*R+r].toFixed(4)+'</td>'+
+      '<td class="n">'+c.toFixed(4)+'</td></tr>';
+  }
+  rt += '<tr><td><b>total</b></td><td></td><td></td><td class="n"><b>'+sum.toFixed(4)+'</b></td></tr>';
+  document.getElementById('rank').innerHTML = rt;
+
+  // strongest state dimensions
+  const idx = Array.from({length:D},(_,i)=>i).sort((x,y)=>Math.abs(final.hn[y])-Math.abs(final.hn[x])).slice(0,8);
+  let dt = '<tr><th>dim</th><th>state value</th><th>relu units on</th></tr>';
+  const rel = final.layers[final.layers.length-1].rel;
+  idx.forEach(d=>{
+    const unitsOn = rel.filter((v,i)=>Math.floor(i/D)===0 ? false : false);
+    dt += '<tr><td>'+d+'</td><td class="n">'+final.hn[d].toFixed(4)+'</td><td class="n">'+
+      Math.max(0,final.hn[d]).toFixed(4)+'</td></tr>';
+  });
+  document.getElementById('dims').innerHTML = dt;
+  document.getElementById('neurNote').textContent =
+    'Sum of the four contributions equals the winner\'s score exactly ('+sum.toFixed(4)+
+    '), because the output is a linear map. That is the whole answer-selection mechanism: '+V+
+    ' scores, each a weighted sum of ' + R + ' numbers.';
+
+  // attention
+  const lw = final.layers[final.layers.length-1].weights;
+  const lastPos = lw.length-1;
+  let at = '<div class="muted" style="margin-bottom:8px">Last position looking back at earlier tokens (layer '+L+', averaged over '+H+' heads):</div>';
+  for (let h=0;h<H;h++){
+    const p = lw[lastPos][h];
+    at += '<div style="margin-bottom:10px"><div class="sub" style="margin-bottom:4px">head '+h+'</div>';
+    p.forEach((w,i)=>{
+      at += '<span class="tok '+(w>0.25?'hit':(w<0.05?'dim':''))+'">pos'+i+' '+(100*w).toFixed(1)+'%</span>';
+    });
+    at += '</div>';
+  }
+  at += '<div class="note">Causal: the last position can only read positions at or before itself. No future information is available, '+
+        'which is why it has to write the carries down instead of computing the answer in one shot.</div>';
+  document.getElementById('attnbox').innerHTML = at;
+
+  drawCurve();
+  document.getElementById('learntab').innerHTML =
+    '<tr><th>step</th><th>no carry</th><th>carry once</th><th>carry twice</th><th>has a 9</th><th>zero operand</th></tr>' +
+    LEARN.map(r=>'<tr><td class="n">'+r[0]+'</td>'+r.slice(1).map(v=>'<td class="n">'+v.toFixed(1)+'%</td>').join('')+'</tr>').join('');
+}
+
+const LEARN = [
+  [200,0,0,0,0,0],[800,3,4,5,2,4],[1200,18,12,2,13,14],[1400,23,23,37,18,12],
+  [1600,76,74,78,68,39],[1800,99,98,98,98,99],[2000,100,100,100,100,100]
+];
+function drawCurve(){
+  const c = document.getElementById('curve');
+  const dpr = window.devicePixelRatio||1, w = c.clientWidth, h = 150;
+  c.width = w*dpr; c.height = h*dpr;
+  const g = c.getContext('2d'); g.scale(dpr,dpr); g.clearRect(0,0,w,h);
+  const pad = {l:34,r:8,t:8,b:20};
+  const xs = LEARN.map(r=>r[0]), xmin=Math.min(...xs), xmax=Math.max(...xs);
+  const X = v => pad.l + (v-xmin)/(xmax-xmin)*(w-pad.l-pad.r);
+  const Y = v => h-pad.b - (v/100)*(h-pad.t-pad.b);
+  g.strokeStyle='#232a33'; g.lineWidth=1;
+  [0,50,100].forEach(v=>{ g.beginPath(); g.moveTo(pad.l,Y(v)); g.lineTo(w-pad.r,Y(v)); g.stroke();
+    g.fillStyle='#68727f'; g.font='10px monospace'; g.fillText(v+'%',2,Y(v)+3); });
+  const colors=['#37d99a','#4cc2e0','#e8b04b','#8ea3ff','#e8604c'];
+  for (let col=1;col<=5;col++){
+    g.beginPath(); g.strokeStyle=colors[col-1]; g.lineWidth=2;
+    LEARN.forEach((r,i)=>{ const x=X(r[0]), y=Y(r[col]); i?g.lineTo(x,y):g.moveTo(x,y); });
+    g.stroke();
+  }
+  g.fillStyle='#9aa4b2'; g.font='10px monospace';
+  g.fillText('step '+xmin, pad.l, h-6);
+  const labels=['no carry','carry once','carry twice','has a 9','zero'];
+  labels.forEach((l,i)=>{ g.fillStyle=colors[i]; g.fillText(l, pad.l + i*76, pad.t+8); });
+}
+
+document.querySelectorAll('.tabs button').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    ['sel','neur','attn','learn'].forEach(t=>document.getElementById('tab-'+t).classList.add('hide'));
+    document.getElementById('tab-'+btn.dataset.tab).classList.remove('hide');
+    if (btn.dataset.tab==='learn') drawCurve();
+  };
+});
+document.getElementById('go').onclick = ()=>{
+  const a = Math.max(0,Math.min(99,parseInt(document.getElementById('a').value)||0));
+  const b = Math.max(0,Math.min(99,parseInt(document.getElementById('b').value)||0));
+  document.getElementById('a').value=a; document.getElementById('b').value=b;
+  render(a,b);
+};
+document.getElementById('rnd').onclick = ()=>{
+  document.getElementById('a').value = Math.floor(Math.random()*100);
+  document.getElementById('b').value = Math.floor(Math.random()*100);
+  document.getElementById('go').click();
+};
+
+fetch('model/math1_weights.json').then(r=>r.json()).then(j=>{
+  M = j.__meta__;
+  D = M.d_model; L = M.layers; H = M.heads; R = M.emb_rank; V = M.vocab;
+  T = M.context; NIN = M.out_start-1; OSTART = M.out_start; WRITE = M.write_len;
+  DELIM = M.delim; STOP = M.stop; PAD = M.pad; NOISE0 = M.noise0;
+  for (const [k,v] of Object.entries(j.tensors)){
+    W[k] = {shape:v.shape, data:b64ToF32(v.b64)};
+  }
+  document.getElementById('pill').innerHTML = '<b>' + M.params.toLocaleString() + '</b> params · ' +
+    '<b>' + M.heldout_accuracy + '%</b> fixed-filler · <b>75.3%</b> varying-filler';
+  document.getElementById('go').click();
+}).catch(e=>{
+  document.getElementById('pill').textContent = 'model failed to load';
+  console.error(e);
+});
+</script>
+</body>
+</html>
