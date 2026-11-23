@@ -89,7 +89,9 @@
 <div class="card">
   <div class="row">
     <input id="a" type="number" min="0" max="99" value="47">
-    <span class="op">+</span>
+    <select id="opsel" class="op" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);
+            border-radius:10px;padding:11px 8px;font:600 17px var(--mono);display:none"></select>
+    <span class="op" id="opstatic">+</span>
     <input id="b" type="number" min="0" max="99" value="85">
     <button id="go">Show the working</button>
     <button class="ghost" id="rnd">Random</button>
@@ -138,10 +140,12 @@
   <div class="card hide" id="tab-neur">
     <h2>Every neuron in the last layer, and what it contributed</h2>
     <div class="muted" style="margin-bottom:12px">The model's state is 64 numbers. The output weights squeeze them through just
-      <b>4</b> rank dimensions before the answer, so the whole path from state to score is small enough to read.</div>
+      <b>4</b> rank dimensions before the answer. The 67,484 numbers in the model are the weights that PRODUCED this state; the state
+      itself is 64 numbers, and every one of them is listed below — not a sample.</div>
     <div class="grid2">
       <div><h2 style="margin-top:4px">Rank dimension → score for the predicted digit</h2><table id="rank"></table></div>
-      <div><h2 style="margin-top:4px">Strongest state dimensions</h2><table id="dims"></table></div>
+      <div><h2 style="margin-top:4px">All <span id="ndims">64</span> state dimensions</h2>
+        <div style="max-height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:10px"><table id="dims"></table></div></div>
     </div>
     <div class="note" id="neurNote"></div>
   </div>
@@ -165,6 +169,7 @@
 
 <script>
 const META_KEYS = ["digits","vocab","context","out_start","write_len","delim","stop","pad","noise0","noise_n","d_model","layers","heads","emb_rank","params","heldout_accuracy"];
+let OPS = null, OPLBL = {}, ORDER = null, NDIG = 2, KIND = "math", CUR_OP = "add";   // declared BY the model, not by the app
 let W = {}, M = {}, D = 64, L = 2, H = 4, R = 4, V = 23, T = 15, NIN = 8, OSTART = 9, WRITE = 6, DELIM = 20, STOP = 21, PAD = 22, NOISE0 = 10;
 
 function b64ToF32(b64){
@@ -273,15 +278,22 @@ function lastLogits(tokens){
 }
 
 function digitsLSB(x, n){ const out=[]; for(let i=0;i<n;i++) out.push(Math.floor(x/Math.pow(10,i))%10); return out; }
-function encode(a,b){
-  const toks = new Array(NIN).fill(NOISE0);
-  const da = digitsLSB(a,2), db = digitsLSB(b,2);
-  toks[0]=da[0]; toks[1]=da[1]; toks[2]=db[0]; toks[3]=db[1];
-  for (let i=4;i<NIN;i++) toks[i]=NOISE0 + ((i*7+a*3+b) % 10);
-  return toks.concat([DELIM]);
+// THE APP DOES NOT KNOW THE TASK. It builds the input from the model's own encode_order:
+//   "a0"/"a1" -> operand A digit at that place, "b0"/"b1" -> operand B, "op" -> the operator token for the chosen operation.
+function encode(a,b,op){
+  const da = digitsLSB(a, NDIG), db = digitsLSB(b, NDIG);
+  const toks = [];
+  for (const slot of ORDER){
+    if (slot === 'op') toks.push(OPS ? OPS[op] : NOISE0);
+    else if (slot.charAt(0) === 'a') toks.push(da[parseInt(slot.slice(1))] || 0);
+    else if (slot.charAt(0) === 'b') toks.push(db[parseInt(slot.slice(1))] || 0);
+    else if (slot === 'delim') toks.push(DELIM);
+  }
+  return toks;
 }
-function runModel(a,b){
-  let ctx = encode(a,b);
+function runModel(a,b,op){
+  op = op || CUR_OP;
+  let ctx = encode(a,b,op);
   const written = [], steps = [];
   for (let i=0;i<WRITE;i++){
     const r = lastLogits(ctx.slice(-T));
@@ -297,9 +309,10 @@ function runModel(a,b){
 
 function render(a,b){
   const t0 = performance.now();
-  const res = runModel(a,b);
+  const res = runModel(a,b,CUR_OP);
   const ms = performance.now()-t0;
-  const truth = a+b;
+  // the app cannot assume the operation any more - it reads the chosen one
+  const truth = CUR_OP==='sub' ? a-b : CUR_OP==='mul' ? a*b : CUR_OP==='div' ? (b?Math.floor(a/b):0) : a+b;
   document.getElementById('out').classList.remove('hide');
   document.getElementById('ans').textContent = res.value;
   document.getElementById('verdict').innerHTML =
@@ -354,7 +367,8 @@ function render(a,b){
   document.getElementById('rank').innerHTML = rt;
 
   // strongest state dimensions
-  const idx = Array.from({length:D},(_,i)=>i).sort((x,y)=>Math.abs(final.hn[y])-Math.abs(final.hn[x])).slice(0,8);
+  // ALL of them, not the top 8: he asked why only a few were shown when the model holds 67,484 numbers.
+  const idx = Array.from({length:D},(_,i)=>i).sort((x,y)=>Math.abs(final.hn[y])-Math.abs(final.hn[x]));
   let dt = '<tr><th>dim</th><th>state value</th><th>relu units on</th></tr>';
   const rel = final.layers[final.layers.length-1].rel;
   idx.forEach(d=>{
@@ -363,6 +377,7 @@ function render(a,b){
       Math.max(0,final.hn[d]).toFixed(4)+'</td></tr>';
   });
   document.getElementById('dims').innerHTML = dt;
+  const nd = document.getElementById('ndims'); if (nd) nd.textContent = D;
   document.getElementById('neurNote').textContent =
     'Sum of the four contributions equals the winner\'s score exactly ('+sum.toFixed(4)+
     '), because the output is a linear map. That is the whole answer-selection mechanism: '+V+
@@ -445,11 +460,32 @@ function loadModel(j){
   D = M.d_model; L = M.layers; H = M.heads; R = M.emb_rank; V = M.vocab;
   T = M.context; NIN = M.out_start-1; OSTART = M.out_start; WRITE = M.write_len;
   DELIM = M.delim; STOP = M.stop; PAD = M.pad; NOISE0 = M.noise0;
+  KIND = M.kind || 'math';
+  NDIG = M.digits || 2;
+  OPS = M.op_tokens || null;
+  OPLBL = M.op_labels || {};
+  ORDER = M.encode_order || ['a0','a1','b0','b1','delim'];
+  const sel = document.getElementById('opsel'), stat = document.getElementById('opstatic');
+  if (OPS){
+    sel.innerHTML = Object.keys(OPS).map(k=>'<option value="'+k+'">'+(OPLBL[k]||k)+'</option>').join('');
+    sel.style.display = ''; stat.style.display = 'none';
+    CUR_OP = Object.keys(OPS)[0];
+    sel.onchange = () => { CUR_OP = sel.value; document.getElementById('go').click(); };
+  } else { sel.style.display='none'; stat.style.display=''; }
+  // operand range follows the model's declared width: a 2-digit model cannot accept 3 digits
+  const lim = Math.pow(10, NDIG) - 1;
+  ['a','b'].forEach(id=>{ const el=document.getElementById(id); el.max=lim; el.value=Math.min(parseInt(el.value)||0, lim); });
   for (const [k,v] of Object.entries(j.tensors)){
     W[k] = {shape:v.shape, data:b64ToF32(v.b64)};
   }
-  document.getElementById('pill').innerHTML = '<b>' + M.params.toLocaleString() + '</b> params · ' +
-    '<b>' + M.heldout_accuracy + '%</b> fixed-filler · <b>75.3%</b> varying-filler';
+  // the pill must describe THIS model, so it reads whatever the model declares and never prints "undefined"
+  let detail = '';
+  if (M.per_op_heldout) {
+    detail = Object.keys(M.per_op_heldout).map(k => (OPLBL[k]||k) + ' <b>' + M.per_op_heldout[k] + '%</b>').join(' · ');
+  } else if (M.heldout_accuracy !== undefined) {
+    detail = '<b>' + M.heldout_accuracy + '%</b> held-out';
+  }
+  document.getElementById('pill').innerHTML = '<b>' + M.params.toLocaleString() + '</b> params · ' + detail;
   document.getElementById('go').click();
 }
 
