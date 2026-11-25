@@ -37,6 +37,54 @@ can check to six decimal places. This repository is the honest record of what th
 
 
 
+## What was measured on 2026-11-25, in plain words
+
+Four questions asked, four answers with numbers attached. Every figure here has a file beside it in this repository; none of it
+is estimated.
+
+**1. Can the model learn a second skill without destroying the first?** Before: no. A model trained to 94.8% on two-digit
+addition dropped to **1.2%** after learning subtraction - 93.5 points of a mastered skill erased by one new task. Replaying a
+small sample of the old task while learning the new one cut that loss to **2.5 points**, and the new skill still reached 95.8%
+against 98.0% without replay. A buffer of **1,024 old examples** clears the 80% retention bar; 4,096 keeps almost everything.
+
+**2. How much data does one mechanism cost?** About **1,600 examples** of a mechanism, drawn from the same distribution as the
+test, buy **90.9% +/- 1.4** of it - replicated on three seeds, monotone on every one. Below that the curve is steep: 100
+examples give 28.9%, 400 give 52.8%.
+
+**3. Can the neurons be named, and do the names hold?** A unit scores **AUROC 1.000** for "the units column carries" and keeps
+firing on fresh examples it never saw, which is the difference between a concept and a memorised case. But only **28 of 256
+units (10.9%)** earn a name once a name must also stay quiet when its concept is absent. The other **115 units are labelled
+"ranks X first but also responds to Y and Z"** rather than given a label they have not earned.
+
+**4. Does forcing sparse units make them more readable?** Partly, and not in the way that helps. L1 sparsity halved the number
+of mixed units (117 to 63) for 2.8 points of accuracy, but honest naming barely moved (28 to 33). Hard top-8 destroyed both. A
+unit can stop being a mixture and still not be one concept.
+
+Sources: `lens/runs/FORGETTING.out`, `lens/runs/REPLAY-BUFFER2.out`, `lens/runs/COVERAGE-SEEDS.out`,
+`lens/runs/PATTERN-CARDS.json`, `lens/runs/CONCEPT-VOCAB.json`, `lens/runs/EXCLUSIVITY-PRESSURE.json`.
+Write-ups in `docs/` beside the code.
+
+### The four things that did not work
+
+| Attempt | Result |
+| --- | --- |
+| Hand the mechanism over as an input flag | **+0.0 points** on an unseen case |
+| Give the mechanism its own output slot (a written trace) | **+0.0 points** |
+| Curate the most instructive examples | **-46.8 points** - worse than random |
+| Make the model 3.5x wider | **-0.017** on language loss, **-8.8** at equal coverage |
+
+The pattern across all four: a model learns a mechanism only from examples that exhibit it, in the place where it occurs.
+Instructive is not representative, and cleverness in choosing examples lost to plain volume drawn from the right distribution.
+
+### Process changes this forced
+
+Seven times in one day a script printed a conclusion its own numbers did not support, so verdict lines now derive from the
+pre-registered predictions and carry their direction, never from the most flattering number in the table. Every experiment runs
+through one harness that owns the train/held-out split, and every job records its own exit code and signal - because "no
+output" had twice been mistaken for "still running".
+
+---
+
 ## Models
 
 Trained weights, with held-out scores recorded in the files themselves:
