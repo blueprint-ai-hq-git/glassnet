@@ -8084,3 +8084,19 @@ P1 MET   P2 MET   FALSIFIER not fired   OUTCOME: DIRECT_PATH_CARRIES_THE_ANSWER
 ```
 
 At 200 windows it was 5.5-18.0% / 65.0-84.5%; at **500 windows** it is **4.2-21.6% / 64.4-81.6%** - the same conclusion inside the same small band. **The readable layer on its own does not reproduce the model's answer; the unreadable path does.** This number now rests on **three checkpoints, two sample sizes, three readouts (linear, wider, nearest neighbour)** all agreeing - and it is the number any future claim about the readable middle layer must be quoted against. **Launched next (`trigword`)**: every written-reason success so far used a **cue token I provided** - a dedicated id nothing else resembles, which is a hint in itself. `trigword` draws the trigger word from the **same id pool as the decoys**, so the model must find the one meaningful word among identical-looking noise, act on it, and **name it as its reason**. Bars: reason >= 95%, all three >= 90%, honesty >= 95%; falsifier reason < 80% means the perfect scores depended on the cue being special. Source: `docs/history/READABLE-ROUTE-HOLDS-AT-500.md`, `lens/runs/chain_ablate500.out`.
+
+## Tokeniser: the model had no space character
+
+The word tokeniser's pattern had no alternative matching whitespace, so every space was deleted: **0 of 12,000 vocabulary
+entries contained a space** and held-out text decoded as `human:howcanistorefoodifidon'thaveapantry`. The model had no word
+boundary in its alphabet, so no amount of training could produce a readable sentence.
+
+Fixing that exposed a second defect: **33.3% of the tokens the model generated were `<unk>`**, fourteen times its own
+training rate, because a 12,000-word vocabulary cannot cover English. Byte-level BPE (trained from scratch, 6,000 merges,
+6,256 symbols, exact round trip, **0.000% unknown**) fixes it by construction:
+
+**held-out 1.581 +- 0.005 bits per character over three seeds (1.587 / 1.581 / 1.577), against 1.793 for the word
+tokeniser at the same width, window and epochs - an 11.8% improvement.** Generated `<unk>` 0.0%, repeat-rate 0.0%.
+Twelve epochs (one seed) reaches 1.467 bits/char. Grammar is still rough and this is not claimed as fluent.
+
+`docs/TOKENISER-FIX.md`.
