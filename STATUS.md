@@ -8101,3 +8101,13 @@ corpus, where validation turned upward at epoch 6, but on this corpus it was sti
 Grammar is still rough: the model writes short English fragments, not fluent prose.
 
 `docs/TOKENISER-FIX.md`.
+
+## The 12-line path, verified end to end
+
+`examples/example_20_lines.py` is 12 non-blank lines: build the model, `train()` with no settings, read the accuracy, `explain()` twice, `train_judge()`, score five images. Run as a user would, twice, on the shipped tree:
+
+**test accuracy 80.78%** on Fashion-MNIST, reached by the auto-pilot with zero hyperparameters typed. `explain()` prints the rules that fired, the concepts each rule connects to, and their weights and activations, and writes the same thing as a picture. The data judge returns a score per image (0.28 / 0.05 / 0.18 / 0.16 / 0.16 on the first five test images).
+
+The honest limit: an explanation is printed whether or not the answer is right - one held-out example is called shirt at 37.7% when it is a dress, and the rules that produced that are shown in full. Readability is not the same as correctness.
+
+`examples/example_20_lines.py`.
