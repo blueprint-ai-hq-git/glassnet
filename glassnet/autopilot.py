@@ -21,6 +21,7 @@ from .phase2_model import GlassNetPhase2
 AUTO_PILOT_DEFAULTS = {
     # ---- architecture (inherited from Phase 2 manual tuning, unchanged) ----
     "num_concepts": 14,
+    "concept_each": 0,          # >0: one nonlinear detector PER concept instead of one shared linear filter
     "num_rules": 30,
     "concept_loss_alpha": 1.0,      # weight of the concept-name supervision
     "l1_lambda": 0.005,             # strength of the rule-sparsity penalty
@@ -119,6 +120,7 @@ def train_autopilot(Xtr, ytr, Ctr, Xte, yte, Cte, seed=0,
     rng_data = np.random.default_rng(int(seed) * 777 + 1)
     net = GlassNetPhase2(K=d["num_concepts"], R=d["num_rules"], rng=rng_model,
                              concept_hidden=d.get("concept_hidden", 0),
+                             concept_each=d.get("concept_each", 0),
                              rule_linear=d.get("rule_linear", False),
                              no_rules=d.get("no_rules", False),
                              classes=d.get("num_classes", 10),

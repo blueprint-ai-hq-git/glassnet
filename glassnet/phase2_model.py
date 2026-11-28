@@ -9,7 +9,7 @@ Phase 3's auto-pilot trainer will drive this same model (see phase2_train).
 """
 import numpy as np
 
-from .tensor import Tensor, sigmoid, relu
+from .tensor import Tensor, sigmoid, relu, concat_cols
 from .layers import Dense
 import os
 from .losses import cross_entropy, bce_logits, l1_sum, concept_exclusivity
@@ -25,7 +25,7 @@ class GlassNetPhase2:
 
     def __init__(self, K=None, R=20, rng=None, concept_names=None,
                  concept_hidden=0, rule_linear=False, no_rules=False,
-                 classes=10, input_dim=784):
+                 classes=10, input_dim=784, concept_each=0):
         if K is None:
             K = DEFAULT_K
         rng = rng if rng is not None else np.random.default_rng()
@@ -33,10 +33,19 @@ class GlassNetPhase2:
         self.classes = int(classes)
         self.input_dim = int(input_dim)
         self.concept_hidden = int(concept_hidden or 0)
+        self.concept_each = int(concept_each or 0)
         self.rule_linear = bool(rule_linear)
         self.no_rules = bool(no_rules)
         self.concept_names = list((concept_names or DEFAULT_CONCEPT_NAMES)[:K])
-        if self.concept_hidden:
+        if self.concept_each:
+            # ONE DETECTOR PER CONCEPT. Every concept gets its own relu(x @ W1_k + b1_k) -> w2_k, so no two names compete for
+            # the same filter. This is the lever that a shared concept_hidden layer cannot test: sharing forces 14 correlated
+            # properties into one basis, which is the standing explanation for neurons answering to the wrong label.
+            self.pc_in = [Dense(input_dim, self.concept_each, rng=rng, name="concept_%d_in" % k) for k in range(K)]
+            self.pc_out = [Dense(self.concept_each, 1, rng=rng, name="concept_%d_out" % k) for k in range(K)]
+            self.concept = None          # no shared filter in this mode
+            self.concept_bias = Tensor(np.zeros(K, dtype=np.float32), requires_grad=True, name="concept_bias")
+        elif self.concept_hidden:
             self.concept_gate = Dense(input_dim, self.concept_hidden, rng=rng,
                                       name="concept_gate")
             self.concept = Dense(self.concept_hidden, K, rng=rng, name="concept")
@@ -50,7 +59,11 @@ class GlassNetPhase2:
             self.answer = Dense(R, classes, rng=rng, name="answer")
 
     def forward(self, x):
-        if self.concept_hidden:
+        if self.concept_each:
+            # each named concept from its OWN detector, stacked into the concept axes
+            cols = [self.pc_out[k](relu(self.pc_in[k](x))) for k in range(self.K)]
+            z_c = concat_cols(cols) + self.concept_bias
+        elif self.concept_hidden:
             z_c = self.concept(relu(self.concept_gate(x)))
         else:
             z_c = self.concept(x)        # pre-sigmoid (bce_logits wants this)
@@ -92,7 +105,12 @@ class GlassNetPhase2:
         return total
 
     def parameters(self):
-        if self.concept_hidden:
+        if self.concept_each:
+            heads = []
+            for k in range(self.K):
+                heads += self.pc_in[k].parameters() + self.pc_out[k].parameters()
+            heads += [self.concept_bias]
+        elif self.concept_hidden:
             heads = (self.concept_gate.parameters() + self.concept.parameters())
         else:
             heads = self.concept.parameters()
