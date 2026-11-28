@@ -8095,8 +8095,9 @@ Fixing that exposed a second defect: **33.3% of the tokens the model generated w
 training rate, because a 12,000-word vocabulary cannot cover English. Byte-level BPE (trained from scratch, 6,000 merges,
 6,256 symbols, exact round trip, **0.000% unknown**) fixes it by construction:
 
-**held-out 1.581 +- 0.005 bits per character over three seeds (1.587 / 1.581 / 1.577), against 1.793 for the word
-tokeniser at the same width, window and epochs - an 11.8% improvement.** Generated `<unk>` 0.0%, repeat-rate 0.0%.
-Twelve epochs (one seed) reaches 1.467 bits/char. Grammar is still rough and this is not claimed as fluent.
+**held-out 1.455 +- 0.010 bits per character over three seeds (1.467 / 1.449 / 1.449), against 1.793 for the word tokeniser at the
+same width and window - a 18.9% improvement.** Twelve epochs, not six: the six-epoch schedule was tuned on the old
+corpus, where validation turned upward at epoch 6, but on this corpus it was still falling. Generated `<unk>` 0.0%, repeat-rate 0.0%.
+Grammar is still rough: the model writes short English fragments, not fluent prose.
 
 `docs/TOKENISER-FIX.md`.
