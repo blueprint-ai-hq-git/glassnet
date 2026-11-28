@@ -8189,3 +8189,17 @@ If a finished open model could be turned white-box, building our own would be wa
 ```
 
 **Verdict: the decode route does not replace building our own.** Readable rules copy a black box where the task is surface lookup and fail to copy it where the task needs computation - which is exactly the case our architecture exists to make readable. One real caveat in our favour of honesty: the (b) pass on IOI was vacuous, and it was the probe itself that caught it.
+
+## The model now audits its own names
+
+`GlassNet(...).honesty()` ships with the library. It answers one question about the model itself: which of my concept names do I actually answer to? It runs two instruments and reports both, because they disagree.
+
+```
+model = GlassNet('fashion-mnist')
+model.train()
+model.honesty()          # prints, per concept, either 'honest' or 'NOT what its name says - it tracks X'
+```
+
+On the shipped model it prints **9 of 14 names true (marginal) and 6 of 14 under the stricter test (conditional)**, and it warns that the simple test flatters the model rather than reporting the friendlier number alone. A readable model that quietly mislabels itself is worse than an opaque one, so this is an API method, not a grading script.
+
+`glassnet/honesty.py`, `glassnet/api.py`.

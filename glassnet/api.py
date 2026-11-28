@@ -14,7 +14,7 @@ import numpy as np
 
 from .tensor import sigmoid  # noqa: F401  (re-exported for power users)
 from .data import load as load_fmnist, LABELS
-from .concepts import load as load_concepts, compute as compute_concepts
+from .concepts import load as load_concepts, compute as compute_concepts, NAMES as CONCEPT_NAMES
 from .autopilot import train_autopilot, AUTO_PILOT_DEFAULTS
 from .phase2_model import GlassNetPhase2
 from .eval import accuracy as acc_fn
@@ -142,6 +142,22 @@ class GlassNet:
         if self.model is None:
             raise RuntimeError("train() first")
         return acc_fn(self.model, self.X_test, self.y_test)
+
+    def honesty(self, verbose=True):
+        """Which of the model's own concept names does it actually answer to?
+
+        Runs two instruments and returns both counts, because they disagree: the marginal test compares each neuron with each label
+        one at a time, while the conditional test holds the other concepts fixed. A readable model that quietly mislabels itself is
+        worse than an opaque one, so this ships with the library rather than living in a grading script.
+        """
+        from .honesty import concept_honesty, format_report
+        if self.model is None:
+            raise RuntimeError("train() first")
+        Cte = compute_concepts(self.X_test, self._concept_lo, self._concept_hi)[0]
+        rep = concept_honesty(self.model, self.X_test, Cte, names=CONCEPT_NAMES)
+        if verbose:
+            print(format_report(rep))
+        return rep
 
     # -------------------------------------------------------------- judge
     def train_judge(self, epochs=None, silent=False):
