@@ -329,3 +329,28 @@ def embedding(E, idx):
 
     out._backward = bw
     return out
+
+
+def concat_cols(parts):
+    """Join 2-D tensors side by side along the column axis. Gradient returns each block's slice of the incoming gradient.
+
+    WHY IT EXISTS: a readable concept layer needs one detector PER concept (relu(x @ W1_k + b1_k) -> w2_k) instead of one shared
+    linear filter, because a shared filter must encode 14 correlated properties in one basis - which is exactly the condition under
+    which neurons answer to the wrong name. Building that head needs a way to stack the per-concept outputs, and there was no such op.
+    """
+    if not isinstance(parts, (list, tuple)):
+        parts = list(parts)
+    data = xp.concatenate([p.data for p in parts], axis=1)
+    out = Tensor(data, requires_grad=any(p.requires_grad for p in parts), _prev=tuple(parts), name="concat_cols")
+    widths = [p.data.shape[1] for p in parts]
+
+    def bw():
+        if out.grad is None:
+            return
+        start = 0
+        for p, w in zip(parts, widths):
+            _accum(p, out.grad[:, start:start + w])
+            start += w
+
+    out._backward = bw
+    return out
