@@ -87,3 +87,47 @@ def l1_sum(w):
     the same constant pull toward zero and the task gradient must hold the
     useful ones up. Stronger than a mean-based penalty at the same lambda."""
     return sum_all(abs_(w))
+
+
+def concept_exclusivity(h, c):
+    """Penalise a concept neuron for tracking a DIFFERENT concept's label.
+
+    WHY: on the shipped 80.78% model only 9 of 14 concept neurons meant what
+    their label said (tools/check_concept_honesty.py). Correlation between the
+    dishonest neurons' own labels and the labels they actually tracked was
+    mostly LOW (r = +0.274 to +0.521), so the layer learned the wrong thing
+    rather than being handed indistinguishable labels. Plain per-concept BCE
+    does not care: a neuron may fit someone else's label as long as its own
+    error is small. This term makes caring explicit.
+
+    WHAT IT COMPUTES: the off-diagonal squared correlations between every
+    neuron activation column and every concept TARGET column, so a neuron is
+    charged for matching any label except its own. Both sides are centred
+    first, so a neuron that merely copies a base rate is not charged.
+
+    HONEST LIMIT: the derivative of the column normalisers is dropped (the
+    penalty is differentiated as if the scales were constants). That changes
+    the step size, not the direction of descent, and the term is scaled by a
+    weight the caller sets; the gate, not this comment, decides whether it
+    worked.
+    """
+    H = h.data
+    C = as_backend(c, H.dtype)
+    n = H.shape[0]
+    Hc = H - xp.mean(H, axis=0, keepdims=True)
+    Cc = C - xp.mean(C, axis=0, keepdims=True)
+    hn = Hc / (xp.sqrt(xp.sum(Hc * Hc, axis=0, keepdims=True)) + 1e-8)
+    cn = Cc / (xp.sqrt(xp.sum(Cc * Cc, axis=0, keepdims=True)) + 1e-8)
+    R = hn.T @ cn                                   # (K, K) correlations
+    off = R - xp.diag(xp.diag(R))                   # zero the diagonal: own label is free
+    out = Tensor(xp.mean(off * off), requires_grad=h.requires_grad, _prev=(h,), name="concept_excl")
+
+    def bw():
+        if out.grad is None:
+            return
+        g = out.grad * (2.0 / (R.size)) * (hn @ off.T)
+        _accum(h, g)
+
+    out._backward = bw
+    return out
+

@@ -52,7 +52,9 @@ def auroc(scores, labels):
 
 
 def main():
-    g = GlassNet.load(os.path.join(PUB, "runs", "library", "model.npz"))
+    ckpt = sys.argv[1] if len(sys.argv) > 1 else os.path.join(PUB, "runs", "library", "model.npz")
+    print("checkpoint:", ckpt)
+    g = GlassNet.load(ckpt)
     z = np.load(os.path.join(PUB, "data", "concepts.npz"))
     Cte = z["Cte"]
     X = g.X_test

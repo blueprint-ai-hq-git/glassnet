@@ -11,7 +11,8 @@ import numpy as np
 
 from .tensor import Tensor, sigmoid, relu
 from .layers import Dense
-from .losses import cross_entropy, bce_logits, l1_sum
+import os
+from .losses import cross_entropy, bce_logits, l1_sum, concept_exclusivity
 from .concepts import NAMES as DEFAULT_CONCEPT_NAMES, K as DEFAULT_K
 
 
@@ -66,7 +67,7 @@ class GlassNetPhase2:
         return {"logits": logits, "concepts": h, "concept_pre": z_c, "rules": r}
 
     def loss(self, x, y, c, alpha=0.5, lam=0.02, return_parts=False, f=None,
-             include_ce=True):
+             include_ce=True, excl=None):
         f = f or self.forward(x)
         ce = cross_entropy(f["logits"], y) if include_ce else None
         cb = bce_logits(f["concept_pre"], c,
@@ -75,8 +76,20 @@ class GlassNetPhase2:
             l1 = lam * 0.0
         else:
             l1 = l1_sum(self.rules.W)
+        # EXCLUSIVITY (added 2026-11-28): charge each concept neuron for matching any label except its own. Off by default
+        # (GLASSNET_EXCL unset or 0), so every existing run and checkpoint reproduces exactly; set GLASSNET_EXCL=0.5 to enable.
+        if excl is None:
+            try:
+                excl = float(os.environ.get("GLASSNET_EXCL", "0"))
+            except Exception:
+                excl = 0.0
+        ex = concept_exclusivity(f["concepts"], c) if excl else None
         total = (cb * 0.0 if not include_ce else ce) + alpha * cb + lam * l1
-        return (total, ce, cb, l1) if return_parts else total
+        if ex is not None:
+            total = total + excl * ex
+        if return_parts:
+            return total, ce, cb, l1
+        return total
 
     def parameters(self):
         if self.concept_hidden:
