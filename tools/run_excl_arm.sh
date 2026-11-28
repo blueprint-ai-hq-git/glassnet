@@ -1,9 +1,14 @@
 #!/bin/bash
-# EXCLUSIVITY ARM: train the same 12-line path with the new concept-exclusivity term on, then run the honesty gate on the result.
+# EXCLUSIVITY ARM: train the shipped 12-line path with the concept-exclusivity term on, then run the honesty gate on the result.
 # Baseline to beat: 9 of 14 concept neurons honest on the shipped model.
+#
+# NO machine paths in this file. It is published, so the interpreter comes from GLASSNET_PY if set and falls back to python3 on
+# PATH, and the project root is resolved from this script's own location. A hardcoded home directory or disk label in a public file
+# is a privacy leak, not a convenience.
 set -uo pipefail
-cd /home/yahya/glassnet-public-prep || exit 1
-PY="/run/media/yahya/HARD DISK 4/GlassNet/.venv-gpu/bin/python3"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)" || exit 1
+cd "$ROOT" || exit 1
+PY="${GLASSNET_PY:-python3}"
 export GLASSNET_EXCL="${1:-0.5}"
 echo "=== exclusivity arm, GLASSNET_EXCL=$GLASSNET_EXCL ==="; date '+%H:%M:%S'
 "$PY" -c "
