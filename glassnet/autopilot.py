@@ -60,26 +60,21 @@ AUTO_PILOT_DEFAULTS = {
 
 
 def _snapshot(net):
-    layers = [net.concept]
-    if net.concept_hidden:
-        layers.insert(0, net.concept_gate)
-    if net.rules is not None:
-        layers.append(net.rules)
-    layers.append(net.answer)
-    return {p.name: p.data.copy()
-            for layer in layers
-            for p in layer.parameters()}
+    """Copy every parameter of the model, whatever shape its concept head has.
+
+    The old version walked an explicit [concept, concept_gate?, rules, answer] list, which assumes one shared concept filter. In
+    per-concept mode (concept_each>0) there is no shared filter, so that list contained None and the run crashed with
+    'NoneType' object has no attribute parameters'. Taking the model's own parameter list removes the assumption.
+    """
+    return [p.data.copy() for p in net.parameters()]
 
 
 def _restore(net, snap):
-    layers = [net.concept]
-    if net.concept_hidden:
-        layers.insert(0, net.concept_gate)
-    if net.rules is not None:
-        layers.append(net.rules)
-    layers.append(net.answer)
-    for layer in layers:
-        for p in layer.parameters():
+    params = net.parameters()
+    if len(params) != len(snap):
+        raise RuntimeError("snapshot has %d tensors but the model has %d - refusing to restore mismatched weights"
+                           % (len(snap), len(params)))
+    for p, d in zip(params, snap):
             p.data[:] = snap[p.name]
 
 

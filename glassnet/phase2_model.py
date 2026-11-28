@@ -148,6 +148,9 @@ class GlassNetPhase2:
         return sum(p.data.size for p in self.parameters())
 
     def save(self, path, **extra):
+        if getattr(self, "concept_each", 0):
+            raise NotImplementedError("save() does not support concept_each yet - refusing to write a checkpoint that would"
+                                      " silently omit the per-concept detectors")
         layers = [self.concept]
         if self.concept_hidden:
             layers.insert(0, self.concept_gate)
