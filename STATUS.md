@@ -8111,3 +8111,21 @@ Grammar is still rough: the model writes short English fragments, not fluent pro
 The honest limit: an explanation is printed whether or not the answer is right - one held-out example is called shirt at 37.7% when it is a dress, and the rules that produced that are shown in full. Readability is not the same as correctness.
 
 `examples/example_20_lines.py`.
+
+## Five of fourteen concept names are wrong
+
+A name is a claim, so `tools/check_concept_honesty.py` tests it: for every neuron and every concept label it computes AUROC on 10,000 held-out images, and a neuron is only **honest** if its own label explains its behaviour better than any other label.
+
+**Result on the shipped 80.78% model: 9 of 14 concept neurons mean what their label says.** Five are secret detectors:
+
+```
+horizontal_edges   claims horizontal_edges   tracks left_heavy   (AUC 0.859 vs own 0.597)
+vertical_edges     claims vertical_edges     tracks wide_shape   (AUC 0.867 vs own 0.532)
+quad_UL_ink        claims quad_UL_ink        tracks left_heavy   (AUC 0.948 vs own 0.915)
+quad_UR_ink        claims quad_UR_ink        tracks tall_shape   (AUC 0.810 vs own 0.602)
+quad_LR_ink        claims quad_LR_ink        tracks tall_shape   (AUC 0.648 vs own 0.478)
+```
+
+The bar this project sets for a readable layer is at least 12 of 14 honest with every margin positive, so at 9 of 14 the layer does not pass its own gate. High AUROC alone was never enough - the two edge neurons predict their own concept at 0.597 and 0.532 while tracking a different one at 0.859 and 0.867, which is precisely the failure a name can hide.
+
+`tools/check_concept_honesty.py`.
