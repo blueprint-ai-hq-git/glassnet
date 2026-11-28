@@ -8129,3 +8129,7 @@ quad_LR_ink        claims quad_LR_ink        tracks tall_shape   (AUC 0.648 vs o
 The bar this project sets for a readable layer is at least 12 of 14 honest with every margin positive, so at 9 of 14 the layer does not pass its own gate. High AUROC alone was never enough - the two edge neurons predict their own concept at 0.597 and 0.532 while tracking a different one at 0.859 and 0.867, which is precisely the failure a name can hide.
 
 `tools/check_concept_honesty.py`.
+
+**Why renaming would be the wrong fix, measured:** if two labels measured the same pixels no model could separate them, so the names would be the problem. Correlation between each dishonest neuron's own label and the label it actually tracks is mostly low - `horizontal_edges` vs `left_heavy` **r = +0.274**, `quad_LR_ink` vs `tall_shape` **r = +0.307**, `quad_UR_ink` vs `tall_shape` **r = +0.434**, `quad_UL_ink` vs `left_heavy` **r = +0.521**. Only `vertical_edges` vs `wide_shape` is genuinely confounded at **r = +0.722**. So the layer mostly learned the wrong thing rather than being handed indistinguishable labels: the fix is training with exclusivity, not new names.
+
+Separately, the label set itself is redundant - **7 label pairs correlate above 0.80** (`ink_amount` vs `quad_LL_ink` 0.917, `ink_amount` vs `center_ink` 0.910, `quad_LL_ink` vs `quad_LR_ink` 0.902), which adds a second reason for the layer to confuse them.
