@@ -12,7 +12,10 @@ def mse(pred, target):
     """Mean squared error. target: array broadcastable to pred."""
     t = as_backend(target, pred.data.dtype)
     r = pred.data - t
-    out = Tensor(xp.mean(r * r), requires_grad=pred.requires_grad,
+    # Keep the loss in the PRECISION OF THE INPUTS. A bare xp.mean(...) returns a NumPy scalar, not an ndarray, and Tensor()
+    # casts scalars to the default dtype - so a float64 forward produced a float32 loss, which makes a finite-difference
+    # gradient check measure float32 rounding instead of the gradient. This cost me a false FAIL on a correct op.
+    out = Tensor(np.asarray(xp.mean(r * r), dtype=pred.data.dtype), requires_grad=pred.requires_grad,
                  _prev=(pred,), name="mse")
 
     def bw():
