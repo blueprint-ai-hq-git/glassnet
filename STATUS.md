@@ -8149,3 +8149,19 @@ shipped (linear concept head)           80.78%      9 of 14
 ```
 
 Every lever that raises accuracy lowers the number of names the network actually honours, and the two penalties together give both the best accuracy and the worst naming. In this architecture the concept neurons are what the answer layer reads from, so the network is rewarded for putting whatever predicts the label into them - and a name is only true when the model has no reason to be more clever than the name. **Conclusion, and a correction to it:** 12 of 14 honest is unreachable by adding capacity or penalties. My first explanation for that was wrong - I said the answer layer needed to stop seeing anything but the concepts, but it already sees nothing else: the shipped model is `concept (784->14, sigmoid) -> rules (14->30) -> answer (30->10)` with no direct pixel path into the answer, verified on the trained checkpoint. So the cause is upstream: with seven label pairs correlating above 0.80, the labels themselves are redundant, and a neuron cannot be pure about a property that shares its pixels with another property.
+
+**Two more results, and the second one corrects our own headline downward.**
+
+Decorrelation is the third failed lever: a matched pair in one run, same seed and budget and trainer, control at **9 of 14 honest (64%) / 80.78%**, trimmed to nine non-redundant labels at **4 of 9 honest (44%) / 80.03%**. Dropping the redundant labels made naming worse, so the labels are not the lever either.
+
+Because three interventions (capacity, exclusivity, decorrelation) all failed to raise the count, the next suspect was the measuring instrument itself: the gate compares each neuron with each label one at a time, so a neuron that faithfully detects a property which usually co-occurs with another gets charged with tracking that other property. The sharper test regresses each neuron on **all** labels at once, so a label's coefficient says how much it moves the neuron with the other labels held fixed:
+
+```
+marginal test (published so far)             9 of 14 honest (64%)
+conditional test (controls co-occurrence)    6 of 14 honest (43%)
+bar                                          12 of 14
+```
+
+The audit went against my suspicion. **The published 9 of 14 was generous, not harsh** - once co-occurrence is controlled, only six neurons keep their own label as their strongest driver. So the honest status of the shipped 80.78% model is **6 to 9 of 14 names true depending on how strictly you ask the question, with a linear pixel-to-concept map**, and every lever tried so far - capacity, exclusivity, decorrelated labels - fails to improve it.
+
+`tools/check_concept_honesty_conditional.py`, `tools/train_decorrelated.py`.
