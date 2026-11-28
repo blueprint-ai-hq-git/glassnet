@@ -9,8 +9,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)" || exit 1
 cd "$ROOT" || exit 1
 PY="${GLASSNET_PY:-python3}"
 HID="${1:-64}"
-OUT="runs/caph${HID}"
 export GLASSNET_EXCL="${2:-0}"
+# The out dir MUST include every varied setting: an earlier version keyed it on the hidden size alone, so the
+# capacity arm and the capacity+exclusivity arm wrote to the same folder and the second destroyed the first checkpoint.
+OUT="runs/caph${HID}_ex${GLASSNET_EXCL}"
 echo "=== capacity arm, concept_hidden=$HID, GLASSNET_EXCL=$GLASSNET_EXCL ==="; date '+%H:%M:%S'
 "$PY" -c "
 import sys; sys.path.insert(0,'.')

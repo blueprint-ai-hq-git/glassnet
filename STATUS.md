@@ -8137,3 +8137,15 @@ Separately, the label set itself is redundant - **7 label pairs correlate above 
 **The exclusivity fix does not work yet, tested:** a concept-exclusivity penalty (off-diagonal squared correlations between activations and every other concept's label, diagonal left free) trained at weight 0.5 gives **8 of 14 honest and 79.68% accuracy**, against **9 of 14 at 80.78%** without it. So the first attempt at the fix made naming worse and cost 1.1 points of accuracy. The gradient of the new term is finite-difference checked (max_abs_err 5.77e-03), so this is a result about the idea at this weight and schedule, not a broken implementation - one seed, and the honest status is that the concept layer still fails its own gate.
 
 **Capacity buys accuracy and sells the names:** giving the concept head a hidden layer of 64 raises test accuracy from **80.78% to 84.91%** (+4.13 points) while honest concept neurons fall from **9 of 14 to 6 of 14**. More capacity lets the network use each neuron for whatever predicts the label rather than for the property its name claims. That is the central tension of a readable net, measured rather than argued: the two goals pull against each other, and neither the exclusivity penalty (8 of 14) nor extra capacity (6 of 14) improved naming.
+
+**The accuracy/readability trade-off is monotone, measured across four arms:**
+
+```
+arm                                    accuracy    honest concept names
+shipped (linear concept head)           80.78%      9 of 14
++ exclusivity 0.5 alone                 79.68%      8 of 14
++ hidden 64 alone                       84.91%      6 of 14
++ hidden 64 AND exclusivity 0.5         85.75%      5 of 14
+```
+
+Every lever that raises accuracy lowers the number of names the network actually honours, and the two penalties together give both the best accuracy and the worst naming. In this architecture the concept neurons are what the answer layer reads from, so the network is rewarded for putting whatever predicts the label into them - and a name is only true when the model has no reason to be more clever than the name. **Conclusion: 12 of 14 honest is unreachable by adding capacity or penalties; honesty needs the answer layer to see nothing but the concepts, so each concept must carry its own information or the accuracy must fall.**
