@@ -8165,3 +8165,12 @@ bar                                          12 of 14
 The audit went against my suspicion. **The published 9 of 14 was generous, not harsh** - once co-occurrence is controlled, only six neurons keep their own label as their strongest driver. So the honest status of the shipped 80.78% model is **6 to 9 of 14 names true depending on how strictly you ask the question, with a linear pixel-to-concept map**, and every lever tried so far - capacity, exclusivity, decorrelated labels - fails to improve it.
 
 `tools/check_concept_honesty_conditional.py`, `tools/train_decorrelated.py`.
+
+**The last lever fails too: one detector per concept.** Giving every named concept its own nonlinear detector (`relu(x@W1_k+b1_k) -> w2_k`, 88,820 params) against the shipped shared linear filter (11,750 params), matched pair in one run, same seed and budget:
+
+```
+control (shared linear filter)    accuracy 80.78%    marginal 9/14    conditional 6/14
+per-concept (own detectors)       accuracy 83.96%    marginal 4/14    conditional 5/14
+```
+
+Accuracy rises **+3.18 points** and honest naming **falls** on both instruments. That is now four architectural levers - capacity (6/14), exclusivity (8/14), decorrelated labels (4/9), one-detector-per-concept (4/14) - and every one of them moves accuracy up as the names get worse. The naming ceiling is not a tuning problem in this architecture family: **the network is paid for accuracy, and a true name is only free when it happens to be the cheapest way to be accurate.**
