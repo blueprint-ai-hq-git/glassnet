@@ -8174,3 +8174,18 @@ per-concept (own detectors)       accuracy 83.96%    marginal 4/14    conditiona
 ```
 
 Accuracy rises **+3.18 points** and honest naming **falls** on both instruments. That is now four architectural levers - capacity (6/14), exclusivity (8/14), decorrelated labels (4/9), one-detector-per-concept (4/14) - and every one of them moves accuracy up as the names get worse. The naming ceiling is not a tuning problem in this architecture family: **the network is paid for accuracy, and a true name is only free when it happens to be the cheapest way to be accurate.**
+
+## We also tested the shortcut: can a pretrained black box just be decoded instead?
+
+If a finished open model could be turned white-box, building our own would be wasted effort. So that was tested against a bar fixed before any result existed - causal named features, a readable surrogate at >=90% of the original's accuracy, and no hidden path. On GPT-2 small (124M), one model, 19 minutes, 2967 MB peak VRAM, 62 C max:
+
+```
+(a) named features are causal        MET      3 named heads: 98.50% -> 71.00% accuracy, 54.50% of answers flip to the
+                                               distractor; 9 named heads -> 45.50%; 5 random heads move nothing
+(b) readable surrogate >=90%         NOT MET  IOI: a 2-rule parser scores 100.0% vs the model's 98.5% - but the answer is
+                                               fixed by the template, so the pass is vacuous
+                                               greater-than (must be computed): readable rules agree only 27.70% / 21.30%
+(c) no hidden path                   MET       two hand-written rules, no learned weights - by construction, not by test
+```
+
+**Verdict: the decode route does not replace building our own.** Readable rules copy a black box where the task is surface lookup and fail to copy it where the task needs computation - which is exactly the case our architecture exists to make readable. One real caveat in our favour of honesty: the (b) pass on IOI was vacuous, and it was the probe itself that caught it.
