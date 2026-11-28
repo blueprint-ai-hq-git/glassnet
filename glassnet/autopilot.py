@@ -75,7 +75,7 @@ def _restore(net, snap):
         raise RuntimeError("snapshot has %d tensors but the model has %d - refusing to restore mismatched weights"
                            % (len(snap), len(params)))
     for p, d in zip(params, snap):
-            p.data[:] = snap[p.name]
+        p.data[:] = d
 
 
 def _act(actions, step, msg):
